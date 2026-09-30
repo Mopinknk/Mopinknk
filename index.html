@@ -9,6 +9,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Itim&family=Kanit:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,700;1,800&display=swap" rel="stylesheet">
 <!-- Chart.js สำหรับทำกราฟระบบบัญชี -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 tailwind.config = {
 theme: {
@@ -701,7 +703,7 @@ text-align: left;
 </div>
 <div class="px-6 py-5 bg-petal-light/50 border-t border-petal flex justify-end gap-3 shrink-0">
 <button type="button" onclick="closeEditAccountModal()" class="px-5 py-2.5 rounded-2xl text-sm font-bold text-espresso bg-white border border-petal hover:bg-petal-light transition-colors">ยกเลิก</button>
-<button type="submit" form="editAccountForm" class="px-6 py-2.5 rounded-2xl text-sm font-bold text-espresso bg-petal border-2 border-transparent hover:bg-petal-deep shadow-cute transition-colors">บันทึกการแก้ไข</button>
+<button type="submit" form="editAccountForm" class="px-6 py-2.5 rounded-2xl text-sm font-bold text-espresso bg-petal border-2 border-transparent hover:bg-petal-deep shadow-cute transition-colors" id="btnSubmitEditAcc">บันทึกการแก้ไข</button>
 </div>
 </div>
 </div>
@@ -717,6 +719,7 @@ text-align: left;
 <div class="px-5 sm:px-6 py-6 overflow-y-auto overflow-x-hidden w-full">
 <form id="editScreenForm" onsubmit="handleEditScreen(event)" class="space-y-5 sm:space-y-6 w-full">
 <input type="hidden" id="editAccountId">
+<input type="hidden" id="editScreenId">
 <input type="hidden" id="editScreenIndex">
 <div class="w-full">
 <label class="block text-sm font-bold text-espresso mb-2 sm:mb-3">สถานะ (ระบบจะคำนวณวันครบกำหนดให้อัตโนมัติ)</label>
@@ -767,7 +770,7 @@ text-align: left;
 </form>
 </div>
 <div class="px-5 sm:px-6 py-4 sm:py-5 bg-petal-light/50 flex flex-col shrink-0 rounded-b-[2rem] w-full border-t border-petal">
-<button type="submit" form="editScreenForm" class="w-full rounded-2xl bg-petal border-2 border-transparent px-4 py-3.5 text-sm font-bold text-espresso shadow-cute hover:bg-petal-deep hover:-translate-y-0.5 transition-all text-center block box-border">
+<button type="submit" form="editScreenForm" class="w-full rounded-2xl bg-petal border-2 border-transparent px-4 py-3.5 text-sm font-bold text-espresso shadow-cute hover:bg-petal-deep hover:-translate-y-0.5 transition-all text-center block box-border" id="btnSubmitEditScreen">
 บันทึกข้อมูล
 </button>
 </div>
@@ -887,7 +890,7 @@ text-align: left;
 <button type="button" onclick="manualSendDailySummary(this)" class="w-full py-3.5 rounded-2xl text-sm font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 transition-colors border-2 border-purple-100">
 <i class="fa-solid fa-calendar-check mr-1.5"></i> ทดสอบส่งแจ้งเตือนรายวัน
 </button>
-<button type="submit" class="w-full py-3.5 rounded-2xl text-sm font-bold text-ivory bg-espresso hover:bg-espresso-light transition-colors shadow-soft">
+<button type="submit" id="btnSaveSettings" class="w-full py-3.5 rounded-2xl text-sm font-bold text-ivory bg-espresso hover:bg-espresso-light transition-colors shadow-soft">
 บันทึกการตั้งค่า
 </button>
 </div>
@@ -925,7 +928,7 @@ text-align: left;
 <div class="text-center pb-2">
 <h4 class="font-bold text-espresso text-base">เข้าสู่ระบบแอดมิน</h4>
 <p class="text-xs text-espresso/70">กรุณากรอกอีเมลและรหัสผ่านเพื่อดำเนินการต่อ</p>
-<p class="text-[11px] text-espresso mt-2 font-bold bg-petal-light py-2 px-3 rounded-xl border border-petal">⚠️ หากต้องการแก้ไขข้อมูล โปรดติดต่อผู้ดูแล</p>
+<p class="text-[11px] text-espresso mt-2 font-bold bg-petal-light py-2 px-3 rounded-xl border border-petal">⚠️ หากต้องการแก้ไขข้อมูล โปรดเข้าสู่ระบบแอดมิน</p>
 </div>
 <form id="adminLoginForm" onsubmit="handleAdminLogin(event)" class="space-y-4">
 <div>
@@ -1038,10 +1041,10 @@ text-align: left;
 </div>
 </div>
 <div class="pt-5 flex justify-between shrink-0 mt-2 border-t border-petal">
-<button type="button" id="deleteTemplateBtn" onclick="deleteCurrentTemplate()" class="px-5 py-3 rounded-2xl text-sm font-bold text-red-500 bg-white border border-red-200 hover:bg-red-50 transition-colors">ลบรูปแบบ</button>
+<button type="button" id="deleteTemplateBtn" onclick="deleteCurrentTemplate(this)" class="px-5 py-3 rounded-2xl text-sm font-bold text-red-500 bg-white border border-red-200 hover:bg-red-50 transition-colors">ลบรูปแบบ</button>
 <div class="flex gap-2">
 <button type="button" onclick="closeEditTemplateModal()" class="px-5 py-3 rounded-2xl text-sm font-bold text-espresso bg-white border border-petal hover:bg-petal-light transition-colors">ยกเลิก</button>
-<button type="button" onclick="saveTemplate()" class="px-6 py-3 rounded-2xl text-sm font-bold text-espresso bg-petal border-2 border-transparent hover:bg-petal-deep shadow-cute transition-colors">บันทึก</button>
+<button type="button" onclick="saveTemplate(this)" class="px-6 py-3 rounded-2xl text-sm font-bold text-espresso bg-petal border-2 border-transparent hover:bg-petal-deep shadow-cute transition-colors">บันทึก</button>
 </div>
 </div>
 </div>
@@ -1096,7 +1099,7 @@ text-align: left;
 </div>
 <div class="pt-3 flex gap-2">
 <button type="button" onclick="closeAddCustomAppModal()" class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-espresso bg-white border border-petal hover:bg-petal-light transition-colors">ยกเลิก</button>
-<button type="submit" class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-espresso bg-petal border-2 border-transparent hover:bg-petal-deep transition-colors shadow-cute">บันทึกแอป</button>
+<button type="submit" id="btnSaveApp" class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-espresso bg-petal border-2 border-transparent hover:bg-petal-deep transition-colors shadow-cute">บันทึกแอป</button>
 </div>
 </form>
 </div>
@@ -1111,7 +1114,7 @@ text-align: left;
 <p class="text-sm font-medium text-espresso/70 mb-6" id="deleteScreenModalText">ข้อมูลของจอนี้จะถูกลบออกจากบัญชี</p>
 <div class="flex gap-3">
 <button onclick="closeDeleteScreenModal()" class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-espresso bg-white border border-petal hover:bg-petal-light transition-colors">ยกเลิก</button>
-<button onclick="executeDeleteScreen()" class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-white bg-red-500 border-2 border-transparent hover:bg-red-600 shadow-soft transition-colors">ลบจอ</button>
+<button onclick="executeDeleteScreen(this)" class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-white bg-red-500 border-2 border-transparent hover:bg-red-600 shadow-soft transition-colors">ลบจอ</button>
 </div>
 </div>
 </div>
@@ -1125,17 +1128,28 @@ text-align: left;
 <p class="text-sm font-medium text-espresso/70 mb-6">ข้อมูลทั้งหมดในบัญชีนี้จะถูกลบและไม่สามารถกู้คืนได้</p>
 <div class="flex gap-3">
 <button onclick="closeDeleteModal()" class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-espresso bg-white border border-petal hover:bg-petal-light transition-colors">ยกเลิก</button>
-<button onclick="executeDeleteAccount()" class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-white bg-red-500 border-2 border-transparent hover:bg-red-600 shadow-soft transition-colors">ลบบัญชี</button>
+<button onclick="executeDeleteAccount(this)" class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-white bg-red-500 border-2 border-transparent hover:bg-red-600 shadow-soft transition-colors">ลบบัญชี</button>
 </div>
 </div>
 </div>
 <div id="toastContainer" class="fixed top-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none"></div>
+
 <script>
+// --- Supabase Config & Init ---
+// ป้องกันการประกาศตัวแปรซ้ำเมื่อเกิด Hot Reload
+var SUPABASE_URL = 'https://dlepafxydlugwkilbqbo.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRsZXBhZnh5ZGx1Z3draWxicWJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3MzA5NzQsImV4cCI6MjEwNjMwNjk3NH0.wOyXhfs9ZqEOiSUD1HRQSvkq1gZBVbcLWRMMhkClrmU';
+if (!window.supabaseDb) {
+    window.supabaseDb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+var supabase = window.supabaseDb;
+
+// --- Global State ---
 let netflixAccounts = [];
 let telegramSettings = { token: '', chatId: '' };
 let collapsedAccounts = new Set();
 let accountIdToDelete = null;
-let screenToDelete = { accountId: null, screenIndex: null };
+let screenToDelete = { id: null, accountId: null, screenIndex: null };
 let selectedAppFilter = 'all';
 let searchQuery = '';
 let monaliTransactions = [];
@@ -1143,560 +1157,625 @@ let accFilterMode = 'today';
 let accChart = null;
 let cachedTodayTime = new Date().setHours(0,0,0,0);
 let cachedTomorrowTime = new Date(cachedTodayTime).setDate(new Date(cachedTodayTime).getDate() + 1);
-let lastRenderTime = 0;
 let pendingRender = false;
-const APP_COLOR_PALETTES = [
-{ id: 'petal', name: 'ชมพูกลีบกุหลาบ', badge: 'bg-petal text-espresso font-bold', lightBg: 'bg-petal-light text-espresso border-petal' },
-{ id: 'espresso', name: 'เอสเพรสโซ่', badge: 'bg-espresso text-ivory', lightBg: 'bg-ivory text-espresso border-ivory-border' },
-{ id: 'red', name: 'แดง', badge: 'bg-red-500 text-white', lightBg: 'bg-red-50 text-red-600 border-red-200' },
-{ id: 'orange', name: 'ส้ม', badge: 'bg-orange-500 text-white', lightBg: 'bg-orange-50 text-orange-600 border-orange-200' },
-{ id: 'emerald', name: 'เขียว', badge: 'bg-emerald-600 text-white', lightBg: 'bg-emerald-50 text-emerald-600 border-emerald-200' },
-{ id: 'sky', name: 'ฟ้า', badge: 'bg-sky-600 text-white', lightBg: 'bg-sky-50 text-sky-600 border-sky-200' },
-{ id: 'indigo', name: 'น้ำเงิน', badge: 'bg-indigo-600 text-white', lightBg: 'bg-indigo-50 text-indigo-600 border-indigo-200' },
-{ id: 'purple', name: 'ม่วง', badge: 'bg-purple-600 text-white', lightBg: 'bg-purple-50 text-purple-600 border-purple-200' }
-];
+let currentAdmin = null;
 let customApps = [];
 let selectedNewAppColor = 'petal';
 let userManuallySelectedColor = false;
 let appConfigCache = {};
-
-function getAutoIconAndColor(name) {
-const lowerName = name.toLowerCase().trim();
-const presets = {
-'netflix': { icon: 'fa-solid fa-n', color: 'red' },
-'youtube': { icon: 'fa-brands fa-youtube', color: 'red' },
-'spotify': { icon: 'fa-brands fa-spotify', color: 'emerald' },
-'disney': { icon: 'fa-solid fa-d', color: 'indigo' },
-'viu': { icon: 'fa-solid fa-v', color: 'orange' },
-'iqiyi': { icon: 'fa-solid fa-q', color: 'emerald' },
-'wetv': { icon: 'fa-solid fa-w', color: 'sky' },
-'hbo': { icon: 'fa-solid fa-h', color: 'purple' },
-'prime': { icon: 'fa-brands fa-amazon', color: 'sky' },
-'canva': { icon: 'fa-solid fa-c', color: 'sky' },
-'apple': { icon: 'fa-brands fa-apple', color: 'espresso' },
-'bilibili': { icon: 'fa-brands fa-bilibili', color: 'sky' },
-'tiktok': { icon: 'fa-brands fa-tiktok', color: 'espresso' },
-'capcut': { icon: 'fa-solid fa-scissors', color: 'espresso' },
-'trueid': { icon: 'fa-solid fa-tv', color: 'red' },
-'ais play': { icon: 'fa-solid fa-play', color: 'emerald' }
-};
-for (const [key, data] of Object.entries(presets)) {
-if (lowerName.includes(key)) {
-return data;
-}
-}
-const firstChar = lowerName.charAt(0);
-if (/[a-z]/.test(firstChar)) {
-return { icon: `fa-solid fa-${firstChar}`, color: null };
-}
-return { icon: 'fa-solid fa-shapes', color: null };
-}
-function handleCustomAppInput() {
-const val = document.getElementById('customAppNameInput').value;
-const auto = getAutoIconAndColor(val);
-const iconPreview = document.getElementById('customAppIconPreview');
-const iconBox = document.getElementById('customAppIconPreviewBox');
-if (iconPreview) iconPreview.className = auto.icon;
-if (auto.color && !userManuallySelectedColor) {
-selectedNewAppColor = auto.color;
-renderColorPickers();
-}
-const pal = APP_COLOR_PALETTES.find(p => p.id === selectedNewAppColor) || APP_COLOR_PALETTES[0];
-if (iconBox) iconBox.className = `w-14 h-14 rounded-2xl ${pal.lightBg} flex items-center justify-center text-2xl shadow-sm border-2 transition-all shrink-0`;
-}
-function getAppConfig(appName) {
-if (!appName) return { icon: 'fa-solid fa-shapes', badge: 'bg-petal text-espresso font-bold', lightBg: 'bg-petal-light text-espresso border-petal' };
-const lowerName = appName.trim().toLowerCase();
-if (appConfigCache[lowerName]) return appConfigCache[lowerName];
-const autoInfo = getAutoIconAndColor(appName);
-const found = customApps.find(a => a.name.toLowerCase() === lowerName);
-let config;
-if (found) {
-const palette = APP_COLOR_PALETTES.find(p => p.id === found.color) || APP_COLOR_PALETTES[0];
-config = {
-name: found.name,
-icon: found.icon && found.icon !== 'fa-solid fa-shapes' ? found.icon : autoInfo.icon,
-badge: palette.badge,
-lightBg: palette.lightBg
-};
-} else {
-let hash = 0;
-for (let i = 0; i < appName.length; i++) hash = appName.charCodeAt(i) + ((hash << 5) - hash);
-const autoPalette = autoInfo.color ? APP_COLOR_PALETTES.find(p => p.id === autoInfo.color) : null;
-const palette = autoPalette || APP_COLOR_PALETTES[Math.abs(hash) % APP_COLOR_PALETTES.length];
-config = {
-name: appName,
-icon: autoInfo.icon,
-badge: palette.badge,
-lightBg: palette.lightBg
-};
-}
-appConfigCache[lowerName] = config;
-return config;
-}
-function getAccountApp(account) {
-if (account.app && account.app.trim()) return account.app.trim();
-const nameLower = (account.name || '').toLowerCase();
-for (const item of customApps) {
-if (nameLower.includes(item.name.toLowerCase())) return item.name;
-}
-return customApps.length > 0 ? customApps[0].name : 'แอปทั่วไป';
-}
-
-let adminUsers = [];
-let currentAdmin = null;
 let formTemplates = [];
+
 const defaultTemplate = {
-id: 'tpl_default',
-name: 'ฟอร์มส่งมอบ',
-content: 'Email :  {email}\nPass :   {password}\nScreen :  {screen}\nPin :  {pin}\nExp : {expire}'
+    id: 'tpl_default',
+    name: 'ฟอร์มส่งมอบ',
+    content: 'Email :  {email}\nPass :   {password}\nScreen :  {screen}\nPin :  {pin}\nExp : {expire}'
 };
 
-window.addEventListener('DOMContentLoaded', () => {
-loadData();
-scheduleRender();
-checkAdminPermissionsUI();
-checkDailyNotifications();
-initClickSparkles();
-window.addEventListener('storage', (e) => {
-const keysToWatch = [
-'netflix_accounts', 'netflix_collapsed',
-'monali_logo', 'monali_banner', 'monali_templates',
-'monali_admin_users', 'monali_current_admin', 'monali_custom_apps'
+const APP_COLOR_PALETTES = [
+    { id: 'petal', name: 'ชมพูกลีบกุหลาบ', badge: 'bg-petal text-espresso font-bold', lightBg: 'bg-petal-light text-espresso border-petal' },
+    { id: 'espresso', name: 'เอสเพรสโซ่', badge: 'bg-espresso text-ivory', lightBg: 'bg-ivory text-espresso border-ivory-border' },
+    { id: 'red', name: 'แดง', badge: 'bg-red-500 text-white', lightBg: 'bg-red-50 text-red-600 border-red-200' },
+    { id: 'orange', name: 'ส้ม', badge: 'bg-orange-500 text-white', lightBg: 'bg-orange-50 text-orange-600 border-orange-200' },
+    { id: 'emerald', name: 'เขียว', badge: 'bg-emerald-600 text-white', lightBg: 'bg-emerald-50 text-emerald-600 border-emerald-200' },
+    { id: 'sky', name: 'ฟ้า', badge: 'bg-sky-600 text-white', lightBg: 'bg-sky-50 text-sky-600 border-sky-200' },
+    { id: 'indigo', name: 'น้ำเงิน', badge: 'bg-indigo-600 text-white', lightBg: 'bg-indigo-50 text-indigo-600 border-indigo-200' },
+    { id: 'purple', name: 'ม่วง', badge: 'bg-purple-600 text-white', lightBg: 'bg-purple-50 text-purple-600 border-purple-200' }
 ];
-if (e.key && keysToWatch.includes(e.key)) {
-loadData();
-scheduleRender();
-checkAdminPermissionsUI();
-}
+
+window.addEventListener('DOMContentLoaded', async () => {
+    initClickSparkles();
+    setupAuthListener();
+
+    const progressBar = document.getElementById('loading-progress-bar');
+    const percentageText = document.getElementById('loading-percentage');
+    const enterBtn = document.getElementById('enter-system-btn');
+    if(progressBar && percentageText) {
+        let p = 0;
+        let intv = setInterval(() => {
+            p += 2;
+            if(p >= 100) {
+                p = 100;
+                clearInterval(intv);
+                if(enterBtn) enterBtn.classList.add('show');
+            }
+            progressBar.style.width = p + '%';
+            percentageText.textContent = p + '%';
+        }, 40);
+    }
+
+    setInterval(() => {
+        cachedTodayTime = new Date().setHours(0,0,0,0);
+        cachedTomorrowTime = new Date(cachedTodayTime).setDate(new Date(cachedTodayTime).getDate() + 1);
+        scheduleRender();
+        checkDailyNotifications();
+    }, 60000);
 });
-setInterval(() => {
-cachedTodayTime = new Date().setHours(0,0,0,0);
-cachedTomorrowTime = new Date(cachedTodayTime).setDate(new Date(cachedTodayTime).getDate() + 1);
-scheduleRender();
-checkDailyNotifications();
-}, 60000);
-const progressBar = document.getElementById('loading-progress-bar');
-const percentageText = document.getElementById('loading-percentage');
-const statusText = document.getElementById('loading-status-text');
-const enterBtn = document.getElementById('enter-system-btn');
-if(progressBar && percentageText) {
-let p = 0;
-let intv = setInterval(() => {
-p += 2;
-if(p >= 100) {
-p = 100;
-clearInterval(intv);
-if(statusText) statusText.textContent = 'หลังบ้านพร้อมแล้วค่ะ 💖';
-if(enterBtn) enterBtn.classList.add('show');
+
+function setupAuthListener() {
+    supabase.auth.onAuthStateChange(async (event, session) => {
+        if (session) {
+            const { data: isAdmin } = await supabase.rpc('is_admin');
+            if (isAdmin) {
+                currentAdmin = session.user;
+                const nameLabel = document.getElementById('currentAdminNameLabel');
+                if(nameLabel) nameLabel.textContent = session.user.email;
+            } else {
+                currentAdmin = null;
+                await supabase.auth.signOut();
+            }
+        } else {
+            currentAdmin = null;
+        }
+        updateAdminStateUI();
+        checkAdminPermissionsUI();
+        await loadData();
+    });
 }
-progressBar.style.width = p + '%';
-percentageText.textContent = p + '%';
-}, 40);
-}
-});
+
 function hideLoadingScreen() {
-const loader = document.getElementById('loading-screen');
-if(loader) loader.classList.add('hidden-loader');
+    const loader = document.getElementById('loading-screen');
+    if(loader) loader.classList.add('hidden-loader');
 }
+
+async function loadData() {
+    const statusText = document.getElementById('loading-status-text');
+    if(statusText) statusText.textContent = 'กำลังโหลดข้อมูลจากฐานข้อมูล...';
+
+    try {
+        // Apps
+        const { data: appsData } = await supabase.from('apps').select('*');
+        customApps = appsData || [];
+        appConfigCache = {};
+
+        // Accounts & Screens
+        const { data: accData } = await supabase.from('accounts').select('*, apps(name)');
+        const { data: screenData } = await supabase.from('screens').select('*');
+
+        netflixAccounts = (accData || []).map(acc => {
+            const screens = (screenData || []).filter(s => s.account_id === acc.id).sort((a,b) => a.screen_index - b.screen_index);
+            return {
+                id: acc.id,
+                app: acc.apps?.name || 'แอปทั่วไป',
+                app_id: acc.app_id,
+                name: acc.name,
+                email: acc.email,
+                password: acc.password,
+                accountExpireDate: acc.expire_date,
+                screens: screens.map(s => ({
+                    id: s.id,
+                    status: s.status,
+                    expireDate: s.expire_date,
+                    pin: s.pin,
+                    price: s.price,
+                    notes: s.notes
+                }))
+            };
+        }).sort((a,b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+        // Transactions
+        const { data: txData } = await supabase.from('transactions').select('*').order('transaction_date', { ascending: false });
+        monaliTransactions = (txData || []).map(tx => ({
+            id: tx.id,
+            type: tx.type,
+            amount: tx.amount,
+            note: tx.note,
+            date: tx.transaction_date
+        }));
+
+        // Templates
+        const { data: tplData } = await supabase.from('templates').select('*').order('created_at', {ascending: true});
+        formTemplates = (tplData && tplData.length > 0) ? tplData : [defaultTemplate];
+
+        // Settings
+        const { data: settingsData } = await supabase.from('settings').select('*');
+        const stMap = {};
+        (settingsData || []).forEach(s => stMap[s.key] = s.value);
+
+        telegramSettings.token = stMap['tg_token'] || '';
+        telegramSettings.chatId = stMap['tg_chat_id'] || '';
+
+        if (stMap['logo_base64']) {
+            document.getElementById('storeLogo').src = stMap['logo_base64'];
+            const loadingLogoEl = document.getElementById('loadingScreenLogo');
+            if (loadingLogoEl) loadingLogoEl.src = stMap['logo_base64'];
+        }
+        if (stMap['banner_base64']) {
+            document.getElementById('storeBanner').src = stMap['banner_base64'];
+        }
+
+        if(statusText) statusText.textContent = 'หลังบ้านพร้อมแล้วค่ะ 💖';
+        scheduleRender();
+    } catch (error) {
+        console.error("Load Data Error:", error);
+        if(statusText) statusText.textContent = 'เกิดข้อผิดพลาดในการโหลดข้อมูล';
+        showToast('โหลดข้อมูลไม่สำเร็จ: ' + error.message);
+    }
+}
+
+// Wrapper ป้องกันกดปุ่มซ้ำ และแสดง Loading UI
+async function requireAdminAuthAction(btn, actionFunc) {
+    if (!currentAdmin) {
+        showToast('หากต้องการแก้ไขข้อมูล โปรดเข้าสู่ระบบผู้ดูแล 🔒');
+        openAdminModal();
+        return;
+    }
+    const origHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> รอสักครู่...';
+    btn.disabled = true;
+    try {
+        await actionFunc();
+    } catch (err) {
+        showToast('เกิดข้อผิดพลาด: ' + err.message);
+        console.error(err);
+    } finally {
+        btn.innerHTML = origHtml;
+        btn.disabled = false;
+    }
+}
+
+function requireAdminAuth() {
+    if (!currentAdmin) {
+        showToast('หากต้องการแก้ไขข้อมูล โปรดเข้าสู่ระบบผู้ดูแล 🔒');
+        openAdminModal();
+        return false;
+    }
+    return true;
+}
+
 function scheduleRender() {
-if (pendingRender) return;
-pendingRender = true;
-requestAnimationFrame(() => {
-renderDashboard();
-if(!document.getElementById('accountingView').classList.contains('hidden')) {
-renderTransactions();
-}
-pendingRender = false;
-});
+    if (pendingRender) return;
+    pendingRender = true;
+    requestAnimationFrame(() => {
+        renderDashboard();
+        if(!document.getElementById('accountingView').classList.contains('hidden')) {
+            renderTransactions();
+        }
+        pendingRender = false;
+    });
 }
 
 function escapeHTML(str) {
-if (!str) return '';
-return str.replace(/[&<>'"]/g, tag => ({
-'&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-}[tag]));
+    if (!str) return '';
+    return String(str).replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[tag]));
 }
 function escapeJS(str) {
-if (!str) return '';
-return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+    if (!str) return '';
+    return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r');
 }
 function fastParseDateToTime(dateString) {
-if (!dateString) return 0;
-const p = dateString.split('-');
-if (p.length === 3) return new Date(p[0], p[1] - 1, p[2]).getTime();
-return new Date(dateString).setHours(0,0,0,0);
+    if (!dateString) return 0;
+    const p = dateString.split('-');
+    if (p.length === 3) return new Date(p[0], p[1] - 1, p[2]).getTime();
+    return new Date(dateString).setHours(0,0,0,0);
 }
 function formatDate(dateString) {
-if (!dateString) return '';
-const dt = new Date(fastParseDateToTime(dateString));
-return dt ? dt.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+    if (!dateString) return '';
+    const dt = new Date(fastParseDateToTime(dateString));
+    return dt ? dt.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
 }
 function formatShortDate(dateString) {
-if (!dateString) return '';
-const parts = dateString.split('-');
-if (parts.length === 3) {
-const day = parseInt(parts[2], 10);
-const month = parseInt(parts[1], 10);
-if (!isNaN(day) && !isNaN(month)) {
-return `${day}/${month}`;
-}
-}
-const dt = new Date(fastParseDateToTime(dateString));
-if (dt && !isNaN(dt.getTime())) {
-return `${dt.getDate()}/${dt.getMonth() + 1}`;
-}
-return dateString;
+    if (!dateString) return '';
+    const parts = dateString.split('-');
+    if (parts.length === 3) {
+        const day = parseInt(parts[2], 10);
+        const month = parseInt(parts[1], 10);
+        if (!isNaN(day) && !isNaN(month)) {
+            return `${day}/${month}`;
+        }
+    }
+    const dt = new Date(fastParseDateToTime(dateString));
+    if (dt && !isNaN(dt.getTime())) {
+        return `${dt.getDate()}/${dt.getMonth() + 1}`;
+    }
+    return dateString;
 }
 
-function loadData() {
-try {
-const savedNetflix = localStorage.getItem('netflix_accounts');
-if (savedNetflix) {
-netflixAccounts = JSON.parse(savedNetflix);
-netflixAccounts.forEach(acc => {
-if (!acc.app) acc.app = getAccountApp(acc);
-});
+function getAutoIconAndColor(name) {
+    const lowerName = name.toLowerCase().trim();
+    const presets = {
+        'netflix': { icon: 'fa-solid fa-n', color: 'red' },
+        'youtube': { icon: 'fa-brands fa-youtube', color: 'red' },
+        'spotify': { icon: 'fa-brands fa-spotify', color: 'emerald' },
+        'disney': { icon: 'fa-solid fa-d', color: 'indigo' },
+        'viu': { icon: 'fa-solid fa-v', color: 'orange' },
+        'iqiyi': { icon: 'fa-solid fa-q', color: 'emerald' },
+        'wetv': { icon: 'fa-solid fa-w', color: 'sky' },
+        'hbo': { icon: 'fa-solid fa-h', color: 'purple' },
+        'prime': { icon: 'fa-brands fa-amazon', color: 'sky' },
+        'canva': { icon: 'fa-solid fa-c', color: 'sky' },
+        'apple': { icon: 'fa-brands fa-apple', color: 'espresso' },
+        'bilibili': { icon: 'fa-brands fa-bilibili', color: 'sky' },
+        'tiktok': { icon: 'fa-brands fa-tiktok', color: 'espresso' },
+        'capcut': { icon: 'fa-solid fa-scissors', color: 'espresso' },
+        'trueid': { icon: 'fa-solid fa-tv', color: 'red' },
+        'ais play': { icon: 'fa-solid fa-play', color: 'emerald' }
+    };
+    for (const [key, data] of Object.entries(presets)) {
+        if (lowerName.includes(key)) return data;
+    }
+    const firstChar = lowerName.charAt(0);
+    if (/[a-z]/.test(firstChar)) return { icon: `fa-solid fa-${firstChar}`, color: null };
+    return { icon: 'fa-solid fa-shapes', color: null };
 }
-const savedSettings = localStorage.getItem('netflix_tg_settings');
-if (savedSettings) telegramSettings = JSON.parse(savedSettings);
-const savedCollapsed = localStorage.getItem('netflix_collapsed');
-if (savedCollapsed) collapsedAccounts = new Set(JSON.parse(savedCollapsed));
-const savedLogo = localStorage.getItem('monali_logo');
-if (savedLogo) {
-const logoEl = document.getElementById('storeLogo');
-if (logoEl) logoEl.src = savedLogo;
-const loadingLogoEl = document.getElementById('loadingScreenLogo');
-if (loadingLogoEl) loadingLogoEl.src = savedLogo;
+
+function handleCustomAppInput() {
+    const val = document.getElementById('customAppNameInput').value;
+    const auto = getAutoIconAndColor(val);
+    const iconPreview = document.getElementById('customAppIconPreview');
+    const iconBox = document.getElementById('customAppIconPreviewBox');
+    if (iconPreview) iconPreview.className = auto.icon;
+    if (auto.color && !userManuallySelectedColor) {
+        selectedNewAppColor = auto.color;
+        renderColorPickers();
+    }
+    const pal = APP_COLOR_PALETTES.find(p => p.id === selectedNewAppColor) || APP_COLOR_PALETTES[0];
+    if (iconBox) iconBox.className = `w-14 h-14 rounded-2xl ${pal.lightBg} flex items-center justify-center text-2xl shadow-sm border-2 transition-all shrink-0`;
 }
-const savedBanner = localStorage.getItem('monali_banner');
-if (savedBanner) {
-const bannerEl = document.getElementById('storeBanner');
-if (bannerEl) bannerEl.src = savedBanner;
+
+function getAppConfig(appName) {
+    if (!appName) return { icon: 'fa-solid fa-shapes', badge: 'bg-petal text-espresso font-bold', lightBg: 'bg-petal-light text-espresso border-petal' };
+    const lowerName = appName.trim().toLowerCase();
+    if (appConfigCache[lowerName]) return appConfigCache[lowerName];
+    const autoInfo = getAutoIconAndColor(appName);
+    const found = customApps.find(a => a.name.toLowerCase() === lowerName);
+    let config;
+    if (found) {
+        const palette = APP_COLOR_PALETTES.find(p => p.id === found.color) || APP_COLOR_PALETTES[0];
+        config = {
+            name: found.name,
+            icon: found.icon && found.icon !== 'fa-solid fa-shapes' ? found.icon : autoInfo.icon,
+            badge: palette.badge,
+            lightBg: palette.lightBg
+        };
+    } else {
+        let hash = 0;
+        for (let i = 0; i < appName.length; i++) hash = appName.charCodeAt(i) + ((hash << 5) - hash);
+        const autoPalette = autoInfo.color ? APP_COLOR_PALETTES.find(p => p.id === autoInfo.color) : null;
+        const palette = autoPalette || APP_COLOR_PALETTES[Math.abs(hash) % APP_COLOR_PALETTES.length];
+        config = {
+            name: appName,
+            icon: autoInfo.icon,
+            badge: palette.badge,
+            lightBg: palette.lightBg
+        };
+    }
+    appConfigCache[lowerName] = config;
+    return config;
 }
-const savedTemplates = localStorage.getItem('monali_templates');
-if (savedTemplates) {
-formTemplates = JSON.parse(savedTemplates);
-const defIndex = formTemplates.findIndex(t => t.id === 'tpl_default');
-if (defIndex !== -1 && formTemplates[defIndex].content.includes('ร้าน Monali')) {
-formTemplates[defIndex].content = defaultTemplate.content;
-localStorage.setItem('monali_templates', JSON.stringify(formTemplates));
+
+function getAccountApp(account) {
+    if (account.app && account.app.trim()) return account.app.trim();
+    const nameLower = (account.name || '').toLowerCase();
+    for (const item of customApps) {
+        if (nameLower.includes(item.name.toLowerCase())) return item.name;
+    }
+    return customApps.length > 0 ? customApps[0].name : 'แอปทั่วไป';
 }
-}
-if (formTemplates.length === 0) formTemplates.push(defaultTemplate);
-const savedTransactions = localStorage.getItem('monali_transactions');
-if (savedTransactions) monaliTransactions = JSON.parse(savedTransactions);
-const savedCustomApps = localStorage.getItem('monali_custom_apps');
-if (savedCustomApps) {
-customApps = JSON.parse(savedCustomApps);
-} else {
-customApps = [
-{ id: 'app_1', name: 'Netflix', color: 'petal', icon: 'fa-solid fa-n' },
-{ id: 'app_2', name: 'YouTube', color: 'red', icon: 'fa-brands fa-youtube' },
-{ id: 'app_3', name: 'Disney+', color: 'indigo', icon: 'fa-solid fa-d' },
-{ id: 'app_4', name: 'Spotify', color: 'emerald', icon: 'fa-brands fa-spotify' }
-];
-localStorage.setItem('monali_custom_apps', JSON.stringify(customApps));
-}
-appConfigCache = {};
-const savedAdmins = localStorage.getItem('monali_admin_users');
-if (savedAdmins) {
-adminUsers = JSON.parse(savedAdmins);
-adminUsers.forEach((adm, idx) => {
-if (!adm.email) adm.email = `admin${idx === 0 ? '' : idx}@monali.com`;
-});
-}
-if (adminUsers.length === 0) {
-adminUsers.push({ id: 'adm_1', name: 'ผู้ดูแลระบบหลัก', email: 'admin@monali.com', password: '1234' });
-}
-const savedCurrentAdmin = localStorage.getItem('monali_current_admin');
-if (savedCurrentAdmin) {
-currentAdmin = JSON.parse(savedCurrentAdmin);
-} else {
-currentAdmin = null;
-}
-} catch (error) {
-console.error("Error loading data:", error);
-netflixAccounts = [];
-formTemplates = [defaultTemplate];
-adminUsers = [{ id: 'adm_1', name: 'ผู้ดูแลระบบหลัก', email: 'admin@mopink.com', password: '1234' }];
-currentAdmin = null;
-}
-}
-function saveData() {
-localStorage.setItem('netflix_accounts', JSON.stringify(netflixAccounts));
-localStorage.setItem('netflix_collapsed', JSON.stringify([...collapsedAccounts]));
+
+// ช่วยคืนค่า App ID หรือสร้างใหม่ถ้าพิมพ์ชื่อแปลกๆ เข้ามา
+async function resolveAppId(appName) {
+    let app = customApps.find(a => a.name.toLowerCase() === appName.toLowerCase());
+    if (app) return app.id;
+
+    const auto = getAutoIconAndColor(appName);
+    const { data, error } = await supabase.from('apps').insert({
+        name: appName,
+        color: 'petal',
+        icon: auto.icon || 'fa-solid fa-shapes'
+    }).select().single();
+
+    if (error) throw error;
+    customApps.push(data);
+    appConfigCache = {};
+    return data.id;
 }
 
 function getEffectiveScreenStatus(screen) {
-if (screen.status === 'available') return 'available';
-if (screen.status === 'wait_cut') return 'wait_cut';
-if (screen.expireDate) {
-const expTime = fastParseDateToTime(screen.expireDate);
-if (expTime > 0 && expTime <= cachedTodayTime) {
-return 'kick';
-}
-}
-return 'sold';
+    if (screen.status === 'available') return 'available';
+    if (screen.status === 'wait_cut') return 'wait_cut';
+    if (screen.expireDate) {
+        const expTime = fastParseDateToTime(screen.expireDate);
+        if (expTime > 0 && expTime <= cachedTodayTime) {
+            return 'kick';
+        }
+    }
+    return 'sold';
 }
 function getAccountExpireStatus(accountExpireDate) {
-if (!accountExpireDate) return 'active';
-const accExpTime = fastParseDateToTime(accountExpireDate);
-if (accExpTime <= 0) return 'active';
-if (accExpTime < cachedTodayTime) return 'overdue';
-if (accExpTime === cachedTodayTime) return 'due_today';
-return 'active';
+    if (!accountExpireDate) return 'active';
+    const accExpTime = fastParseDateToTime(accountExpireDate);
+    if (accExpTime <= 0) return 'active';
+    if (accExpTime < cachedTodayTime) return 'overdue';
+    if (accExpTime === cachedTodayTime) return 'due_today';
+    return 'active';
 }
+
 function renderAppFilterTabs() {
-const container = document.getElementById('appFilterContainer');
-if (!container) return;
-const appCounts = {};
-netflixAccounts.forEach(acc => {
-const appName = getAccountApp(acc);
-appCounts[appName] = (appCounts[appName] || 0) + 1;
-});
-const allAppNames = new Set(customApps.map(a => a.name));
-Object.keys(appCounts).forEach(name => allAppNames.add(name));
-const htmlParts = [];
-htmlParts.push(`<button onclick="setAppFilter('all')" class="px-4 py-2.5 rounded-2xl text-xs font-bold shrink-0 transition-colors flex items-center gap-1.5 shadow-sm border ${selectedAppFilter === 'all' ? 'bg-espresso text-ivory shadow-cute border-transparent' : 'bg-white text-espresso/70 hover:bg-petal-light border-petal'}"> <i class="fa-solid fa-layer-group"></i> ทั้งหมด <span class="text-[10px] px-1.5 py-0.2 rounded-full ${selectedAppFilter === 'all' ? 'bg-white/20' : 'bg-petal-light text-espresso'}">${netflixAccounts.length}</span> </button>`);
-allAppNames.forEach(appName => {
-const conf = getAppConfig(appName);
-const count = appCounts[appName] || 0;
-const isSelected = selectedAppFilter.toLowerCase() === appName.toLowerCase();
-htmlParts.push(`<button onclick="setAppFilter('${escapeJS(appName)}')" class="px-3.5 py-2.5 rounded-2xl text-xs font-bold shrink-0 transition-colors flex items-center gap-1.5 shadow-sm border ${isSelected ? `${conf.badge} shadow-md border-transparent` : 'bg-white text-espresso/70 hover:bg-petal-light border-petal'}"> <i class="${conf.icon}"></i> ${escapeHTML(appName)} <span class="text-[10px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-white/20' : 'bg-petal-light text-espresso'}">${count}</span> </button>`);
-});
-container.innerHTML = htmlParts.join('');
-const countLabel = document.getElementById('filterCountLabel');
-if (countLabel) {
-countLabel.textContent = selectedAppFilter === 'all' ? `ทั้งหมด (${netflixAccounts.length})` : `${selectedAppFilter} (${appCounts[selectedAppFilter] || 0})`;
-}
+    const container = document.getElementById('appFilterContainer');
+    if (!container) return;
+    const appCounts = {};
+    netflixAccounts.forEach(acc => {
+        const appName = getAccountApp(acc);
+        appCounts[appName] = (appCounts[appName] || 0) + 1;
+    });
+    const allAppNames = new Set(customApps.map(a => a.name));
+    Object.keys(appCounts).forEach(name => allAppNames.add(name));
+    const htmlParts = [];
+    htmlParts.push(`<button onclick="setAppFilter('all')" class="px-4 py-2.5 rounded-2xl text-xs font-bold shrink-0 transition-colors flex items-center gap-1.5 shadow-sm border ${selectedAppFilter === 'all' ? 'bg-espresso text-ivory shadow-cute border-transparent' : 'bg-white text-espresso/70 hover:bg-petal-light border-petal'}"> <i class="fa-solid fa-layer-group"></i> ทั้งหมด <span class="text-[10px] px-1.5 py-0.2 rounded-full ${selectedAppFilter === 'all' ? 'bg-white/20' : 'bg-petal-light text-espresso'}">${netflixAccounts.length}</span> </button>`);
+    allAppNames.forEach(appName => {
+        const conf = getAppConfig(appName);
+        const count = appCounts[appName] || 0;
+        const isSelected = selectedAppFilter.toLowerCase() === appName.toLowerCase();
+        htmlParts.push(`<button onclick="setAppFilter('${escapeJS(appName)}')" class="px-3.5 py-2.5 rounded-2xl text-xs font-bold shrink-0 transition-colors flex items-center gap-1.5 shadow-sm border ${isSelected ? `${conf.badge} shadow-md border-transparent` : 'bg-white text-espresso/70 hover:bg-petal-light border-petal'}"> <i class="${conf.icon}"></i> ${escapeHTML(appName)} <span class="text-[10px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-white/20' : 'bg-petal-light text-espresso'}">${count}</span> </button>`);
+    });
+    container.innerHTML = htmlParts.join('');
+    const countLabel = document.getElementById('filterCountLabel');
+    if (countLabel) {
+        countLabel.textContent = selectedAppFilter === 'all' ? `ทั้งหมด (${netflixAccounts.length})` : `${selectedAppFilter} (${appCounts[selectedAppFilter] || 0})`;
+    }
 }
 function setAppFilter(appName) {
-selectedAppFilter = appName;
-scheduleRender();
+    selectedAppFilter = appName;
+    scheduleRender();
 }
 function handleSearch(event) {
-searchQuery = event.target.value.trim();
-const clearBtn = document.getElementById('clearSearchBtn');
-if (searchQuery.length > 0) {
-clearBtn.classList.remove('hidden');
-} else {
-clearBtn.classList.add('hidden');
-}
-scheduleRender();
+    searchQuery = event.target.value.trim();
+    const clearBtn = document.getElementById('clearSearchBtn');
+    if (searchQuery.length > 0) {
+        clearBtn.classList.remove('hidden');
+    } else {
+        clearBtn.classList.add('hidden');
+    }
+    scheduleRender();
 }
 function clearSearch() {
-searchQuery = '';
-const searchInput = document.getElementById('searchInput');
-if (searchInput) searchInput.value = '';
-document.getElementById('clearSearchBtn').classList.add('hidden');
-scheduleRender();
+    searchQuery = '';
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.value = '';
+    document.getElementById('clearSearchBtn').classList.add('hidden');
+    scheduleRender();
 }
 
 function renderPresetAppChips(containerId, inputId, selectedValue = '') {
-const container = document.getElementById(containerId);
-if (!container) return;
-const htmlParts = [];
-customApps.forEach(app => {
-const conf = getAppConfig(app.name);
-const isActive = selectedValue && selectedValue.toLowerCase() === app.name.toLowerCase();
-htmlParts.push(`<div class="inline-flex items-center rounded-xl border-2 text-xs transition-colors overflow-hidden ${isActive ? `${conf.badge} border-transparent shadow-sm` : 'bg-white border-petal text-espresso/70 hover:border-petal-deep hover:text-espresso'}"> <button type="button" onclick="selectAppChip('${inputId}', '${escapeJS(app.name)}')" class="px-2.5 py-1.5 flex items-center gap-1.5 font-bold"> <i class="${conf.icon}"></i> ${escapeHTML(app.name)} </button> <button type="button" onclick="deleteCustomApp('${app.id}', event)" class="px-2 py-1.5 text-[11px] opacity-40 hover:opacity-100 hover:text-red-500 hover:bg-black/5 transition-colors" title="ลบแอป ${escapeHTML(app.name)} ออกจากรายการ"> <i class="fa-solid fa-xmark"></i> </button> </div>`);
-});
-htmlParts.push(`<button type="button" onclick="openAddCustomAppModal('${inputId}')" class="px-3 py-1.5 rounded-xl text-xs font-bold text-espresso bg-petal border-2 border-transparent hover:border-petal-deep transition-colors flex items-center gap-1"> <i class="fa-solid fa-plus"></i> เพิ่มแอป </button>`);
-container.innerHTML = htmlParts.join('');
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const htmlParts = [];
+    customApps.forEach(app => {
+        const conf = getAppConfig(app.name);
+        const isActive = selectedValue && selectedValue.toLowerCase() === app.name.toLowerCase();
+        htmlParts.push(`<div class="inline-flex items-center rounded-xl border-2 text-xs transition-colors overflow-hidden ${isActive ? `${conf.badge} border-transparent shadow-sm` : 'bg-white border-petal text-espresso/70 hover:border-petal-deep hover:text-espresso'}"> <button type="button" onclick="selectAppChip('${inputId}', '${escapeJS(app.name)}')" class="px-2.5 py-1.5 flex items-center gap-1.5 font-bold"> <i class="${conf.icon}"></i> ${escapeHTML(app.name)} </button> <button type="button" onclick="deleteCustomApp('${app.id}', event)" class="px-2 py-1.5 text-[11px] opacity-40 hover:opacity-100 hover:text-red-500 hover:bg-black/5 transition-colors" title="ลบแอป ${escapeHTML(app.name)} ออกจากรายการ"> <i class="fa-solid fa-xmark"></i> </button> </div>`);
+    });
+    htmlParts.push(`<button type="button" onclick="openAddCustomAppModal('${inputId}')" class="px-3 py-1.5 rounded-xl text-xs font-bold text-espresso bg-petal border-2 border-transparent hover:border-petal-deep transition-colors flex items-center gap-1"> <i class="fa-solid fa-plus"></i> เพิ่มแอป </button>`);
+    container.innerHTML = htmlParts.join('');
 }
 function selectAppChip(inputId, appName) {
-const input = document.getElementById(inputId);
-if (input) {
-input.value = appName;
-input.focus();
-const containerId = inputId === 'accountApp' ? 'addAppPresetChips' : 'editAppPresetChips';
-renderPresetAppChips(containerId, inputId, appName);
+    const input = document.getElementById(inputId);
+    if (input) {
+        input.value = appName;
+        input.focus();
+        const containerId = inputId === 'accountApp' ? 'addAppPresetChips' : 'editAppPresetChips';
+        renderPresetAppChips(containerId, inputId, appName);
+    }
 }
-}
+
 let targetInputForNewApp = 'accountApp';
 function openAddCustomAppModal(targetInput = 'accountApp') {
-if (!requireAdminAuth()) return;
-targetInputForNewApp = targetInput;
-document.getElementById('customAppNameInput').value = '';
-userManuallySelectedColor = false;
-selectedNewAppColor = 'petal';
-handleCustomAppInput();
-renderColorPickers();
-animateModalOpen('addCustomAppModal');
+    if (!requireAdminAuth()) return;
+    targetInputForNewApp = targetInput;
+    document.getElementById('customAppNameInput').value = '';
+    userManuallySelectedColor = false;
+    selectedNewAppColor = 'petal';
+    handleCustomAppInput();
+    renderColorPickers();
+    animateModalOpen('addCustomAppModal');
 }
 function closeAddCustomAppModal() { animateModalClose('addCustomAppModal'); }
+
 function renderColorPickers() {
-const container = document.getElementById('colorPickerContainer');
-if (!container) return;
-const htmlParts = [];
-APP_COLOR_PALETTES.forEach(pal => {
-const isSelected = selectedNewAppColor === pal.id;
-htmlParts.push(`<button type="button" onclick="userManuallySelectedColor=true; selectedNewAppColor='${pal.id}'; renderColorPickers(); handleCustomAppInput();" class="p-2 rounded-xl border-2 text-[11px] font-bold flex items-center justify-center gap-1 transition-all ${isSelected ? `${pal.badge} border-transparent ring-2 ring-espresso scale-105 shadow-sm` : `${pal.lightBg} border-petal`}"> <span class="truncate">${pal.name}</span> </button> `);
-});
-container.innerHTML = htmlParts.join('');
+    const container = document.getElementById('colorPickerContainer');
+    if (!container) return;
+    const htmlParts = [];
+    APP_COLOR_PALETTES.forEach(pal => {
+        const isSelected = selectedNewAppColor === pal.id;
+        htmlParts.push(`<button type="button" onclick="userManuallySelectedColor=true; selectedNewAppColor='${pal.id}'; renderColorPickers(); handleCustomAppInput();" class="p-2 rounded-xl border-2 text-[11px] font-bold flex items-center justify-center gap-1 transition-all ${isSelected ? `${pal.badge} border-transparent ring-2 ring-espresso scale-105 shadow-sm` : `${pal.lightBg} border-petal`}"> <span class="truncate">${pal.name}</span> </button>`);
+    });
+    container.innerHTML = htmlParts.join('');
 }
+
 function handleSaveCustomApp(e) {
-e.preventDefault();
-const name = document.getElementById('customAppNameInput').value.trim();
-if (!name) return;
-const existing = customApps.find(a => a.name.toLowerCase() === name.toLowerCase());
-if (existing) {
-showToast(`มีแอป "${name}" อยู่ในรายการแล้วค่ะ ✨`);
-} else {
-const auto = getAutoIconAndColor(name);
-const newApp = {
-id: 'app_' + Date.now(),
-name: name,
-color: selectedNewAppColor,
-icon: auto.icon
-};
-customApps.push(newApp);
-localStorage.setItem('monali_custom_apps', JSON.stringify(customApps));
-appConfigCache = {};
-showToast(`เพิ่มแอป "${name}" เรียบร้อยแล้วค่ะ ✨`);
+    e.preventDefault();
+    const btn = document.getElementById('btnSaveApp');
+    requireAdminAuthAction(btn, async () => {
+        const name = document.getElementById('customAppNameInput').value.trim();
+        if (!name) return;
+        const existing = customApps.find(a => a.name.toLowerCase() === name.toLowerCase());
+        if (existing) {
+            showToast(`มีแอป "${name}" อยู่ในรายการแล้วค่ะ ✨`);
+        } else {
+            const auto = getAutoIconAndColor(name);
+            const { data, error } = await supabase.from('apps').insert({
+                name: name,
+                color: selectedNewAppColor,
+                icon: auto.icon
+            }).select().single();
+            if(error) throw error;
+
+            customApps.push(data);
+            appConfigCache = {};
+            showToast(`เพิ่มแอป "${name}" เรียบร้อยแล้วค่ะ ✨`);
+        }
+        closeAddCustomAppModal();
+        renderPresetAppChips('addAppPresetChips', 'accountApp', name);
+        renderPresetAppChips('editAppPresetChips', 'editAccApp', name);
+        selectAppChip(targetInputForNewApp, name);
+        scheduleRender();
+        requestAnimationFrame(() => renderManageAppsList());
+    });
 }
-closeAddCustomAppModal();
-renderPresetAppChips('addAppPresetChips', 'accountApp', name);
-renderPresetAppChips('editAppPresetChips', 'editAccApp', name);
-selectAppChip(targetInputForNewApp, name);
-scheduleRender();
-requestAnimationFrame(() => renderManageAppsList());
-}
+
 function deleteCustomApp(appId, event) {
-if (event) event.stopPropagation();
-if (!requireAdminAuth()) return;
-const app = customApps.find(a => a.id === appId);
-if (!app) return;
-customApps = customApps.filter(a => a.id !== appId);
-localStorage.setItem('monali_custom_apps', JSON.stringify(customApps));
-appConfigCache = {};
-renderPresetAppChips('addAppPresetChips', 'accountApp', document.getElementById('accountApp')?.value);
-renderPresetAppChips('editAppPresetChips', 'editAccApp', document.getElementById('editAccApp')?.value);
-scheduleRender();
-requestAnimationFrame(() => renderManageAppsList());
-showToast(`ลบแอป "${app.name}" ออกจากรายการแล้ว 🗑️`);
+    if (event) event.stopPropagation();
+    if (!requireAdminAuth()) return;
+    (async () => {
+        try {
+            const { error } = await supabase.from('apps').delete().eq('id', appId);
+            if(error) throw error;
+            customApps = customApps.filter(a => a.id !== appId);
+            appConfigCache = {};
+            renderPresetAppChips('addAppPresetChips', 'accountApp', document.getElementById('accountApp')?.value);
+            renderPresetAppChips('editAppPresetChips', 'editAccApp', document.getElementById('editAccApp')?.value);
+            scheduleRender();
+            requestAnimationFrame(() => renderManageAppsList());
+            showToast(`ลบแอปออกจากรายการแล้ว 🗑️`);
+        } catch(err) {
+            showToast('ไม่สามารถลบได้ อาจมีบัญชีที่ใช้งานอยู่: ' + err.message);
+        }
+    })();
 }
+
 function openManageAppsModal() {
-if (!requireAdminAuth()) return;
-renderManageAppsList();
-animateModalOpen('manageAppsModal');
+    if (!requireAdminAuth()) return;
+    renderManageAppsList();
+    animateModalOpen('manageAppsModal');
 }
 function closeManageAppsModal() { animateModalClose('manageAppsModal'); }
+
 function renderManageAppsList() {
-const container = document.getElementById('manageAppsList');
-if (!container) return;
-if (customApps.length === 0) {
-container.innerHTML = `<p class="text-center py-6 text-sm font-medium text-espresso/60">ยังไม่มีแอปในรายการ คลิก "เพิ่มแอป" ด้านบนเพื่อเพิ่มได้เลยค่ะ</p>`;
-return;
-}
-const htmlParts = [];
-customApps.forEach(app => {
-const conf = getAppConfig(app.name);
-htmlParts.push(`<div class="flex items-center justify-between p-3.5 rounded-2xl bg-white border-2 border-petal shadow-sm hover:border-petal-deep transition-colors"> <div class="flex items-center gap-3 min-w-0"> <span class="w-10 h-10 rounded-xl ${conf.badge} flex items-center justify-center text-sm shadow-sm shrink-0 border border-transparent"> <i class="${conf.icon}"></i> </span> <span class="font-bold text-sm text-espresso truncate">${escapeHTML(app.name)}</span> </div> <button onclick="deleteCustomApp('${app.id}')" class="w-10 h-10 rounded-xl bg-white border border-petal text-espresso/40 hover:text-red-500 hover:border-red-200 flex items-center justify-center text-sm shadow-sm transition-colors" title="ลบแอป"> <i class="fa-solid fa-trash-can"></i> </button> </div>`);
-});
-container.innerHTML = htmlParts.join('');
+    const container = document.getElementById('manageAppsList');
+    if (!container) return;
+    if (customApps.length === 0) {
+        container.innerHTML = `<p class="text-center py-6 text-sm font-medium text-espresso/60">ยังไม่มีแอปในรายการ คลิก "เพิ่มแอป" ด้านบนเพื่อเพิ่มได้เลยค่ะ</p>`;
+        return;
+    }
+    const htmlParts = [];
+    customApps.forEach(app => {
+        const conf = getAppConfig(app.name);
+        htmlParts.push(`<div class="flex items-center justify-between p-3.5 rounded-2xl bg-white border-2 border-petal shadow-sm hover:border-petal-deep transition-colors"> <div class="flex items-center gap-3 min-w-0"> <span class="w-10 h-10 rounded-xl ${conf.badge} flex items-center justify-center text-sm shadow-sm shrink-0 border border-transparent"> <i class="${conf.icon}"></i> </span> <span class="font-bold text-sm text-espresso truncate">${escapeHTML(app.name)}</span> </div> <button onclick="deleteCustomApp('${app.id}')" class="w-10 h-10 rounded-xl bg-white border border-petal text-espresso/40 hover:text-red-500 hover:border-red-200 flex items-center justify-center text-sm shadow-sm transition-colors" title="ลบแอป"> <i class="fa-solid fa-trash-can"></i> </button> </div>`);
+    });
+    container.innerHTML = htmlParts.join('');
 }
 
 function renderDashboard() {
-renderAppFilterTabs();
-const listContainer = document.getElementById('accountsList');
-const emptyState = document.getElementById('emptyState');
-let totalCount = netflixAccounts.length;
-let soldCount = 0;
-let availCount = 0;
-let kickCount = 0;
-let waitCutCount = 0;
-let cutoffCount = 0;
-netflixAccounts.forEach(account => {
-const accStatus = getAccountExpireStatus(account.accountExpireDate);
-if (accStatus === 'due_today') cutoffCount++;
-else if (accStatus === 'overdue') waitCutCount++;
-account.screens.forEach(s => {
-const effStatus = getEffectiveScreenStatus(s);
-if (effStatus === 'wait_cut' && accStatus !== 'overdue') waitCutCount++;
-if (effStatus === 'sold') soldCount++;
-else if (effStatus === 'kick') kickCount++;
-else if (effStatus === 'available') availCount++;
-});
-});
-if (document.getElementById('statTotalAccounts')) document.getElementById('statTotalAccounts').textContent = totalCount;
-if (document.getElementById('statSoldScreens')) document.getElementById('statSoldScreens').textContent = soldCount;
-if (document.getElementById('statAvailScreens')) document.getElementById('statAvailScreens').textContent = availCount;
-if (document.getElementById('statKickScreens')) document.getElementById('statKickScreens').textContent = kickCount;
-if (document.getElementById('statWaitCutScreens')) document.getElementById('statWaitCutScreens').textContent = waitCutCount;
-if (document.getElementById('statCutoffAccounts')) document.getElementById('statCutoffAccounts').textContent = cutoffCount;
-if (totalCount === 0) {
-listContainer.innerHTML = '';
-emptyState.classList.remove('hidden');
-return;
-}
-emptyState.classList.add('hidden');
-const filteredAccounts = netflixAccounts.filter(account => {
-const appMatch = selectedAppFilter === 'all' || getAccountApp(account).toLowerCase() === selectedAppFilter.toLowerCase();
-if (!appMatch) return false;
-if (!searchQuery) return true;
-const q = searchQuery.toLowerCase();
-const accMatch = (account.name || '').toLowerCase().includes(q) ||
-(account.email || '').toLowerCase().includes(q) ||
-(account.password || '').toLowerCase().includes(q);
-const screenMatch = account.screens.some(s =>
-(s.pin || '').toLowerCase().includes(q) ||
-(s.notes || '').toLowerCase().includes(q)
-);
-return accMatch || screenMatch;
-});
-if (filteredAccounts.length === 0) {
-if (searchQuery) {
-listContainer.innerHTML = `<div class="text-center py-12 bg-white rounded-3xl border-2 border-petal shadow-soft"> <div class="w-16 h-16 bg-petal-light text-espresso/50 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl border-2 border-petal shadow-inner"> <i class="fa-solid fa-magnifying-glass"></i> </div> <h4 class="font-bold text-espresso text-lg">ไม่พบข้อมูล "${escapeHTML(searchQuery)}"</h4> <p class="text-sm text-espresso/60 mt-1 mb-5 font-medium">ลองค้นหาด้วยคำอื่น เช่น อีเมล หรือรหัส PIN</p> <button onclick="clearSearch()" class="text-xs font-bold text-espresso bg-petal border-2 border-transparent px-5 py-3 rounded-2xl shadow-cute hover:bg-petal-deep transition-colors"> ล้างการค้นหา </button> </div>`;
-} else {
-listContainer.innerHTML = `<div class="text-center py-12 bg-white rounded-3xl border-2 border-petal shadow-soft"> <div class="w-16 h-16 bg-petal-light text-espresso/50 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl border-2 border-petal shadow-inner"> <i class="fa-solid fa-filter"></i> </div> <h4 class="font-bold text-espresso text-lg">ไม่มีบัญชีในหมวดหมู่ "${escapeHTML(selectedAppFilter)}"</h4> <p class="text-sm text-espresso/60 mt-1 mb-5 font-medium">คุณสามารถเพิ่มบัญชีใหม่สำหรับแอปนี้ได้เลยค่ะ</p> <button onclick="openAddAccountModal('${escapeJS(selectedAppFilter)}')" class="text-xs font-bold text-espresso bg-petal border-2 border-transparent px-5 py-3 rounded-2xl shadow-cute hover:bg-petal-deep transition-colors"> + เพิ่มบัญชี ${escapeHTML(selectedAppFilter)} </button> </div>`;
-}
-return;
-}
-const grouped = {};
-filteredAccounts.forEach(account => {
-const appName = getAccountApp(account);
-if (!grouped[appName]) grouped[appName] = [];
-grouped[appName].push(account);
-});
-const htmlParts = [];
-for (const [appName, accounts] of Object.entries(grouped)) {
-const appConf = getAppConfig(appName);
-let appAvailCount = 0;
-let appSoldCount = 0;
-accounts.forEach(acc => {
-acc.screens.forEach(s => {
-const st = getEffectiveScreenStatus(s);
-if (st === 'available') appAvailCount++;
-else appSoldCount++;
-});
-});
-htmlParts.push(`<div class="pt-2 mb-4"> <div class="flex items-center justify-between pb-2 border-b-2 border-petal"> <div class="flex items-center gap-2.5"> <span class="px-3 py-1.5 rounded-xl text-xs font-bold ${appConf.badge} flex items-center gap-1.5 shadow-sm border border-transparent"> <i class="${appConf.icon}"></i> ${escapeHTML(appName)} </span> <span class="text-xs font-bold text-espresso/80">${accounts.length} บัญชี</span> </div> <div class="flex items-center gap-2.5 text-[11px] text-espresso font-bold bg-white px-3 py-1.5 rounded-xl shadow-sm border border-petal"> <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow-sm"></span> ว่าง ${appAvailCount}</span> <span class="text-espresso/30">|</span> <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-petal-deep inline-block shadow-sm"></span> ใช้งาน ${appSoldCount}</span> </div> </div> </div> <div class="space-y-4 sm:space-y-5 mb-8">`);
-accounts.forEach(account => {
-const isCollapsed = collapsedAccounts.has(account.id);
-const containerClass = isCollapsed ? 'space-y-2.5 sm:space-y-3 hidden' : 'space-y-2.5 sm:space-y-3';
-const iconClass = isCollapsed ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-up';
-const accStatus = getAccountExpireStatus(account.accountExpireDate);
-const isCutoff = accStatus === 'due_today';
-const isOverdue = accStatus === 'overdue';
-let badgeHtml = '';
-let borderClass = 'border-petal';
-let bgOverlay = '';
-let dateColorClass = 'text-espresso/70 font-medium';
-if (isCutoff) {
-badgeHtml = `<span class="bg-purple-100 border border-purple-200 text-purple-700 text-[10px] font-bold px-2 py-1 rounded-lg ml-2 flex items-center gap-1 shadow-sm"><i class="fa-solid fa-triangle-exclamation"></i> ตัดแอควันนี้</span>`;
-borderClass = 'border-purple-300 shadow-md';
-bgOverlay = '<div class="absolute top-0 right-0 w-16 h-16 bg-purple-100 rounded-bl-[4rem] -z-0"></div>';
-dateColorClass = 'text-purple-600 font-bold bg-purple-50 px-2 py-0.5 rounded-lg border border-purple-100';
-} else if (isOverdue) {
-badgeHtml = `<span class="bg-red-100 border border-red-200 text-red-700 text-[10px] font-bold px-2 py-1 rounded-lg ml-2 flex items-center gap-1 shadow-sm"><i class="fa-solid fa-scissors"></i> รอตัด (เลยกำหนด)</span>`;
-borderClass = 'border-red-300 shadow-md';
-bgOverlay = '<div class="absolute top-0 right-0 w-16 h-16 bg-red-100 rounded-bl-[4rem] -z-0"></div>';
-dateColorClass = 'text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded-lg border border-red-100';
-}
-const accExpireHtml = account.accountExpireDate ? `<span class="text-espresso/30 hidden sm:inline shrink-0">|</span> <span class="flex items-center gap-1.5 ${dateColorClass} truncate max-w-[120px] sm:max-w-full" title="วันหมดอายุบัญชีหลัก"> <i class="fa-regular fa-calendar shrink-0"></i> <span class="truncate">ตัดแอค: ${formatDate(account.accountExpireDate)}</span> </span>` : '';
-htmlParts.push(`
+    renderAppFilterTabs();
+    const listContainer = document.getElementById('accountsList');
+    const emptyState = document.getElementById('emptyState');
+    let totalCount = netflixAccounts.length;
+    let soldCount = 0;
+    let availCount = 0;
+    let kickCount = 0;
+    let waitCutCount = 0;
+    let cutoffCount = 0;
+    netflixAccounts.forEach(account => {
+        const accStatus = getAccountExpireStatus(account.accountExpireDate);
+        if (accStatus === 'due_today') cutoffCount++;
+        else if (accStatus === 'overdue') waitCutCount++;
+        account.screens.forEach(s => {
+            const effStatus = getEffectiveScreenStatus(s);
+            if (effStatus === 'wait_cut' && accStatus !== 'overdue') waitCutCount++;
+            if (effStatus === 'sold') soldCount++;
+            else if (effStatus === 'kick') kickCount++;
+            else if (effStatus === 'available') availCount++;
+        });
+    });
+    if (document.getElementById('statTotalAccounts')) document.getElementById('statTotalAccounts').textContent = totalCount;
+    if (document.getElementById('statSoldScreens')) document.getElementById('statSoldScreens').textContent = soldCount;
+    if (document.getElementById('statAvailScreens')) document.getElementById('statAvailScreens').textContent = availCount;
+    if (document.getElementById('statKickScreens')) document.getElementById('statKickScreens').textContent = kickCount;
+    if (document.getElementById('statWaitCutScreens')) document.getElementById('statWaitCutScreens').textContent = waitCutCount;
+    if (document.getElementById('statCutoffAccounts')) document.getElementById('statCutoffAccounts').textContent = cutoffCount;
+    if (totalCount === 0) {
+        listContainer.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+    }
+    emptyState.classList.add('hidden');
+    const filteredAccounts = netflixAccounts.filter(account => {
+        const appMatch = selectedAppFilter === 'all' || getAccountApp(account).toLowerCase() === selectedAppFilter.toLowerCase();
+        if (!appMatch) return false;
+        if (!searchQuery) return true;
+        const q = searchQuery.toLowerCase();
+        const accMatch = (account.name || '').toLowerCase().includes(q) ||
+            (account.email || '').toLowerCase().includes(q) ||
+            (account.password || '').toLowerCase().includes(q);
+        const screenMatch = account.screens.some(s =>
+            (s.pin || '').toLowerCase().includes(q) ||
+            (s.notes || '').toLowerCase().includes(q)
+        );
+        return accMatch || screenMatch;
+    });
+    if (filteredAccounts.length === 0) {
+        if (searchQuery) {
+            listContainer.innerHTML = `<div class="text-center py-12 bg-white rounded-3xl border-2 border-petal shadow-soft"> <div class="w-16 h-16 bg-petal-light text-espresso/50 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl border-2 border-petal shadow-inner"> <i class="fa-solid fa-magnifying-glass"></i> </div> <h4 class="font-bold text-espresso text-lg">ไม่พบข้อมูล "${escapeHTML(searchQuery)}"</h4> <p class="text-sm text-espresso/60 mt-1 mb-5 font-medium">ลองค้นหาด้วยคำอื่น เช่น อีเมล หรือรหัส PIN</p> <button onclick="clearSearch()" class="text-xs font-bold text-espresso bg-petal border-2 border-transparent px-5 py-3 rounded-2xl shadow-cute hover:bg-petal-deep transition-colors"> ล้างการค้นหา </button> </div>`;
+        } else {
+            listContainer.innerHTML = `<div class="text-center py-12 bg-white rounded-3xl border-2 border-petal shadow-soft"> <div class="w-16 h-16 bg-petal-light text-espresso/50 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl border-2 border-petal shadow-inner"> <i class="fa-solid fa-filter"></i> </div> <h4 class="font-bold text-espresso text-lg">ไม่มีบัญชีในหมวดหมู่ "${escapeHTML(selectedAppFilter)}"</h4> <p class="text-sm text-espresso/60 mt-1 mb-5 font-medium">คุณสามารถเพิ่มบัญชีใหม่สำหรับแอปนี้ได้เลยค่ะ</p> <button onclick="openAddAccountModal('${escapeJS(selectedAppFilter)}')" class="text-xs font-bold text-espresso bg-petal border-2 border-transparent px-5 py-3 rounded-2xl shadow-cute hover:bg-petal-deep transition-colors"> + เพิ่มบัญชี ${escapeHTML(selectedAppFilter)} </button> </div>`;
+        }
+        return;
+    }
+    const grouped = {};
+    filteredAccounts.forEach(account => {
+        const appName = getAccountApp(account);
+        if (!grouped[appName]) grouped[appName] = [];
+        grouped[appName].push(account);
+    });
+    const htmlParts = [];
+    for (const [appName, accounts] of Object.entries(grouped)) {
+        const appConf = getAppConfig(appName);
+        let appAvailCount = 0;
+        let appSoldCount = 0;
+        accounts.forEach(acc => {
+            acc.screens.forEach(s => {
+                const st = getEffectiveScreenStatus(s);
+                if (st === 'available') appAvailCount++;
+                else appSoldCount++;
+            });
+        });
+        htmlParts.push(`<div class="pt-2 mb-4"> <div class="flex items-center justify-between pb-2 border-b-2 border-petal"> <div class="flex items-center gap-2.5"> <span class="px-3 py-1.5 rounded-xl text-xs font-bold ${appConf.badge} flex items-center gap-1.5 shadow-sm border border-transparent"> <i class="${appConf.icon}"></i> ${escapeHTML(appName)} </span> <span class="text-xs font-bold text-espresso/80">${accounts.length} บัญชี</span> </div> <div class="flex items-center gap-2.5 text-[11px] text-espresso font-bold bg-white px-3 py-1.5 rounded-xl shadow-sm border border-petal"> <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow-sm"></span> ว่าง ${appAvailCount}</span> <span class="text-espresso/30">|</span> <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-petal-deep inline-block shadow-sm"></span> ใช้งาน ${appSoldCount}</span> </div> </div> </div> <div class="space-y-4 sm:space-y-5 mb-8">`);
+        accounts.forEach(account => {
+            const isCollapsed = collapsedAccounts.has(account.id);
+            const containerClass = isCollapsed ? 'space-y-2.5 sm:space-y-3 hidden' : 'space-y-2.5 sm:space-y-3';
+            const iconClass = isCollapsed ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-up';
+            const accStatus = getAccountExpireStatus(account.accountExpireDate);
+            const isCutoff = accStatus === 'due_today';
+            const isOverdue = accStatus === 'overdue';
+            let badgeHtml = '';
+            let borderClass = 'border-petal';
+            let bgOverlay = '';
+            let dateColorClass = 'text-espresso/70 font-medium';
+            if (isCutoff) {
+                badgeHtml = `<span class="bg-purple-100 border border-purple-200 text-purple-700 text-[10px] font-bold px-2 py-1 rounded-lg ml-2 flex items-center gap-1 shadow-sm"><i class="fa-solid fa-triangle-exclamation"></i> ตัดแอควันนี้</span>`;
+                borderClass = 'border-purple-300 shadow-md';
+                bgOverlay = '<div class="absolute top-0 right-0 w-16 h-16 bg-purple-100 rounded-bl-[4rem] -z-0"></div>';
+                dateColorClass = 'text-purple-600 font-bold bg-purple-50 px-2 py-0.5 rounded-lg border border-purple-100';
+            } else if (isOverdue) {
+                badgeHtml = `<span class="bg-red-100 border border-red-200 text-red-700 text-[10px] font-bold px-2 py-1 rounded-lg ml-2 flex items-center gap-1 shadow-sm"><i class="fa-solid fa-scissors"></i> รอตัด (เลยกำหนด)</span>`;
+                borderClass = 'border-red-300 shadow-md';
+                bgOverlay = '<div class="absolute top-0 right-0 w-16 h-16 bg-red-100 rounded-bl-[4rem] -z-0"></div>';
+                dateColorClass = 'text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded-lg border border-red-100';
+            }
+            const accExpireHtml = account.accountExpireDate ? `<span class="text-espresso/30 hidden sm:inline shrink-0">|</span> <span class="flex items-center gap-1.5 ${dateColorClass} truncate max-w-[120px] sm:max-w-full" title="วันหมดอายุบัญชีหลัก"> <i class="fa-regular fa-calendar shrink-0"></i> <span class="truncate">ตัดแอค: ${formatDate(account.accountExpireDate)}</span> </span>` : '';
+            htmlParts.push(`
 <div class="bg-white rounded-[2rem] p-4 sm:p-7 shadow-soft border-2 ${borderClass} hover:shadow-cute transition-shadow relative overflow-hidden">
 ${bgOverlay}
 <div class="flex justify-between items-start mb-4 sm:mb-5 gap-3 relative z-10">
@@ -1733,1067 +1812,1098 @@ ${accExpireHtml}
 <div id="screens-container-${account.id}" class="${containerClass} relative z-10">
 <div class="flex flex-col gap-2.5">
 `);
-account.screens.forEach((screen, index) => {
-const effStatus = getEffectiveScreenStatus(screen);
-let statusConfig = getStatusConfig(effStatus);
-let itemTitle = `จอ ${index + 1}`;
-let detailsHtml = '';
-if (effStatus !== 'available') {
-detailsHtml = `<div class="flex flex-col sm:flex-row sm:items-center sm:gap-3 text-[10px] sm:text-xs text-espresso mt-1 sm:mt-1.5 truncate"> ${screen.pin ?`<span class="flex items-center gap-1.5 shrink-0 mt-0.5 sm:mt-0 bg-white/60 px-2 py-0.5 rounded-md border ${statusConfig.borderClass}"><i class="fa-solid fa-lock text-espresso/40"></i> <span class="font-bold text-espresso">${escapeHTML(screen.pin)}</span></span>` : ''} ${screen.expireDate ?`<span class="flex items-center gap-1.5 shrink-0 mt-1 sm:mt-0 font-medium"><i class="fa-regular fa-calendar text-espresso/40"></i> หมด: ${formatDate(screen.expireDate)}</span>` : ''} ${screen.notes ?`<span class="truncate max-w-[120px] sm:max-w-[200px] text-espresso/60 font-medium italic mt-1 sm:mt-0">" ${escapeHTML(screen.notes)} "</span>` : ''} </div>`;
-}
-htmlParts.push(`<div class="group flex items-center justify-between p-3 sm:p-4 rounded-2xl border-2 ${statusConfig.borderClass} ${statusConfig.bgClass} transition-colors shadow-sm"> <div class="flex items-center gap-3 sm:gap-4 flex-1 min-w-0"> <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl ${statusConfig.iconBg} flex items-center justify-center ${statusConfig.textClass} shrink-0 shadow-sm border-2 ${statusConfig.borderClass}"> <i class="${statusConfig.icon} text-base sm:text-lg"></i> </div> <div class="flex-1 min-w-0"> <div class="flex items-center gap-2 sm:gap-2.5"> <h4 class="text-sm sm:text-base font-bold text-espresso">${itemTitle}</h4> <span class="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-lg border border-transparent ${statusConfig.badgeClass}">${statusConfig.label}</span> </div> ${detailsHtml} </div> </div> <div class="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-2"> <button onclick="openAutoFormForScreen('${account.id}', ${index})" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white border-2 border-petal text-espresso/70 hover:text-espresso hover:border-petal-deep hover:bg-petal-light flex items-center justify-center transition-colors shadow-sm" title="สร้างฟอร์มข้อความ"> <i class="fa-solid fa-file-signature text-xs sm:text-sm"></i> </button> <button onclick="openEditScreenModal('${account.id}', ${index})" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white border-2 border-petal text-espresso/70 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 flex items-center justify-center transition-colors shadow-sm" title="แก้ไข"> <i class="fa-solid fa-pen text-xs sm:text-sm"></i> </button> ${account.screens.length > 1 ?`
+            account.screens.forEach((screen, index) => {
+                const effStatus = getEffectiveScreenStatus(screen);
+                let statusConfig = getStatusConfig(effStatus);
+                let itemTitle = `จอ ${index + 1}`;
+                let detailsHtml = '';
+                if (effStatus !== 'available') {
+                    detailsHtml = `<div class="flex flex-col sm:flex-row sm:items-center sm:gap-3 text-[10px] sm:text-xs text-espresso mt-1 sm:mt-1.5 truncate"> ${screen.pin ?`<span class="flex items-center gap-1.5 shrink-0 mt-0.5 sm:mt-0 bg-white/60 px-2 py-0.5 rounded-md border ${statusConfig.borderClass}"><i class="fa-solid fa-lock text-espresso/40"></i> <span class="font-bold text-espresso">${escapeHTML(screen.pin)}</span></span>` : ''} ${screen.expireDate ?`<span class="flex items-center gap-1.5 shrink-0 mt-1 sm:mt-0 font-medium"><i class="fa-regular fa-calendar text-espresso/40"></i> หมด: ${formatDate(screen.expireDate)}</span>` : ''} ${screen.notes ?`<span class="truncate max-w-[120px] sm:max-w-[200px] text-espresso/60 font-medium italic mt-1 sm:mt-0">" ${escapeHTML(screen.notes)} "</span>` : ''} </div>`;
+                }
+                htmlParts.push(`<div class="group flex items-center justify-between p-3 sm:p-4 rounded-2xl border-2 ${statusConfig.borderClass} ${statusConfig.bgClass} transition-colors shadow-sm"> <div class="flex items-center gap-3 sm:gap-4 flex-1 min-w-0"> <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl ${statusConfig.iconBg} flex items-center justify-center ${statusConfig.textClass} shrink-0 shadow-sm border-2 ${statusConfig.borderClass}"> <i class="${statusConfig.icon} text-base sm:text-lg"></i> </div> <div class="flex-1 min-w-0"> <div class="flex items-center gap-2 sm:gap-2.5"> <h4 class="text-sm sm:text-base font-bold text-espresso">${itemTitle}</h4> <span class="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-lg border border-transparent ${statusConfig.badgeClass}">${statusConfig.label}</span> </div> ${detailsHtml} </div> </div> <div class="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-2"> <button onclick="openAutoFormForScreen('${account.id}', ${index})" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white border-2 border-petal text-espresso/70 hover:text-espresso hover:border-petal-deep hover:bg-petal-light flex items-center justify-center transition-colors shadow-sm" title="สร้างฟอร์มข้อความ"> <i class="fa-solid fa-file-signature text-xs sm:text-sm"></i> </button> <button onclick="openEditScreenModal('${account.id}', ${index})" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white border-2 border-petal text-espresso/70 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 flex items-center justify-center transition-colors shadow-sm" title="แก้ไข"> <i class="fa-solid fa-pen text-xs sm:text-sm"></i> </button> ${account.screens.length > 1 ?`
 <button onclick="confirmDeleteScreen('${account.id}', ${index})" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white border-2 border-petal text-espresso/70 hover:text-red-500 hover:border-red-300 hover:bg-red-50 flex items-center justify-center transition-colors shadow-sm" title="ลบจอนี้">
 <i class="fa-solid fa-trash-can text-xs sm:text-sm"></i>
 </button>` : ''} </div> </div>`);
-});
-htmlParts.push(`</div> <div class="pt-2 sm:pt-3 flex justify-end"> <button onclick="addNewScreen('${account.id}')" class="text-xs text-espresso hover:text-espresso-light bg-white hover:bg-petal-light border-2 border-petal px-4 py-2 rounded-xl font-bold transition-colors flex items-center gap-1.5 shadow-sm"> <i class="fa-solid fa-plus"></i> เพิ่มจอใหม่ </button> </div> </div> </div>`);
-});
-htmlParts.push(`</div>`);
+            });
+            htmlParts.push(`</div> <div class="pt-2 sm:pt-3 flex justify-end"> <button onclick="addNewScreen('${account.id}')" class="text-xs text-espresso hover:text-espresso-light bg-white hover:bg-petal-light border-2 border-petal px-4 py-2 rounded-xl font-bold transition-colors flex items-center gap-1.5 shadow-sm"> <i class="fa-solid fa-plus"></i> เพิ่มจอใหม่ </button> </div> </div> </div>`);
+        });
+        htmlParts.push(`</div>`);
+    }
+    listContainer.innerHTML = htmlParts.join('');
 }
-listContainer.innerHTML = htmlParts.join('');
-}
+
 function getStatusConfig(status) {
-switch(status) {
-case 'sold':
-return {
-label: 'ใช้งานอยู่',
-icon: 'fa-solid fa-heart',
-iconBg: 'bg-white',
-textClass: 'text-petal-deep',
-bgClass: 'bg-petal-light/40',
-borderClass: 'border-petal',
-badgeClass: 'bg-petal text-espresso border-transparent'
-};
-case 'kick':
-return {
-label: 'ครบกำหนดวันนี้',
-icon: 'fa-solid fa-star',
-iconBg: 'bg-white',
-textClass: 'text-orange-500',
-bgClass: 'bg-orange-50/60',
-borderClass: 'border-orange-200',
-badgeClass: 'bg-orange-100 text-orange-700 border-orange-200'
-};
-case 'wait_cut':
-return {
-label: 'รอตัด',
-icon: 'fa-solid fa-scissors',
-iconBg: 'bg-white',
-textClass: 'text-red-500',
-bgClass: 'bg-red-50/60',
-borderClass: 'border-red-200',
-badgeClass: 'bg-red-100 text-red-700 border-red-200'
-};
-default:
-return {
-label: 'ว่าง',
-icon: 'fa-regular fa-circle',
-iconBg: 'bg-white',
-textClass: 'text-espresso/40',
-bgClass: 'bg-white',
-borderClass: 'border-ivory-border',
-badgeClass: 'bg-ivory text-espresso border-ivory-border'
-};
+    switch(status) {
+        case 'sold': return { label: 'ใช้งานอยู่', icon: 'fa-solid fa-heart', iconBg: 'bg-white', textClass: 'text-petal-deep', bgClass: 'bg-petal-light/40', borderClass: 'border-petal', badgeClass: 'bg-petal text-espresso border-transparent' };
+        case 'kick': return { label: 'ครบกำหนดวันนี้', icon: 'fa-solid fa-star', iconBg: 'bg-white', textClass: 'text-orange-500', bgClass: 'bg-orange-50/60', borderClass: 'border-orange-200', badgeClass: 'bg-orange-100 text-orange-700 border-orange-200' };
+        case 'wait_cut': return { label: 'รอตัด', icon: 'fa-solid fa-scissors', iconBg: 'bg-white', textClass: 'text-red-500', bgClass: 'bg-red-50/60', borderClass: 'border-red-200', badgeClass: 'bg-red-100 text-red-700 border-red-200' };
+        default: return { label: 'ว่าง', icon: 'fa-regular fa-circle', iconBg: 'bg-white', textClass: 'text-espresso/40', bgClass: 'bg-white', borderClass: 'border-ivory-border', badgeClass: 'bg-ivory text-espresso border-ivory-border' };
+    }
 }
-}
+
 function toggleScreens(accountId) {
-const container = document.getElementById(`screens-container-${accountId}`);
-const icon = document.getElementById(`icon-toggle-${accountId}`);
-if (collapsedAccounts.has(accountId)) {
-collapsedAccounts.delete(accountId);
-container.classList.remove('hidden');
-icon.className = 'fa-solid fa-chevron-up text-sm';
-} else {
-collapsedAccounts.add(accountId);
-container.classList.add('hidden');
-icon.className = 'fa-solid fa-chevron-down text-sm';
-}
-saveData();
+    const container = document.getElementById(`screens-container-${accountId}`);
+    const icon = document.getElementById(`icon-toggle-${accountId}`);
+    if (collapsedAccounts.has(accountId)) {
+        collapsedAccounts.delete(accountId);
+        container.classList.remove('hidden');
+        icon.className = 'fa-solid fa-chevron-up text-sm';
+    } else {
+        collapsedAccounts.add(accountId);
+        container.classList.add('hidden');
+        icon.className = 'fa-solid fa-chevron-down text-sm';
+    }
 }
 
 function animateModalOpen(modalId) {
-const modal = document.getElementById(modalId);
-if (!modal) return;
-modal.classList.remove('hidden');
-document.body.classList.add('modal-active');
-void modal.offsetWidth;
-modal.classList.remove('opacity-0');
-const content = modal.querySelector('.modal-content');
-if (content) {
-content.classList.remove('scale-95', 'translate-y-full');
-}
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    document.body.classList.add('modal-active');
+    void modal.offsetWidth;
+    modal.classList.remove('opacity-0');
+    const content = modal.querySelector('.modal-content');
+    if (content) {
+        content.classList.remove('scale-95', 'translate-y-full');
+    }
 }
 function animateModalClose(modalId) {
-const modal = document.getElementById(modalId);
-if (!modal) return;
-modal.classList.add('opacity-0');
-const content = modal.querySelector('.modal-content');
-if (content) {
-if (window.innerWidth < 640 && modalId === 'editScreenModal') {
-content.classList.add('translate-y-full');
-} else {
-content.classList.add('scale-95');
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.classList.add('opacity-0');
+    const content = modal.querySelector('.modal-content');
+    if (content) {
+        if (window.innerWidth < 640 && modalId === 'editScreenModal') {
+            content.classList.add('translate-y-full');
+        } else {
+            content.classList.add('scale-95');
+        }
+    }
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        const openModals = document.querySelectorAll('[id$="Modal"]:not(.hidden)');
+        if (openModals.length === 0) {
+            document.body.classList.remove('modal-active');
+        }
+    }, 300);
 }
-}
-setTimeout(() => {
-modal.classList.add('hidden');
-const openModals = document.querySelectorAll('[id$="Modal"]:not(.hidden)');
-if (openModals.length === 0) {
-document.body.classList.remove('modal-active');
-}
-}, 300);
-}
+
 function openAvailableListModal() { renderAvailableList(); animateModalOpen('availableListModal'); }
 function closeAvailableListModal() { animateModalClose('availableListModal'); }
 function openAutoFormForScreen(accountId, screenIndex) {
-const acc = netflixAccounts.find(a => a.id === accountId);
-if (acc && acc.screens[screenIndex]) {
-openAutoFormModal({
-email: acc.email,
-password: acc.password,
-screen: `${screenIndex + 1}`,
-pin: acc.screens[screenIndex].pin || '',
-expire: acc.screens[screenIndex].expireDate || ''
-});
-}
+    const acc = netflixAccounts.find(a => a.id === accountId);
+    if (acc && acc.screens[screenIndex]) {
+        openAutoFormModal({
+            email: acc.email,
+            password: acc.password,
+            screen: `${screenIndex + 1}`,
+            pin: acc.screens[screenIndex].pin || '',
+            expire: acc.screens[screenIndex].expireDate || ''
+        });
+    }
 }
 function openAutoFormFromAvailable(accountId, screenIndex) {
-closeAvailableListModal();
-setTimeout(() => { openAutoFormForScreen(accountId, screenIndex); }, 300);
+    closeAvailableListModal();
+    setTimeout(() => { openAutoFormForScreen(accountId, screenIndex); }, 300);
 }
+
 function renderAvailableList() {
-const container = document.getElementById('availableListContent');
-const htmlParts = [];
-htmlParts.push('<div class="space-y-3">');
-let count = 0;
-netflixAccounts.forEach(acc => {
-const appName = getAccountApp(acc);
-const appConf = getAppConfig(appName);
-acc.screens.forEach((screen, index) => {
-if (getEffectiveScreenStatus(screen) === 'available') {
-count++;
-const itemTitle = `จอ ${index + 1}`;
-htmlParts.push(`<div class="bg-white p-4 sm:p-5 rounded-2xl border-2 border-petal shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-petal-deep transition-colors group"> <div class="flex-1 min-w-0"> <div class="flex items-center gap-2 mb-1.5"> <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold ${appConf.lightBg} border-2 flex items-center gap-1"> <i class="${appConf.icon}"></i> ${escapeHTML(appName)} </span> <h4 class="font-bold text-espresso text-sm sm:text-base truncate" title="${escapeHTML(acc.name)}"> ${escapeHTML(acc.name)} <span class="text-espresso/30 mx-1.5 text-xs">|</span> <span class="text-espresso font-extrabold">${itemTitle}</span> </h4> </div> <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-bold text-espresso"> <span class="flex items-center gap-1.5 cursor-pointer hover:text-petal-deep transition-colors bg-petal-light/50 px-2 py-1 rounded-lg border border-petal" onclick="copyText('${escapeJS(acc.email)}')"> <i class="fa-regular fa-envelope"></i> <span class="truncate max-w-[120px] sm:max-w-full">${escapeHTML(acc.email)}</span> </span> </div> </div> <div class="flex gap-2 shrink-0"> <button onclick="openAutoFormFromAvailable('${acc.id}', ${index})" class="w-10 h-10 rounded-xl bg-white border-2 border-petal text-espresso/70 hover:text-espresso hover:border-petal-deep hover:bg-petal-light flex items-center justify-center transition-colors shadow-sm" title="สร้างฟอร์มข้อความ"> <i class="fa-solid fa-file-signature"></i> </button> <button onclick="closeAvailableListModal(); setTimeout(() => openEditScreenModal('${acc.id}', ${index}), 300)" class="w-10 h-10 rounded-xl bg-white border-2 border-petal text-espresso/70 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 flex items-center justify-center transition-colors shadow-sm" title="แก้ไข/อัปเดตสถานะ"> <i class="fa-solid fa-pen"></i> </button> </div> </div>`);
-}
-});
-});
-htmlParts.push('</div>');
-if (count === 0) {
-container.innerHTML = `<div class="text-center py-12 flex flex-col items-center bg-white rounded-3xl border-2 border-petal shadow-sm"> <div class="w-20 h-20 bg-petal-light border-2 border-petal rounded-full flex items-center justify-center text-espresso/40 mb-4 text-4xl shadow-inner"> <i class="fa-solid fa-box-open"></i> </div> <p class="text-espresso font-bold text-lg">ไม่มีจอว่างในขณะนี้</p> </div>`;
-} else {
-container.innerHTML = htmlParts.join('');
-}
+    const container = document.getElementById('availableListContent');
+    const htmlParts = [];
+    htmlParts.push('<div class="space-y-3">');
+    let count = 0;
+    netflixAccounts.forEach(acc => {
+        const appName = getAccountApp(acc);
+        const appConf = getAppConfig(appName);
+        acc.screens.forEach((screen, index) => {
+            if (getEffectiveScreenStatus(screen) === 'available') {
+                count++;
+                const itemTitle = `จอ ${index + 1}`;
+                htmlParts.push(`<div class="bg-white p-4 sm:p-5 rounded-2xl border-2 border-petal shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-petal-deep transition-colors group"> <div class="flex-1 min-w-0"> <div class="flex items-center gap-2 mb-1.5"> <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold ${appConf.lightBg} border-2 flex items-center gap-1"> <i class="${appConf.icon}"></i> ${escapeHTML(appName)} </span> <h4 class="font-bold text-espresso text-sm sm:text-base truncate" title="${escapeHTML(acc.name)}"> ${escapeHTML(acc.name)} <span class="text-espresso/30 mx-1.5 text-xs">|</span> <span class="text-espresso font-extrabold">${itemTitle}</span> </h4> </div> <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-bold text-espresso"> <span class="flex items-center gap-1.5 cursor-pointer hover:text-petal-deep transition-colors bg-petal-light/50 px-2 py-1 rounded-lg border border-petal" onclick="copyText('${escapeJS(acc.email)}')"> <i class="fa-regular fa-envelope"></i> <span class="truncate max-w-[120px] sm:max-w-full">${escapeHTML(acc.email)}</span> </span> </div> </div> <div class="flex gap-2 shrink-0"> <button onclick="openAutoFormFromAvailable('${acc.id}', ${index})" class="w-10 h-10 rounded-xl bg-white border-2 border-petal text-espresso/70 hover:text-espresso hover:border-petal-deep hover:bg-petal-light flex items-center justify-center transition-colors shadow-sm" title="สร้างฟอร์มข้อความ"> <i class="fa-solid fa-file-signature"></i> </button> <button onclick="closeAvailableListModal(); setTimeout(() => openEditScreenModal('${acc.id}', ${index}), 300)" class="w-10 h-10 rounded-xl bg-white border-2 border-petal text-espresso/70 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 flex items-center justify-center transition-colors shadow-sm" title="แก้ไข/อัปเดตสถานะ"> <i class="fa-solid fa-pen"></i> </button> </div> </div>`);
+            }
+        });
+    });
+    htmlParts.push('</div>');
+    if (count === 0) {
+        container.innerHTML = `<div class="text-center py-12 flex flex-col items-center bg-white rounded-3xl border-2 border-petal shadow-sm"> <div class="w-20 h-20 bg-petal-light border-2 border-petal rounded-full flex items-center justify-center text-espresso/40 mb-4 text-4xl shadow-inner"> <i class="fa-solid fa-box-open"></i> </div> <p class="text-espresso font-bold text-lg">ไม่มีจอว่างในขณะนี้</p> </div>`;
+    } else {
+        container.innerHTML = htmlParts.join('');
+    }
 }
 function openKickListModal() { renderKickList(); animateModalOpen('kickListModal'); }
 function closeKickListModal() { animateModalClose('kickListModal'); }
 function renderKickList() {
-const container = document.getElementById('kickListContent');
-const htmlParts = [];
-htmlParts.push('<div class="space-y-3">');
-let count = 0;
-netflixAccounts.forEach(acc => {
-const appName = getAccountApp(acc);
-const appConf = getAppConfig(appName);
-acc.screens.forEach((screen, index) => {
-const effStatus = getEffectiveScreenStatus(screen);
-if (effStatus === 'kick') {
-count++;
-const itemTitle = `จอ ${index + 1}`;
-const statusConfig = getStatusConfig(effStatus);
-htmlParts.push(`<div class="bg-white p-4 sm:p-5 rounded-2xl border-2 ${statusConfig.borderClass} shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"> <div class="flex-1 min-w-0"> <div class="flex items-center gap-2 mb-1.5"> <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold ${appConf.lightBg} border-2 flex items-center gap-1"> <i class="${appConf.icon}"></i> ${escapeHTML(appName)} </span> <h4 class="font-bold text-espresso text-sm sm:text-base truncate flex items-center gap-1.5" title="${escapeHTML(acc.name)}"> <span>${escapeHTML(acc.name)}</span> <span class="${statusConfig.textClass} text-xs">●</span>&nbsp; <span class="text-espresso/70">${itemTitle}</span> <span class="text-[10px] font-bold px-2 py-0.5 rounded-lg border ${statusConfig.badgeClass} ml-1">${statusConfig.label}</span> </h4> </div> <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-bold text-espresso"> <span class="flex items-center gap-1.5 cursor-pointer hover:text-petal-deep transition-colors bg-petal-light/50 px-2 py-1 rounded-lg border border-petal" onclick="copyText('${escapeJS(acc.email)}')"> <i class="fa-regular fa-envelope"></i> <span class="truncate max-w-[120px] sm:max-w-full">${escapeHTML(acc.email)}</span> </span> </div> ${screen.notes ?`<div class="text-xs font-medium ${statusConfig.textClass} mt-2.5 ${statusConfig.bgClass} p-2.5 rounded-xl border border-dashed ${statusConfig.borderClass} flex items-start gap-1.5"><i class="fa-regular fa-comment-dots mt-0.5 shrink-0"></i><span class="line-clamp-2">${escapeHTML(screen.notes)}</span></div>` : ''} </div> <div class="flex gap-2 sm:flex-col shrink-0"> <button onclick="closeKickListModal(); setTimeout(() => openEditScreenModal('${acc.id}', ${index}), 300)" class="flex-1 px-4 py-2.5 rounded-xl text-xs font-bold text-espresso bg-white border-2 border-petal hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors flex items-center justify-center gap-1.5 shadow-sm"> <i class="fa-solid fa-pen"></i> <span class="sm:hidden">จัดการ</span> </button> </div> </div>`);
-}
-});
-});
-htmlParts.push('</div>');
-if (count === 0) {
-container.innerHTML = `<div class="text-center py-12 flex flex-col items-center bg-white rounded-3xl border-2 border-petal shadow-sm"> <div class="w-20 h-20 bg-petal-light border-2 border-petal rounded-full flex items-center justify-center text-espresso/40 mb-4 text-4xl shadow-inner"> <i class="fa-regular fa-face-smile-wink"></i> </div> <p class="text-espresso font-bold text-lg">ไม่มีรายการต้องจัดการ</p> </div>`;
-} else {
-container.innerHTML = htmlParts.join('');
-}
+    const container = document.getElementById('kickListContent');
+    const htmlParts = [];
+    htmlParts.push('<div class="space-y-3">');
+    let count = 0;
+    netflixAccounts.forEach(acc => {
+        const appName = getAccountApp(acc);
+        const appConf = getAppConfig(appName);
+        acc.screens.forEach((screen, index) => {
+            const effStatus = getEffectiveScreenStatus(screen);
+            if (effStatus === 'kick') {
+                count++;
+                const itemTitle = `จอ ${index + 1}`;
+                const statusConfig = getStatusConfig(effStatus);
+                htmlParts.push(`<div class="bg-white p-4 sm:p-5 rounded-2xl border-2 ${statusConfig.borderClass} shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"> <div class="flex-1 min-w-0"> <div class="flex items-center gap-2 mb-1.5"> <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold ${appConf.lightBg} border-2 flex items-center gap-1"> <i class="${appConf.icon}"></i> ${escapeHTML(appName)} </span> <h4 class="font-bold text-espresso text-sm sm:text-base truncate flex items-center gap-1.5" title="${escapeHTML(acc.name)}"> <span>${escapeHTML(acc.name)}</span> <span class="${statusConfig.textClass} text-xs">●</span>&nbsp; <span class="text-espresso/70">${itemTitle}</span> <span class="text-[10px] font-bold px-2 py-0.5 rounded-lg border ${statusConfig.badgeClass} ml-1">${statusConfig.label}</span> </h4> </div> <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-bold text-espresso"> <span class="flex items-center gap-1.5 cursor-pointer hover:text-petal-deep transition-colors bg-petal-light/50 px-2 py-1 rounded-lg border border-petal" onclick="copyText('${escapeJS(acc.email)}')"> <i class="fa-regular fa-envelope"></i> <span class="truncate max-w-[120px] sm:max-w-full">${escapeHTML(acc.email)}</span> </span> </div> ${screen.notes ?`<div class="text-xs font-medium ${statusConfig.textClass} mt-2.5 ${statusConfig.bgClass} p-2.5 rounded-xl border border-dashed ${statusConfig.borderClass} flex items-start gap-1.5"><i class="fa-regular fa-comment-dots mt-0.5 shrink-0"></i><span class="line-clamp-2">${escapeHTML(screen.notes)}</span></div>` : ''} </div> <div class="flex gap-2 sm:flex-col shrink-0"> <button onclick="closeKickListModal(); setTimeout(() => openEditScreenModal('${acc.id}', ${index}), 300)" class="flex-1 px-4 py-2.5 rounded-xl text-xs font-bold text-espresso bg-white border-2 border-petal hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors flex items-center justify-center gap-1.5 shadow-sm"> <i class="fa-solid fa-pen"></i> <span class="sm:hidden">จัดการ</span> </button> </div> </div>`);
+            }
+        });
+    });
+    htmlParts.push('</div>');
+    if (count === 0) {
+        container.innerHTML = `<div class="text-center py-12 flex flex-col items-center bg-white rounded-3xl border-2 border-petal shadow-sm"> <div class="w-20 h-20 bg-petal-light border-2 border-petal rounded-full flex items-center justify-center text-espresso/40 mb-4 text-4xl shadow-inner"> <i class="fa-regular fa-face-smile-wink"></i> </div> <p class="text-espresso font-bold text-lg">ไม่มีรายการต้องจัดการ</p> </div>`;
+    } else {
+        container.innerHTML = htmlParts.join('');
+    }
 }
 function openWaitCutListModal() { renderWaitCutList(); animateModalOpen('waitCutListModal'); }
 function closeWaitCutListModal() { animateModalClose('waitCutListModal'); }
 function renderWaitCutList() {
-const container = document.getElementById('waitCutListContent');
-const htmlParts = [];
-htmlParts.push('<div class="space-y-3">');
-let count = 0;
-netflixAccounts.forEach(acc => {
-const appName = getAccountApp(acc);
-const appConf = getAppConfig(appName);
-const isAccOverdue = getAccountExpireStatus(acc.accountExpireDate) === 'overdue';
-if (isAccOverdue) {
-count++;
-htmlParts.push(`<div class="bg-white p-4 sm:p-5 rounded-2xl border-2 border-red-300 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"> <div class="flex-1 min-w-0"> <div class="flex items-center gap-2 mb-1.5"> <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold ${appConf.lightBg} border-2 flex items-center gap-1"> <i class="${appConf.icon}"></i> ${escapeHTML(appName)} </span> <h4 class="font-bold text-espresso text-sm sm:text-base truncate flex items-center gap-1.5" title="${escapeHTML(acc.name)}"> <span>${escapeHTML(acc.name)}</span> <span class="text-[10px] font-bold px-2 py-0.5 rounded-lg border bg-red-100 text-red-700 border-red-200 ml-1">บัญชีหลักรอตัด</span> </h4> </div> <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-bold text-espresso"> <span class="flex items-center gap-1.5 cursor-pointer hover:text-red-600 transition-colors bg-petal-light/50 px-2 py-1 rounded-lg border border-petal" onclick="copyText('${escapeJS(acc.email)}')"> <i class="fa-regular fa-envelope"></i> <span class="truncate max-w-[120px] sm:max-w-full">${escapeHTML(acc.email)}</span> </span> </div> <div class="text-xs font-bold text-red-700 mt-2.5 bg-red-50 p-2.5 rounded-xl border border-dashed border-red-300 flex items-center gap-1.5"> <i class="fa-solid fa-scissors"></i> เลยกำหนดตัดบัญชีตั้งแต่: ${formatDate(acc.accountExpireDate)} </div> </div> <div class="flex gap-2 sm:flex-col shrink-0"> <button onclick="closeWaitCutListModal(); setTimeout(() => openEditAccountModal('${acc.id}'), 300)" class="flex-1 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-red-500 border-2 border-transparent hover:bg-red-600 transition-colors flex items-center justify-center gap-1.5 shadow-sm"> <i class="fa-solid fa-pen"></i> จัดการบัญชี </button> </div> </div>`);
-}
-acc.screens.forEach((screen, index) => {
-const effStatus = getEffectiveScreenStatus(screen);
-if (effStatus === 'wait_cut') {
-count++;
-const itemTitle = `จอ ${index + 1}`;
-const statusConfig = getStatusConfig(effStatus);
-htmlParts.push(`<div class="bg-white p-4 sm:p-5 rounded-2xl border-2 ${statusConfig.borderClass} shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"> <div class="flex-1 min-w-0"> <div class="flex items-center gap-2 mb-1.5"> <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold ${appConf.lightBg} border-2 flex items-center gap-1"> <i class="${appConf.icon}"></i> ${escapeHTML(appName)} </span> <h4 class="font-bold text-espresso text-sm sm:text-base truncate flex items-center gap-1.5" title="${escapeHTML(acc.name)}"> <span>${escapeHTML(acc.name)}</span> <span class="${statusConfig.textClass} text-xs">●</span>&nbsp; <span class="text-espresso/70">${itemTitle}</span> <span class="text-[10px] font-bold px-2 py-0.5 rounded-lg border ${statusConfig.badgeClass} ml-1">${statusConfig.label}</span> </h4> </div> <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-bold text-espresso"> <span class="flex items-center gap-1.5 cursor-pointer hover:text-petal-deep transition-colors bg-petal-light/50 px-2 py-1 rounded-lg border border-petal" onclick="copyText('${escapeJS(acc.email)}')"> <i class="fa-regular fa-envelope"></i> <span class="truncate max-w-[120px] sm:max-w-full">${escapeHTML(acc.email)}</span> </span> </div> ${screen.notes ?`<div class="text-xs font-medium ${statusConfig.textClass} mt-2.5 ${statusConfig.bgClass} p-2.5 rounded-xl border border-dashed ${statusConfig.borderClass} flex items-start gap-1.5"><i class="fa-regular fa-comment-dots mt-0.5 shrink-0"></i><span class="line-clamp-2">${escapeHTML(screen.notes)}</span></div>` : ''} </div> <div class="flex gap-2 sm:flex-col shrink-0"> <button onclick="closeWaitCutListModal(); setTimeout(() => openEditScreenModal('${acc.id}', ${index}), 300)" class="flex-1 px-4 py-2.5 rounded-xl text-xs font-bold text-espresso bg-white border-2 border-petal hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors flex items-center justify-center gap-1.5 shadow-sm"> <i class="fa-solid fa-pen"></i> <span class="sm:hidden">จัดการ</span> </button> </div> </div>`);
-}
-});
-});
-htmlParts.push('</div>');
-if (count === 0) {
-container.innerHTML = `<div class="text-center py-12 flex flex-col items-center bg-white rounded-3xl border-2 border-petal shadow-sm"> <div class="w-20 h-20 bg-petal-light border-2 border-petal rounded-full flex items-center justify-center text-espresso/40 mb-4 text-4xl shadow-inner"> <i class="fa-regular fa-face-smile-wink"></i> </div> <p class="text-espresso font-bold text-lg">ไม่มีรายการรอตัด</p> </div>`;
-} else {
-container.innerHTML = htmlParts.join('');
-}
+    const container = document.getElementById('waitCutListContent');
+    const htmlParts = [];
+    htmlParts.push('<div class="space-y-3">');
+    let count = 0;
+    netflixAccounts.forEach(acc => {
+        const appName = getAccountApp(acc);
+        const appConf = getAppConfig(appName);
+        const isAccOverdue = getAccountExpireStatus(acc.accountExpireDate) === 'overdue';
+        if (isAccOverdue) {
+            count++;
+            htmlParts.push(`<div class="bg-white p-4 sm:p-5 rounded-2xl border-2 border-red-300 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"> <div class="flex-1 min-w-0"> <div class="flex items-center gap-2 mb-1.5"> <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold ${appConf.lightBg} border-2 flex items-center gap-1"> <i class="${appConf.icon}"></i> ${escapeHTML(appName)} </span> <h4 class="font-bold text-espresso text-sm sm:text-base truncate flex items-center gap-1.5" title="${escapeHTML(acc.name)}"> <span>${escapeHTML(acc.name)}</span> <span class="text-[10px] font-bold px-2 py-0.5 rounded-lg border bg-red-100 text-red-700 border-red-200 ml-1">บัญชีหลักรอตัด</span> </h4> </div> <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-bold text-espresso"> <span class="flex items-center gap-1.5 cursor-pointer hover:text-red-600 transition-colors bg-petal-light/50 px-2 py-1 rounded-lg border border-petal" onclick="copyText('${escapeJS(acc.email)}')"> <i class="fa-regular fa-envelope"></i> <span class="truncate max-w-[120px] sm:max-w-full">${escapeHTML(acc.email)}</span> </span> </div> <div class="text-xs font-bold text-red-700 mt-2.5 bg-red-50 p-2.5 rounded-xl border border-dashed border-red-300 flex items-center gap-1.5"> <i class="fa-solid fa-scissors"></i> เลยกำหนดตัดบัญชีตั้งแต่: ${formatDate(acc.accountExpireDate)} </div> </div> <div class="flex gap-2 sm:flex-col shrink-0"> <button onclick="closeWaitCutListModal(); setTimeout(() => openEditAccountModal('${acc.id}'), 300)" class="flex-1 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-red-500 border-2 border-transparent hover:bg-red-600 transition-colors flex items-center justify-center gap-1.5 shadow-sm"> <i class="fa-solid fa-pen"></i> จัดการบัญชี </button> </div> </div>`);
+        }
+        acc.screens.forEach((screen, index) => {
+            const effStatus = getEffectiveScreenStatus(screen);
+            if (effStatus === 'wait_cut') {
+                count++;
+                const itemTitle = `จอ ${index + 1}`;
+                const statusConfig = getStatusConfig(effStatus);
+                htmlParts.push(`<div class="bg-white p-4 sm:p-5 rounded-2xl border-2 ${statusConfig.borderClass} shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"> <div class="flex-1 min-w-0"> <div class="flex items-center gap-2 mb-1.5"> <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold ${appConf.lightBg} border-2 flex items-center gap-1"> <i class="${appConf.icon}"></i> ${escapeHTML(appName)} </span> <h4 class="font-bold text-espresso text-sm sm:text-base truncate flex items-center gap-1.5" title="${escapeHTML(acc.name)}"> <span>${escapeHTML(acc.name)}</span> <span class="${statusConfig.textClass} text-xs">●</span>&nbsp; <span class="text-espresso/70">${itemTitle}</span> <span class="text-[10px] font-bold px-2 py-0.5 rounded-lg border ${statusConfig.badgeClass} ml-1">${statusConfig.label}</span> </h4> </div> <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-bold text-espresso"> <span class="flex items-center gap-1.5 cursor-pointer hover:text-petal-deep transition-colors bg-petal-light/50 px-2 py-1 rounded-lg border border-petal" onclick="copyText('${escapeJS(acc.email)}')"> <i class="fa-regular fa-envelope"></i> <span class="truncate max-w-[120px] sm:max-w-full">${escapeHTML(acc.email)}</span> </span> </div> ${screen.notes ?`<div class="text-xs font-medium ${statusConfig.textClass} mt-2.5 ${statusConfig.bgClass} p-2.5 rounded-xl border border-dashed ${statusConfig.borderClass} flex items-start gap-1.5"><i class="fa-regular fa-comment-dots mt-0.5 shrink-0"></i><span class="line-clamp-2">${escapeHTML(screen.notes)}</span></div>` : ''} </div> <div class="flex gap-2 sm:flex-col shrink-0"> <button onclick="closeWaitCutListModal(); setTimeout(() => openEditScreenModal('${acc.id}', ${index}), 300)" class="flex-1 px-4 py-2.5 rounded-xl text-xs font-bold text-espresso bg-white border-2 border-petal hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors flex items-center justify-center gap-1.5 shadow-sm"> <i class="fa-solid fa-pen"></i> <span class="sm:hidden">จัดการ</span> </button> </div> </div>`);
+            }
+        });
+    });
+    htmlParts.push('</div>');
+    if (count === 0) {
+        container.innerHTML = `<div class="text-center py-12 flex flex-col items-center bg-white rounded-3xl border-2 border-petal shadow-sm"> <div class="w-20 h-20 bg-petal-light border-2 border-petal rounded-full flex items-center justify-center text-espresso/40 mb-4 text-4xl shadow-inner"> <i class="fa-regular fa-face-smile-wink"></i> </div> <p class="text-espresso font-bold text-lg">ไม่มีรายการรอตัด</p> </div>`;
+    } else {
+        container.innerHTML = htmlParts.join('');
+    }
 }
 function openCutoffListModal() { renderCutoffList(); animateModalOpen('cutoffListModal'); }
 function closeCutoffListModal() { animateModalClose('cutoffListModal'); }
 function renderCutoffList() {
-const container = document.getElementById('cutoffListContent');
-const htmlParts = [];
-htmlParts.push('<div class="space-y-3">');
-let count = 0;
-netflixAccounts.forEach(acc => {
-if (acc.accountExpireDate) {
-const accStatus = getAccountExpireStatus(acc.accountExpireDate);
-if (accStatus === 'due_today') {
-count++;
-const appName = getAccountApp(acc);
-const appConf = getAppConfig(appName);
-htmlParts.push(`<div class="bg-white p-4 sm:p-5 rounded-2xl border-2 border-purple-300 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"> <div class="flex-1 min-w-0"> <div class="flex items-center gap-2 mb-1.5"> <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold ${appConf.lightBg} border-2 flex items-center gap-1"> <i class="${appConf.icon}"></i> ${escapeHTML(appName)} </span> <h4 class="font-bold text-espresso text-sm sm:text-base truncate flex items-center gap-2" title="${escapeHTML(acc.name)}"> <i class="fa-solid fa-triangle-exclamation text-purple-600"></i> ${escapeHTML(acc.name)} </h4> </div> <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-bold text-espresso"> <span class="flex items-center gap-1.5 cursor-pointer hover:text-purple-600 transition-colors bg-petal-light/50 px-2 py-1 rounded-lg border border-petal" onclick="copyText('${escapeJS(acc.email)}')"> <i class="fa-regular fa-envelope"></i> <span class="truncate max-w-[120px] sm:max-w-full">${escapeHTML(acc.email)}</span> </span> </div> <div class="text-xs font-bold text-purple-700 mt-2.5 bg-purple-50 p-2.5 rounded-xl border border-dashed border-purple-300 flex items-center gap-1.5"> <i class="fa-regular fa-calendar-xmark"></i> วันตัดบัญชี: ${formatDate(acc.accountExpireDate)} </div> </div> <div class="flex gap-2 sm:flex-col shrink-0"> <button onclick="closeCutoffListModal(); setTimeout(() => openEditAccountModal('${acc.id}'), 300)" class="flex-1 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-purple-600 border-2 border-transparent hover:bg-purple-700 transition-colors flex items-center justify-center gap-1.5 shadow-sm"> <i class="fa-solid fa-pen"></i> อัปเดตวันที่ </button> </div> </div>`);
-}
-}
-});
-htmlParts.push('</div>');
-if (count === 0) {
-container.innerHTML = `<div class="text-center py-12 flex flex-col items-center bg-white rounded-3xl border-2 border-petal shadow-sm"> <div class="w-20 h-20 bg-petal-light border-2 border-petal rounded-full flex items-center justify-center text-espresso/40 mb-4 text-4xl shadow-inner"> <i class="fa-solid fa-calendar-check"></i> </div> <p class="text-espresso font-bold text-lg">ไม่มีบัญชีหลักที่หมดอายุ</p> </div>`;
-} else {
-container.innerHTML = htmlParts.join('');
-}
+    const container = document.getElementById('cutoffListContent');
+    const htmlParts = [];
+    htmlParts.push('<div class="space-y-3">');
+    let count = 0;
+    netflixAccounts.forEach(acc => {
+        if (acc.accountExpireDate) {
+            const accStatus = getAccountExpireStatus(acc.accountExpireDate);
+            if (accStatus === 'due_today') {
+                count++;
+                const appName = getAccountApp(acc);
+                const appConf = getAppConfig(appName);
+                htmlParts.push(`<div class="bg-white p-4 sm:p-5 rounded-2xl border-2 border-purple-300 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"> <div class="flex-1 min-w-0"> <div class="flex items-center gap-2 mb-1.5"> <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold ${appConf.lightBg} border-2 flex items-center gap-1"> <i class="${appConf.icon}"></i> ${escapeHTML(appName)} </span> <h4 class="font-bold text-espresso text-sm sm:text-base truncate flex items-center gap-2" title="${escapeHTML(acc.name)}"> <i class="fa-solid fa-triangle-exclamation text-purple-600"></i> ${escapeHTML(acc.name)} </h4> </div> <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-bold text-espresso"> <span class="flex items-center gap-1.5 cursor-pointer hover:text-purple-600 transition-colors bg-petal-light/50 px-2 py-1 rounded-lg border border-petal" onclick="copyText('${escapeJS(acc.email)}')"> <i class="fa-regular fa-envelope"></i> <span class="truncate max-w-[120px] sm:max-w-full">${escapeHTML(acc.email)}</span> </span> </div> <div class="text-xs font-bold text-purple-700 mt-2.5 bg-purple-50 p-2.5 rounded-xl border border-dashed border-purple-300 flex items-center gap-1.5"> <i class="fa-regular fa-calendar-xmark"></i> วันตัดบัญชี: ${formatDate(acc.accountExpireDate)} </div> </div> <div class="flex gap-2 sm:flex-col shrink-0"> <button onclick="closeCutoffListModal(); setTimeout(() => openEditAccountModal('${acc.id}'), 300)" class="flex-1 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-purple-600 border-2 border-transparent hover:bg-purple-700 transition-colors flex items-center justify-center gap-1.5 shadow-sm"> <i class="fa-solid fa-pen"></i> อัปเดตวันที่ </button> </div> </div>`);
+            }
+        }
+    });
+    htmlParts.push('</div>');
+    if (count === 0) {
+        container.innerHTML = `<div class="text-center py-12 flex flex-col items-center bg-white rounded-3xl border-2 border-petal shadow-sm"> <div class="w-20 h-20 bg-petal-light border-2 border-petal rounded-full flex items-center justify-center text-espresso/40 mb-4 text-4xl shadow-inner"> <i class="fa-solid fa-calendar-check"></i> </div> <p class="text-espresso font-bold text-lg">ไม่มีบัญชีหลักที่หมดอายุ</p> </div>`;
+    } else {
+        container.innerHTML = htmlParts.join('');
+    }
 }
 
-function requireAdminAuth(callback) {
-if (!currentAdmin) {
-showToast('หากต้องการแก้ไขข้อมูล โปรดติดต่อผู้ดูแล 🔒');
-openAdminModal();
-return false;
-}
-if (typeof callback === 'function') callback();
-return true;
-}
 function verifyPasscodeForSettings() {
-document.getElementById('settingsPasscodeInput').value = '';
-animateModalOpen('passcodeModal');
+    if (!requireAdminAuth()) return;
+    document.getElementById('settingsPasscodeInput').value = '';
+    animateModalOpen('passcodeModal');
 }
 function closePasscodeModal() { animateModalClose('passcodeModal'); }
 function verifySettingsPasscode(e) {
-e.preventDefault();
-if (document.getElementById('settingsPasscodeInput').value.trim() === '0835') {
-closePasscodeModal();
-showToast('ยืนยันรหัสผ่านสำเร็จ ✨');
-openSettingsModal();
-} else {
-showToast('รหัสผ่านไม่ถูกต้อง ❌');
-}
-}
-
-function openAddAccountModal(presetAppName = '') {
-if (!requireAdminAuth()) return;
-document.getElementById('addAccountForm').reset();
-const defaultApp = presetAppName || (selectedAppFilter !== 'all' ? selectedAppFilter : (customApps.length > 0 ? customApps[0].name : ''));
-document.getElementById('accountApp').value = defaultApp;
-renderPresetAppChips('addAppPresetChips', 'accountApp', defaultApp);
-animateModalOpen('addAccountModal');
-}
-function closeAddAccountModal() { animateModalClose('addAccountModal'); }
-async function handleAddAccount(e) {
-e.preventDefault();
-if (!requireAdminAuth()) return;
-const btn = document.getElementById('btnSubmitAdd');
-const originalText = btn.innerHTML;
-btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังบันทึก...';
-btn.disabled = true;
-const defaultScreens = Array(5).fill().map(() => ({ status: 'available', expireDate: '', pin: '', notes: '' }));
-const appValue = document.getElementById('accountApp').value.trim() || (customApps.length > 0 ? customApps[0].name : 'แอปทั่วไป');
-if (!customApps.some(a => a.name.toLowerCase() === appValue.toLowerCase())) {
-customApps.push({ id: 'app_' + Date.now(), name: appValue, color: 'petal', icon: getAutoIconAndColor(appValue).icon || 'fa-solid fa-shapes' });
-localStorage.setItem('monali_custom_apps', JSON.stringify(customApps));
-appConfigCache = {};
-}
-const newAccount = {
-id: 'acc_' + Date.now(),
-app: appValue,
-name: document.getElementById('accountName').value.trim(),
-email: document.getElementById('accountEmail').value.trim(),
-password: document.getElementById('accountPassword').value.trim(),
-accountExpireDate: document.getElementById('accountExpireDate').value,
-screens: defaultScreens
-};
-netflixAccounts.unshift(newAccount);
-saveData();
-scheduleRender();
-closeAddAccountModal();
-showToast(`เพิ่มบัญชี ${escapeHTML(newAccount.app)} เรียบร้อยแล้วค่ะ ✨`);
-btn.innerHTML = originalText;
-btn.disabled = false;
-}
-function openEditAccountModal(accountId) {
-if (!requireAdminAuth()) return;
-const acc = netflixAccounts.find(a => a.id === accountId);
-if (!acc) return;
-const currentApp = getAccountApp(acc);
-document.getElementById('editAccId').value = acc.id;
-document.getElementById('editAccApp').value = currentApp;
-document.getElementById('editAccName').value = acc.name;
-document.getElementById('editAccEmail').value = acc.email;
-document.getElementById('editAccPassword').value = acc.password;
-document.getElementById('editAccExpireDate').value = acc.accountExpireDate || '';
-renderPresetAppChips('editAppPresetChips', 'editAccApp', currentApp);
-animateModalOpen('editAccountModal');
-}
-function closeEditAccountModal() { animateModalClose('editAccountModal'); }
-async function handleEditAccount(e) {
-e.preventDefault();
-if (!requireAdminAuth()) return;
-const id = document.getElementById('editAccId').value;
-const acc = netflixAccounts.find(a => a.id === id);
-if (acc) {
-const appValue = document.getElementById('editAccApp').value.trim() || 'แอปทั่วไป';
-if (!customApps.some(a => a.name.toLowerCase() === appValue.toLowerCase())) {
-customApps.push({ id: 'app_' + Date.now(), name: appValue, color: 'petal', icon: getAutoIconAndColor(appValue).icon || 'fa-solid fa-shapes' });
-localStorage.setItem('monali_custom_apps', JSON.stringify(customApps));
-appConfigCache = {};
-}
-acc.app = appValue;
-acc.name = document.getElementById('editAccName').value.trim();
-acc.email = document.getElementById('editAccEmail').value.trim();
-acc.password = document.getElementById('editAccPassword').value.trim();
-acc.accountExpireDate = document.getElementById('editAccExpireDate').value;
-saveData();
-scheduleRender();
-closeEditAccountModal();
-showToast('แก้ไขข้อมูลบัญชีเรียบร้อยแล้วค่ะ ✨');
-}
-}
-
-function openEditScreenModal(accountId, screenIndex) {
-if (!requireAdminAuth()) return;
-const account = netflixAccounts.find(a => a.id === accountId);
-if (!account || !account.screens[screenIndex]) return;
-const screen = account.screens[screenIndex];
-document.getElementById('editAccountId').value = accountId;
-document.getElementById('editScreenIndex').value = screenIndex;
-document.getElementById('editScreenTitle').textContent = `จอ ${screenIndex + 1} (${account.name})`;
-const savedStatus = screen.status === 'kick' ? 'sold' : screen.status;
-const radios = document.getElementsByName('screenStatus');
-for(let i=0; i<radios.length; i++) {
-if(radios[i].value === savedStatus) { radios[i].checked = true; break; }
-}
-document.getElementById('expireDate').value = screen.expireDate || '';
-document.getElementById('screenPin').value = screen.pin || '';
-document.getElementById('screenNotes').value = screen.notes || '';
-// ดึงราคาเก่า (ถ้ามี) และตั้งค่าการบันทึกรายรับอัตโนมัติ
-document.getElementById('screenPrice').value = screen.price || '';
-document.getElementById('autoRecordIncome').checked = (screen.status !== 'sold');
-animateModalOpen('editScreenModal');
-}
-function closeEditScreenModal() { animateModalClose('editScreenModal'); }
-async function handleEditScreen(e) {
-e.preventDefault();
-if (!requireAdminAuth()) return;
-const accountId = document.getElementById('editAccountId').value;
-const screenIndex = parseInt(document.getElementById('editScreenIndex').value);
-const account = netflixAccounts.find(a => a.id === accountId);
-if (!account || !account.screens[screenIndex]) return;
-const selectedRadio = document.querySelector('input[name="screenStatus"]:checked');
-if(!selectedRadio) { showToast('กรุณาเลือกสถานะของจอ ❌'); return; }
-const price = parseFloat(document.getElementById('screenPrice').value) || 0;
-const autoRecord = document.getElementById('autoRecordIncome').checked;
-account.screens[screenIndex] = {
-status: selectedRadio.value,
-expireDate: document.getElementById('expireDate').value,
-pin: document.getElementById('screenPin').value,
-notes: document.getElementById('screenNotes').value,
-price: price
-};
-// บันทึกรายรับอัตโนมัติ
-if (autoRecord && price > 0 && selectedRadio.value === 'sold') {
-const appName = getAccountApp(account);
-const newTrans = {
-id: 'tx_' + Date.now(),
-type: 'income',
-amount: price,
-note: `ขายจอ ${appName} - ${account.name} (จอ ${screenIndex + 1})`,
-date: new Date().toISOString()
-};
-monaliTransactions.unshift(newTrans);
-saveTransactions();
-renderTransactions();
-}
-saveData();
-scheduleRender();
-closeEditScreenModal();
-const effStatus = getEffectiveScreenStatus(account.screens[screenIndex]);
-if (effStatus === 'kick') showToast('บันทึกข้อมูลเรียบร้อย (ตั้งให้เตะคืนนี้) ⭐️');
-else if (effStatus === 'wait_cut') showToast('บันทึกข้อมูลเรียบร้อย (ตั้งสถานะเป็นรอตัด) ✂️');
-else showToast('บันทึกข้อมูลเรียบร้อยแล้วค่ะ 💖');
-}
-function addNewScreen(accountId) {
-if (!requireAdminAuth()) return;
-const account = netflixAccounts.find(a => a.id === accountId);
-if (account) {
-account.screens.push({ status: 'available', expireDate: '', pin: '', notes: '' });
-saveData();
-scheduleRender();
-showToast(`เพิ่ม จอ ${account.screens.length} ให้บัญชี ${account.name} แล้ว ✨`);
-}
-}
-function confirmDeleteScreen(accountId, screenIndex) {
-if (!requireAdminAuth()) return;
-const account = netflixAccounts.find(a => a.id === accountId);
-if (account) {
-if (account.screens.length <= 1) { showToast('ต้องมีอย่างน้อย 1 จอในแต่ละบัญชีค่ะ ❌'); return; }
-screenToDelete = { accountId, screenIndex };
-document.getElementById('deleteScreenModalText').textContent = `คุณแน่ใจว่าต้องการลบ จอ ${screenIndex + 1} ของบัญชี "${account.name}" ใช่หรือไม่?`;
-animateModalOpen('deleteScreenModal');
-}
-}
-function closeDeleteScreenModal() {
-screenToDelete = { accountId: null, screenIndex: null };
-animateModalClose('deleteScreenModal');
-}
-function executeDeleteScreen() {
-if (!requireAdminAuth() || !screenToDelete.accountId || screenToDelete.screenIndex === null) return;
-const account = netflixAccounts.find(a => a.id === screenToDelete.accountId);
-if (account && account.screens[screenToDelete.screenIndex]) {
-account.screens.splice(screenToDelete.screenIndex, 1);
-saveData();
-scheduleRender();
-closeDeleteScreenModal();
-showToast('ลบจอดังกล่าวเรียบร้อยแล้วค่ะ 🗑️');
-}
-}
-function confirmDeleteAccount(accountId) {
-if (!requireAdminAuth()) return;
-accountIdToDelete = accountId;
-animateModalOpen('deleteConfirmModal');
-}
-function closeDeleteModal() {
-accountIdToDelete = null;
-animateModalClose('deleteConfirmModal');
-}
-function executeDeleteAccount() {
-if (!requireAdminAuth() || !accountIdToDelete) return;
-netflixAccounts = netflixAccounts.filter(a => a.id !== accountIdToDelete);
-collapsedAccounts.delete(accountIdToDelete);
-saveData();
-scheduleRender();
-closeDeleteModal();
-showToast('ลบข้อมูลเรียบร้อยแล้วค่ะ 🗑️');
-}
-
-function openSettingsModal() {
-document.getElementById('tgToken').value = telegramSettings.token || '';
-document.getElementById('tgChatId').value = telegramSettings.chatId || '';
-document.getElementById('testResult').className = 'hidden text-sm text-center py-2 px-3 rounded-xl mt-3';
-animateModalOpen('settingsModal');
-}
-function closeSettingsModal() { animateModalClose('settingsModal'); }
-function saveTelegramSettings(e) {
-e.preventDefault();
-telegramSettings.token = document.getElementById('tgToken').value.trim();
-telegramSettings.chatId = document.getElementById('tgChatId').value.trim();
-localStorage.setItem('netflix_tg_settings', JSON.stringify(telegramSettings));
-closeSettingsModal();
-showToast('บันทึกการตั้งค่า Telegram แล้ว 🔔');
-}
-async function sendTelegramMessage(text) {
-if (!telegramSettings.token || !telegramSettings.chatId) return { success: false, error: 'ยังไม่ได้ตั้งค่า Token/Chat ID' };
-try {
-const response = await fetch(`https://api.telegram.org/bot${telegramSettings.token}/sendMessage`, {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ chat_id: telegramSettings.chatId, text: text, parse_mode: 'HTML' })
-});
-const data = await response.json();
-return data.ok ? { success: true } : { success: false, error: data.description };
-} catch (error) {
-return { success: false, error: error.message };
-}
-}
-async function testTelegramSettings(btn) {
-const originalText = btn.innerHTML;
-btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> กำลังส่ง...';
-btn.disabled = true;
-const tempToken = document.getElementById('tgToken').value.trim();
-const tempChatId = document.getElementById('tgChatId').value.trim();
-const resultDiv = document.getElementById('testResult');
-resultDiv.classList.remove('hidden');
-if (!tempToken || !tempChatId) {
-resultDiv.textContent = 'กรุณากรอกข้อมูลให้ครบก่อนทดสอบ';
-resultDiv.className = 'text-sm font-bold text-center py-2.5 px-3 rounded-xl mt-3 text-red-600 bg-red-50 border border-red-200 block';
-btn.innerHTML = originalText; btn.disabled = false; return;
-}
-const oldToken = telegramSettings.token;
-const oldChatId = telegramSettings.chatId;
-telegramSettings.token = tempToken;
-telegramSettings.chatId = tempChatId;
-const result = await sendTelegramMessage('👋 <b>ทดสอบระบบแจ้งเตือน MONALI</b>\nเชื่อมต่อสำเร็จ! ✨');
-if (result.success) {
-resultDiv.innerHTML = '<i class="fa-solid fa-check-circle mr-1"></i> ส่งสำเร็จ ตรวจสอบใน Telegram ได้เลย';
-resultDiv.className = 'text-sm font-bold text-center py-2.5 px-3 rounded-xl mt-3 text-emerald-600 bg-emerald-50 border border-emerald-200 block';
-} else {
-resultDiv.innerHTML = '<i class="fa-solid fa-circle-exclamation mr-1"></i> ส่งไม่สำเร็จ: ' + escapeHTML(result.error);
-resultDiv.className = 'text-sm font-bold text-center py-2.5 px-3 rounded-xl mt-3 text-red-600 bg-red-50 border border-red-200 block';
-telegramSettings.token = oldToken; telegramSettings.chatId = oldChatId;
-}
-btn.innerHTML = originalText; btn.disabled = false;
-}
-function checkDailyNotifications() {
-const lastRun = localStorage.getItem('monali_last_notif_date');
-const todayStr = new Date().toLocaleDateString('en-CA');
-if (lastRun !== todayStr && telegramSettings.token && telegramSettings.chatId) {
-sendDailySummary();
-localStorage.setItem('monali_last_notif_date', todayStr);
-}
-}
-async function manualSendDailySummary(btn) {
-const originalText = btn.innerHTML;
-btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> กำลังสรุป...';
-btn.disabled = true;
-await sendDailySummary();
-btn.innerHTML = originalText;
-btn.disabled = false;
-}
-async function sendDailySummary() {
-const today = new Date();
-today.setHours(0,0,0,0);
-let message = `🔔 <b>สรุปรายการประจำวัน MONALI</b>\n📅 ${today.toLocaleDateString('th-TH')}\n\n`;
-let hasContent = false;
-const appGroups = {};
-netflixAccounts.forEach(acc => {
-const appName = getAccountApp(acc);
-if (!appGroups[appName]) appGroups[appName] = [];
-appGroups[appName].push(acc);
-});
-for (const [appName, accounts] of Object.entries(appGroups)) {
-let appSection = '';
-let cutoffList = [];
-accounts.forEach(acc => {
-if (acc.accountExpireDate) {
-const accExpTime = fastParseDateToTime(acc.accountExpireDate);
-if (accExpTime > 0) {
-if (accExpTime === cachedTodayTime) cutoffList.push(`- ${escapeHTML(acc.name)} (ตัดวันนี้)`);
-else if (accExpTime === cachedTomorrowTime) cutoffList.push(`- ${escapeHTML(acc.name)} (ตัดพรุ่งนี้)`);
-}
-}
-});
-if (cutoffList.length > 0) appSection += `🔴 <b>บัญชีหลักตัดแอค:</b>\n${cutoffList.join('\n')}\n`;
-let dueList = [];
-accounts.forEach(acc => {
-acc.screens.forEach((screen, index) => {
-const effStatus = getEffectiveScreenStatus(screen);
-if (effStatus === 'wait_cut') dueList.push(`- ${escapeHTML(acc.name)} จอ ${index+1} (รอตัด)`);
-else if (effStatus === 'kick' && screen.expireDate) {
-const expTime = fastParseDateToTime(screen.expireDate);
-if (expTime > 0 && expTime <= cachedTodayTime) dueList.push(`- ${escapeHTML(acc.name)} จอ ${index+1} (หมดแล้ว)`);
-} else if (effStatus === 'sold' && screen.expireDate) {
-const expTime = fastParseDateToTime(screen.expireDate);
-if (expTime === cachedTomorrowTime) dueList.push(`- ${escapeHTML(acc.name)} จอ ${index+1} (หมดพรุ่งนี้)`);
-}
-});
-});
-if (dueList.length > 0) appSection += `⭐️ <b>จอครบกำหนด:</b>\n${dueList.join('\n')}\n`;
-if (appSection) { message += `📱 <b>[ ${appName} ]</b>\n${appSection}\n`; hasContent = true; }
-}
-if (!hasContent) message += `✅ <i>ไม่มีบัญชีหรือจอที่ครบกำหนดในวันนี้และพรุ่งนี้ค่ะ พักผ่อนได้เลย</i> 🎉`;
-await sendTelegramMessage(message);
+    e.preventDefault();
+    if (document.getElementById('settingsPasscodeInput').value.trim() === '0835') {
+        closePasscodeModal();
+        showToast('ยืนยันรหัสผ่านสำเร็จ ✨');
+        openSettingsModal();
+    } else {
+        showToast('รหัสผ่านไม่ถูกต้อง ❌');
+    }
 }
 
 function openAdminModal() { updateAdminStateUI(); animateModalOpen('adminModal'); }
 function closeAdminModal() { animateModalClose('adminModal'); }
 function checkAdminPermissionsUI() {
-const lockedBanner = document.getElementById('adminLockedBanner');
-if (!currentAdmin) {
-if(lockedBanner) lockedBanner.classList.remove('hidden');
-document.getElementById('adminBadgeDot').classList.remove('hidden');
-} else {
-if(lockedBanner) lockedBanner.classList.add('hidden');
-document.getElementById('adminBadgeDot').classList.add('hidden');
-}
+    const lockedBanner = document.getElementById('adminLockedBanner');
+    const badge = document.getElementById('adminBadgeDot');
+    if (!currentAdmin) {
+        if(lockedBanner) lockedBanner.classList.remove('hidden');
+        if(badge) { badge.classList.remove('hidden'); badge.style.display = 'block'; }
+    } else {
+        if(lockedBanner) lockedBanner.classList.add('hidden');
+        if(badge) { badge.classList.add('hidden'); badge.style.display = 'none'; }
+    }
 }
 function updateAdminStateUI() {
-const stateSection = document.getElementById('adminLoginStateSection');
-const loginFormContainer = document.getElementById('adminLoginFormContainer');
-if (currentAdmin) {
-stateSection.classList.remove('hidden');
-loginFormContainer.classList.add('hidden');
-document.getElementById('currentAdminNameLabel').textContent = currentAdmin.name;
-} else {
-stateSection.classList.add('hidden');
-loginFormContainer.classList.remove('hidden');
-}
-}
-function handleAdminLogin(e) {
-e.preventDefault();
-const email = document.getElementById('loginAdminEmail').value.trim();
-const pass = document.getElementById('loginAdminPassword').value.trim();
-const adm = adminUsers.find(a => a.email === email);
-if (adm && adm.password === pass) {
-currentAdmin = adm;
-localStorage.setItem('monali_current_admin', JSON.stringify(currentAdmin));
-document.getElementById('loginAdminEmail').value = '';
-document.getElementById('loginAdminPassword').value = '';
-updateAdminStateUI();
-checkAdminPermissionsUI();
-showToast(`ยินดีต้อนรับคุณ ${escapeHTML(adm.name)} ✨`);
-closeAdminModal();
-} else {
-showToast('อีเมลหรือรหัสผ่านไม่ถูกต้อง ❌');
-}
-}
-function logoutAdmin() {
-currentAdmin = null;
-localStorage.removeItem('monali_current_admin');
-updateAdminStateUI();
-checkAdminPermissionsUI();
-showToast('ออกจากระบบเรียบร้อยแล้ว 🔒');
+    const stateSection = document.getElementById('adminLoginStateSection');
+    const loginFormContainer = document.getElementById('adminLoginFormContainer');
+    const nameLabel = document.getElementById('currentAdminNameLabel');
+    if (currentAdmin) {
+        if(stateSection) stateSection.classList.remove('hidden');
+        if(loginFormContainer) loginFormContainer.classList.add('hidden');
+        if(nameLabel) nameLabel.textContent = currentAdmin.email || 'ผู้ดูแลระบบ';
+    } else {
+        if(stateSection) stateSection.classList.add('hidden');
+        if(loginFormContainer) loginFormContainer.classList.remove('hidden');
+    }
 }
 
-function openAutoFormModal(presetData = null) {
-updateTemplateDropdown();
-document.getElementById('afEmail').value = presetData?.email || '';
-document.getElementById('afPassword').value = presetData?.password || '';
-document.getElementById('afScreen').value = presetData?.screen || '';
-document.getElementById('afPin').value = presetData?.pin || '';
-document.getElementById('afExpire').value = presetData?.expire || '';
-generateFormText();
-animateModalOpen('autoFormModal');
+function openAddAccountModal(presetAppName = '') {
+    if (!requireAdminAuth()) return;
+    document.getElementById('addAccountForm').reset();
+    const defaultApp = presetAppName || (selectedAppFilter !== 'all' ? selectedAppFilter : (customApps.length > 0 ? customApps[0].name : ''));
+    document.getElementById('accountApp').value = defaultApp;
+    renderPresetAppChips('addAppPresetChips', 'accountApp', defaultApp);
+    animateModalOpen('addAccountModal');
 }
-function closeAutoFormModal() { animateModalClose('autoFormModal'); }
+function closeAddAccountModal() { animateModalClose('addAccountModal'); }
+
+async function handleAddAccount(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSubmitAdd');
+    requireAdminAuthAction(btn, async () => {
+        const appValue = document.getElementById('accountApp').value.trim() || (customApps.length > 0 ? customApps[0].name : 'แอปทั่วไป');
+        const appId = await resolveAppId(appValue);
+
+        const accData = {
+            app_id: appId,
+            name: document.getElementById('accountName').value.trim(),
+            email: document.getElementById('accountEmail').value.trim(),
+            password: document.getElementById('accountPassword').value.trim(),
+            expire_date: document.getElementById('accountExpireDate').value || null
+        };
+
+        const { data: newAcc, error: accErr } = await supabase.from('accounts').insert(accData).select().single();
+        if(accErr) throw accErr;
+
+        const screensToInsert = Array(5).fill().map((_, idx) => ({
+            account_id: newAcc.id,
+            screen_index: idx,
+            status: 'available',
+        }));
+        const { error: scrErr } = await supabase.from('screens').insert(screensToInsert);
+        if(scrErr) throw scrErr;
+
+        await loadData();
+        closeAddAccountModal();
+        showToast(`เพิ่มบัญชีเรียบร้อยแล้วค่ะ ✨`);
+    });
+}
+
+function openEditAccountModal(accountId) {
+    if (!requireAdminAuth()) return;
+    const acc = netflixAccounts.find(a => a.id === accountId);
+    if (!acc) return;
+    const currentApp = getAccountApp(acc);
+    document.getElementById('editAccId').value = acc.id;
+    document.getElementById('editAccApp').value = currentApp;
+    document.getElementById('editAccName').value = acc.name;
+    document.getElementById('editAccEmail').value = acc.email;
+    document.getElementById('editAccPassword').value = acc.password;
+    document.getElementById('editAccExpireDate').value = acc.accountExpireDate || '';
+    renderPresetAppChips('editAppPresetChips', 'editAccApp', currentApp);
+    animateModalOpen('editAccountModal');
+}
+function closeEditAccountModal() { animateModalClose('editAccountModal'); }
+
+async function handleEditAccount(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSubmitEditAcc');
+    requireAdminAuthAction(btn, async () => {
+        const id = document.getElementById('editAccId').value;
+        const appValue = document.getElementById('editAccApp').value.trim() || 'แอปทั่วไป';
+        const appId = await resolveAppId(appValue);
+
+        const { error } = await supabase.from('accounts').update({
+            app_id: appId,
+            name: document.getElementById('editAccName').value.trim(),
+            email: document.getElementById('editAccEmail').value.trim(),
+            password: document.getElementById('editAccPassword').value.trim(),
+            expire_date: document.getElementById('editAccExpireDate').value || null
+        }).eq('id', id);
+
+        if(error) throw error;
+        await loadData();
+        closeEditAccountModal();
+        showToast('แก้ไขข้อมูลบัญชีเรียบร้อยแล้วค่ะ ✨');
+    });
+}
+
+function openEditScreenModal(accountId, screenIndex) {
+    if (!requireAdminAuth()) return;
+    const account = netflixAccounts.find(a => a.id === accountId);
+    if (!account || !account.screens[screenIndex]) return;
+    const screen = account.screens[screenIndex];
+    document.getElementById('editAccountId').value = accountId;
+    document.getElementById('editScreenId').value = screen.id;
+    document.getElementById('editScreenIndex').value = screenIndex;
+    document.getElementById('editScreenTitle').textContent = `จอ ${screenIndex + 1} (${account.name})`;
+    const savedStatus = screen.status === 'kick' ? 'sold' : screen.status;
+    const radios = document.getElementsByName('screenStatus');
+    for(let i=0; i<radios.length; i++) {
+        if(radios[i].value === savedStatus) { radios[i].checked = true; break; }
+    }
+    document.getElementById('expireDate').value = screen.expireDate || '';
+    document.getElementById('screenPin').value = screen.pin || '';
+    document.getElementById('screenNotes').value = screen.notes || '';
+    document.getElementById('screenPrice').value = screen.price || '';
+    document.getElementById('autoRecordIncome').checked = (screen.status !== 'sold');
+    animateModalOpen('editScreenModal');
+}
+function closeEditScreenModal() { animateModalClose('editScreenModal'); }
+
+async function handleEditScreen(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSubmitEditScreen');
+    requireAdminAuthAction(btn, async () => {
+        const accountId = document.getElementById('editAccountId').value;
+        const screenId = document.getElementById('editScreenId').value;
+        const screenIndex = parseInt(document.getElementById('editScreenIndex').value);
+        const account = netflixAccounts.find(a => a.id === accountId);
+        if (!account) return;
+
+        const selectedRadio = document.querySelector('input[name="screenStatus"]:checked');
+        if(!selectedRadio) { showToast('กรุณาเลือกสถานะของจอ ❌'); return; }
+
+        const price = parseFloat(document.getElementById('screenPrice').value) || 0;
+        const autoRecord = document.getElementById('autoRecordIncome').checked;
+        const statusVal = selectedRadio.value;
+
+        const { error } = await supabase.from('screens').update({
+            status: statusVal,
+            expire_date: document.getElementById('expireDate').value || null,
+            pin: document.getElementById('screenPin').value,
+            notes: document.getElementById('screenNotes').value,
+            price: price
+        }).eq('id', screenId);
+        if(error) throw error;
+
+        if (autoRecord && price > 0 && statusVal === 'sold') {
+            const appName = getAccountApp(account);
+            await supabase.from('transactions').insert({
+                type: 'income',
+                amount: price,
+                note: `ขายจอ ${appName} - ${account.name} (จอ ${screenIndex + 1})`,
+                transaction_date: new Date().toISOString()
+            });
+        }
+
+        await loadData();
+        closeEditScreenModal();
+        showToast('บันทึกข้อมูลหน้าจอเรียบร้อยแล้วค่ะ 💖');
+    });
+}
+
+function addNewScreen(accountId) {
+    if (!requireAdminAuth()) return;
+    const btn = window.event ? window.event.currentTarget : null;
+    if(btn) btn.disabled = true;
+    (async () => {
+        try {
+            const account = netflixAccounts.find(a => a.id === accountId);
+            if(!account) return;
+            const nextIdx = account.screens.length > 0 ? Math.max(...account.screens.map(s => s.screen_index || 0)) + 1 : 0;
+            const { error } = await supabase.from('screens').insert({
+                account_id: accountId,
+                screen_index: nextIdx,
+                status: 'available'
+            });
+            if(error) throw error;
+            await loadData();
+            showToast(`เพิ่มจอให้บัญชี ${account.name} แล้ว ✨`);
+        } catch(err) {
+            showToast('เกิดข้อผิดพลาด: ' + err.message);
+        } finally {
+            if(btn) btn.disabled = false;
+        }
+    })();
+}
+
+function confirmDeleteScreen(accountId, screenIndex) {
+    if (!requireAdminAuth()) return;
+    const account = netflixAccounts.find(a => a.id === accountId);
+    if (account && account.screens[screenIndex]) {
+        if (account.screens.length <= 1) { showToast('ต้องมีอย่างน้อย 1 จอในแต่ละบัญชีค่ะ ❌'); return; }
+        screenToDelete = { id: account.screens[screenIndex].id, accountId, screenIndex };
+        document.getElementById('deleteScreenModalText').textContent = `คุณแน่ใจว่าต้องการลบ จอ ${screenIndex + 1} ของบัญชี "${account.name}" ใช่หรือไม่?`;
+        animateModalOpen('deleteScreenModal');
+    }
+}
+function closeDeleteScreenModal() {
+    screenToDelete = { id: null, accountId: null, screenIndex: null };
+    animateModalClose('deleteScreenModal');
+}
+function executeDeleteScreen(btn) {
+    requireAdminAuthAction(btn, async () => {
+        if (!screenToDelete.id) return;
+        const { error } = await supabase.from('screens').delete().eq('id', screenToDelete.id);
+        if(error) throw error;
+        await loadData();
+        closeDeleteScreenModal();
+        showToast('ลบจอดังกล่าวเรียบร้อยแล้วค่ะ 🗑️');
+    });
+}
+
+function confirmDeleteAccount(accountId) {
+    if (!requireAdminAuth()) return;
+    accountIdToDelete = accountId;
+    animateModalOpen('deleteConfirmModal');
+}
+function closeDeleteModal() {
+    accountIdToDelete = null;
+    animateModalClose('deleteConfirmModal');
+}
+function executeDeleteAccount(btn) {
+    requireAdminAuthAction(btn, async () => {
+        if (!accountIdToDelete) return;
+        const { error } = await supabase.from('accounts').delete().eq('id', accountIdToDelete);
+        if(error) throw error;
+        collapsedAccounts.delete(accountIdToDelete);
+        await loadData();
+        closeDeleteModal();
+        showToast('ลบข้อมูลเรียบร้อยแล้วค่ะ 🗑️');
+    });
+}
+
+function openSettingsModal() {
+    document.getElementById('tgToken').value = telegramSettings.token || '';
+    document.getElementById('tgChatId').value = telegramSettings.chatId || '';
+    document.getElementById('testResult').className = 'hidden text-sm text-center py-2 px-3 rounded-xl mt-3';
+    animateModalOpen('settingsModal');
+}
+function closeSettingsModal() { animateModalClose('settingsModal'); }
+
+async function saveTelegramSettings(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSaveSettings');
+    requireAdminAuthAction(btn, async () => {
+        const token = document.getElementById('tgToken').value.trim();
+        const chatId = document.getElementById('tgChatId').value.trim();
+        
+        await supabase.from('settings').upsert({ key: 'tg_token', value: token });
+        await supabase.from('settings').upsert({ key: 'tg_chat_id', value: chatId });
+        
+        telegramSettings.token = token;
+        telegramSettings.chatId = chatId;
+        
+        closeSettingsModal();
+        showToast('บันทึกการตั้งค่า Telegram แล้ว 🔔');
+    });
+}
+
+async function sendTelegramMessage(text) {
+    if (!telegramSettings.token || !telegramSettings.chatId) return { success: false, error: 'ยังไม่ได้ตั้งค่า Token/Chat ID' };
+    try {
+        const response = await fetch(`https://api.telegram.org/bot${telegramSettings.token}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: telegramSettings.chatId, text: text, parse_mode: 'HTML' })
+        });
+        const data = await response.json();
+        return data.ok ? { success: true } : { success: false, error: data.description };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+async function testTelegramSettings(btn) {
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> กำลังส่ง...';
+    btn.disabled = true;
+    const tempToken = document.getElementById('tgToken').value.trim();
+    const tempChatId = document.getElementById('tgChatId').value.trim();
+    const resultDiv = document.getElementById('testResult');
+    resultDiv.classList.remove('hidden');
+    if (!tempToken || !tempChatId) {
+        resultDiv.textContent = 'กรุณากรอกข้อมูลให้ครบก่อนทดสอบ';
+        resultDiv.className = 'text-sm font-bold text-center py-2.5 px-3 rounded-xl mt-3 text-red-600 bg-red-50 border border-red-200 block';
+        btn.innerHTML = originalText; btn.disabled = false; return;
+    }
+    const oldToken = telegramSettings.token;
+    const oldChatId = telegramSettings.chatId;
+    telegramSettings.token = tempToken;
+    telegramSettings.chatId = tempChatId;
+    const result = await sendTelegramMessage('👋 <b>ทดสอบระบบแจ้งเตือน MONALI</b>\nเชื่อมต่อสำเร็จ! ✨');
+    if (result.success) {
+        resultDiv.innerHTML = '<i class="fa-solid fa-check-circle mr-1"></i> ส่งสำเร็จ ตรวจสอบใน Telegram ได้เลย';
+        resultDiv.className = 'text-sm font-bold text-center py-2.5 px-3 rounded-xl mt-3 text-emerald-600 bg-emerald-50 border border-emerald-200 block';
+    } else {
+        resultDiv.innerHTML = '<i class="fa-solid fa-circle-exclamation mr-1"></i> ส่งไม่สำเร็จ: ' + escapeHTML(result.error);
+        resultDiv.className = 'text-sm font-bold text-center py-2.5 px-3 rounded-xl mt-3 text-red-600 bg-red-50 border border-red-200 block';
+        telegramSettings.token = oldToken; telegramSettings.chatId = oldChatId;
+    }
+    btn.innerHTML = originalText; btn.disabled = false;
+}
+function checkDailyNotifications() {
+    const lastRun = localStorage.getItem('monali_last_notif_date');
+    const todayStr = new Date().toLocaleDateString('en-CA');
+    if (lastRun !== todayStr && telegramSettings.token && telegramSettings.chatId) {
+        sendDailySummary();
+        localStorage.setItem('monali_last_notif_date', todayStr);
+    }
+}
+async function manualSendDailySummary(btn) {
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> กำลังสรุป...';
+    btn.disabled = true;
+    await sendDailySummary();
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+}
+async function sendDailySummary() {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    let message = `🔔 <b>สรุปรายการประจำวัน MONALI</b>\n📅 ${today.toLocaleDateString('th-TH')}\n\n`;
+    let hasContent = false;
+    const appGroups = {};
+    netflixAccounts.forEach(acc => {
+        const appName = getAccountApp(acc);
+        if (!appGroups[appName]) appGroups[appName] = [];
+        appGroups[appName].push(acc);
+    });
+    for (const [appName, accounts] of Object.entries(appGroups)) {
+        let appSection = '';
+        let cutoffList = [];
+        accounts.forEach(acc => {
+            if (acc.accountExpireDate) {
+                const accExpTime = fastParseDateToTime(acc.accountExpireDate);
+                if (accExpTime > 0) {
+                    if (accExpTime === cachedTodayTime) cutoffList.push(`- ${escapeHTML(acc.name)} (ตัดวันนี้)`);
+                    else if (accExpTime === cachedTomorrowTime) cutoffList.push(`- ${escapeHTML(acc.name)} (ตัดพรุ่งนี้)`);
+                }
+            }
+        });
+        if (cutoffList.length > 0) appSection += `🔴 <b>บัญชีหลักตัดแอค:</b>\n${cutoffList.join('\n')}\n`;
+        let dueList = [];
+        accounts.forEach(acc => {
+            acc.screens.forEach((screen, index) => {
+                const effStatus = getEffectiveScreenStatus(screen);
+                if (effStatus === 'wait_cut') dueList.push(`- ${escapeHTML(acc.name)} จอ ${index+1} (รอตัด)`);
+                else if (effStatus === 'kick' && screen.expireDate) {
+                    const expTime = fastParseDateToTime(screen.expireDate);
+                    if (expTime > 0 && expTime <= cachedTodayTime) dueList.push(`- ${escapeHTML(acc.name)} จอ ${index+1} (หมดแล้ว)`);
+                } else if (effStatus === 'sold' && screen.expireDate) {
+                    const expTime = fastParseDateToTime(screen.expireDate);
+                    if (expTime === cachedTomorrowTime) dueList.push(`- ${escapeHTML(acc.name)} จอ ${index+1} (หมดพรุ่งนี้)`);
+                }
+            });
+        });
+        if (dueList.length > 0) appSection += `⭐️ <b>จอครบกำหนด:</b>\n${dueList.join('\n')}\n`;
+        if (appSection) { message += `📱 <b>[ ${appName} ]</b>\n${appSection}\n`; hasContent = true; }
+    }
+    if (!hasContent) message += `✅ <i>ไม่มีบัญชีหรือจอที่ครบกำหนดในวันนี้และพรุ่งนี้ค่ะ พักผ่อนได้เลย</i> 🎉`;
+    await sendTelegramMessage(message);
+}
+
+async function handleAdminLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('loginAdminEmail').value.trim();
+    const pass = document.getElementById('loginAdminPassword').value.trim();
+    const btn = document.querySelector('#adminLoginForm button[type="submit"]');
+
+    const origText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> กำลังตรวจสอบ...';
+    btn.disabled = true;
+
+    try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: pass
+        });
+
+        if (error) throw new Error('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+
+        const { data: isAdmin } = await supabase.rpc('is_admin');
+        if (!isAdmin) {
+            await supabase.auth.signOut();
+            throw new Error('บัญชีนี้ไม่มีสิทธิ์แอดมิน');
+        }
+
+        currentAdmin = data.user;
+        document.getElementById('loginAdminEmail').value = '';
+        document.getElementById('loginAdminPassword').value = '';
+        updateAdminStateUI();
+        checkAdminPermissionsUI();
+        showToast(`ยินดีต้อนรับเข้าสู่ระบบ ✨`);
+        closeAdminModal();
+
+        await loadData();
+    } catch (error) {
+        showToast(error.message + ' ❌');
+    } finally {
+        btn.innerHTML = origText;
+        btn.disabled = false;
+    }
+}
+async function logoutAdmin() {
+    await supabase.auth.signOut();
+    currentAdmin = null;
+    updateAdminStateUI();
+    checkAdminPermissionsUI();
+    showToast('ออกจากระบบเรียบร้อยแล้ว 🔒');
+    await loadData();
+}
+
 function updateTemplateDropdown() {
-const select = document.getElementById('templateSelect');
-const currentValue = select.value;
-const htmlParts = formTemplates.map(tpl => `<option value="${escapeHTML(tpl.id)}">${escapeHTML(tpl.name)}</option>`);
-select.innerHTML = htmlParts.join('');
-if (currentValue && formTemplates.some(t => t.id === currentValue)) select.value = currentValue;
+    const select = document.getElementById('templateSelect');
+    const currentValue = select.value;
+    const htmlParts = formTemplates.map(tpl => `<option value="${escapeHTML(tpl.id)}">${escapeHTML(tpl.name)}</option>`);
+    select.innerHTML = htmlParts.join('');
+    if (currentValue && formTemplates.some(t => t.id === currentValue)) select.value = currentValue;
 }
 function generateFormText() {
-const select = document.getElementById('templateSelect');
-const template = formTemplates.find(t => t.id === select.value);
-if (!template) { document.getElementById('afResult').value = ''; return; }
-let result = template.content;
-const dtValue = document.getElementById('afExpire').value;
-const data = {
-'{email}': document.getElementById('afEmail').value || '',
-'{password}': document.getElementById('afPassword').value || '',
-'{screen}': document.getElementById('afScreen').value || '',
-'{pin}': document.getElementById('afPin').value || '',
-'{expire}': dtValue ? formatShortDate(dtValue) : ''
-};
-for (const [key, value] of Object.entries(data)) result = result.split(key).join(value);
-document.getElementById('afResult').value = result;
+    const select = document.getElementById('templateSelect');
+    const template = formTemplates.find(t => t.id === select.value);
+    if (!template) { document.getElementById('afResult').value = ''; return; }
+    let result = template.content;
+    const dtValue = document.getElementById('afExpire').value;
+    const data = {
+        '{email}': document.getElementById('afEmail').value || '',
+        '{password}': document.getElementById('afPassword').value || '',
+        '{screen}': document.getElementById('afScreen').value || '',
+        '{pin}': document.getElementById('afPin').value || '',
+        '{expire}': dtValue ? formatShortDate(dtValue) : ''
+    };
+    for (const [key, value] of Object.entries(data)) result = result.split(key).join(value);
+    document.getElementById('afResult').value = result;
 }
 function copyAutoForm() {
-const resultText = document.getElementById('afResult').value;
-if (!resultText) { showToast('ไม่มีข้อความให้คัดลอก ❌'); return; }
-copyText(resultText);
-const btn = document.querySelector('#autoFormModal button.bg-petal');
-if (btn) {
-const originalHtml = btn.innerHTML;
-btn.innerHTML = '<i class="fa-solid fa-check"></i> คัดลอกสำเร็จแล้ว!';
-btn.classList.replace('bg-petal', 'bg-emerald-500');
-btn.classList.replace('text-espresso', 'text-white');
-setTimeout(() => {
-btn.innerHTML = originalHtml;
-btn.classList.replace('bg-emerald-500', 'bg-petal');
-btn.classList.replace('text-white', 'text-espresso');
-}, 2000);
-}
+    const resultText = document.getElementById('afResult').value;
+    if (!resultText) { showToast('ไม่มีข้อความให้คัดลอก ❌'); return; }
+    copyText(resultText);
+    const btn = document.querySelector('#autoFormModal button.bg-petal');
+    if (btn) {
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> คัดลอกสำเร็จแล้ว!';
+        btn.classList.replace('bg-petal', 'bg-emerald-500');
+        btn.classList.replace('text-espresso', 'text-white');
+        setTimeout(() => {
+            btn.innerHTML = originalHtml;
+            btn.classList.replace('bg-emerald-500', 'bg-petal');
+            btn.classList.replace('text-white', 'text-espresso');
+        }, 2000);
+    }
 }
 
 function openEditTemplateModal(id = null) {
-const title = document.getElementById('templateModalTitle');
-const deleteBtn = document.getElementById('deleteTemplateBtn');
-if (id) {
-const tpl = formTemplates.find(t => t.id === id);
-if (tpl) {
-document.getElementById('editTemplateId').value = tpl.id;
-document.getElementById('templateName').value = tpl.name;
-document.getElementById('templateContent').value = tpl.content;
-title.textContent = 'แก้ไขรูปแบบ';
-deleteBtn.classList.remove('hidden');
-}
-} else {
-document.getElementById('editTemplateId').value = '';
-document.getElementById('templateName').value = '';
-document.getElementById('templateContent').value = '';
-title.textContent = 'เพิ่มรูปแบบใหม่';
-deleteBtn.classList.add('hidden');
-}
-animateModalOpen('editTemplateModal');
+    const title = document.getElementById('templateModalTitle');
+    const deleteBtn = document.getElementById('deleteTemplateBtn');
+    if (id) {
+        const tpl = formTemplates.find(t => t.id === id);
+        if (tpl) {
+            document.getElementById('editTemplateId').value = tpl.id;
+            document.getElementById('templateName').value = tpl.name;
+            document.getElementById('templateContent').value = tpl.content;
+            title.textContent = 'แก้ไขรูปแบบ';
+            deleteBtn.classList.remove('hidden');
+        }
+    } else {
+        document.getElementById('editTemplateId').value = '';
+        document.getElementById('templateName').value = '';
+        document.getElementById('templateContent').value = '';
+        title.textContent = 'เพิ่มรูปแบบใหม่';
+        deleteBtn.classList.add('hidden');
+    }
+    animateModalOpen('editTemplateModal');
 }
 function closeEditTemplateModal() { animateModalClose('editTemplateModal'); }
 function editCurrentTemplate() {
-const id = document.getElementById('templateSelect').value;
-if (id) openEditTemplateModal(id);
+    const id = document.getElementById('templateSelect').value;
+    if (id && id !== 'tpl_default') openEditTemplateModal(id);
+    else openEditTemplateModal();
 }
-function saveTemplate() {
-const id = document.getElementById('editTemplateId').value;
-const name = document.getElementById('templateName').value.trim();
-const content = document.getElementById('templateContent').value.trim();
-if (!name || !content) { showToast('กรุณากรอกข้อมูลให้ครบถ้วน ❌'); return; }
-if (id) {
-const index = formTemplates.findIndex(t => t.id === id);
-if (index !== -1) formTemplates[index] = { id, name, content };
-} else {
-formTemplates.push({ id: 'tpl_' + Date.now(), name, content });
+function saveTemplate(btn) {
+    requireAdminAuthAction(btn, async () => {
+        const id = document.getElementById('editTemplateId').value;
+        const name = document.getElementById('templateName').value.trim();
+        const content = document.getElementById('templateContent').value.trim();
+        if (!name || !content) { showToast('กรุณากรอกข้อมูลให้ครบถ้วน ❌'); return; }
+
+        if (id && id !== 'tpl_default') {
+            await supabase.from('templates').update({ name, content }).eq('id', id);
+        } else {
+            await supabase.from('templates').insert({ name, content });
+        }
+
+        await loadData();
+        updateTemplateDropdown();
+        generateFormText();
+        closeEditTemplateModal();
+        showToast('บันทึกรูปแบบเรียบร้อย ✨');
+    });
 }
-localStorage.setItem('monali_templates', JSON.stringify(formTemplates));
-updateTemplateDropdown();
-document.getElementById('templateSelect').value = id ? id : formTemplates[formTemplates.length - 1].id;
-generateFormText();
-closeEditTemplateModal();
-showToast('บันทึกรูปแบบเรียบร้อย ✨');
-}
-function deleteCurrentTemplate() {
-const id = document.getElementById('editTemplateId').value;
-if (!id || formTemplates.length <= 1) return;
-formTemplates = formTemplates.filter(t => t.id !== id);
-localStorage.setItem('monali_templates', JSON.stringify(formTemplates));
-updateTemplateDropdown();
-generateFormText();
-closeEditTemplateModal();
-showToast('ลบรูปแบบเรียบร้อย 🗑️');
+function deleteCurrentTemplate(btn) {
+    requireAdminAuthAction(btn, async () => {
+        const id = document.getElementById('editTemplateId').value;
+        if (!id || id === 'tpl_default') return;
+
+        await supabase.from('templates').delete().eq('id', id);
+        await loadData();
+        updateTemplateDropdown();
+        generateFormText();
+        closeEditTemplateModal();
+        showToast('ลบรูปแบบเรียบร้อย 🗑️');
+    });
 }
 function insertTemplateVar(variable) {
-const textarea = document.getElementById('templateContent');
-const start = textarea.selectionStart;
-const text = textarea.value;
-textarea.value = text.slice(0, start) + variable + text.slice(textarea.selectionEnd);
-textarea.focus();
-textarea.selectionStart = textarea.selectionEnd = start + variable.length;
+    const textarea = document.getElementById('templateContent');
+    const start = textarea.selectionStart;
+    const text = textarea.value;
+    textarea.value = text.slice(0, start) + variable + text.slice(textarea.selectionEnd);
+    textarea.focus();
+    textarea.selectionStart = textarea.selectionEnd = start + variable.length;
 }
 
 function copyText(text) {
-const el = document.createElement('textarea');
-el.value = text;
-el.setAttribute('readonly', '');
-el.style.position = 'absolute';
-el.style.left = '-9999px';
-document.body.appendChild(el);
-el.select();
-document.execCommand('copy');
-document.body.removeChild(el);
-showToast('คัดลอกข้อความแล้ว ✨');
+    const el = document.createElement('textarea');
+    el.value = text;
+    el.setAttribute('readonly', '');
+    el.style.position = 'absolute';
+    el.style.left = '-9999px';
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    showToast('คัดลอกข้อความแล้ว ✨');
 }
 function showToast(message) {
-const container = document.getElementById('toastContainer');
-const toast = document.createElement('div');
-toast.className = 'bg-white border-2 border-petal text-espresso px-5 py-3.5 rounded-2xl shadow-cute flex items-center gap-3 toast-enter pointer-events-auto font-bold';
-toast.innerHTML = `<div class="w-8 h-8 rounded-full bg-petal flex items-center justify-center text-espresso shrink-0"><i class="fa-solid fa-check"></i></div><span class="text-sm pr-2">${message}</span>`;
-container.appendChild(toast);
-setTimeout(() => {
-toast.classList.replace('toast-enter', 'toast-exit');
-setTimeout(() => container.contains(toast) && container.removeChild(toast), 300);
-}, 3000);
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = 'bg-white border-2 border-petal text-espresso px-5 py-3.5 rounded-2xl shadow-cute flex items-center gap-3 toast-enter pointer-events-auto font-bold';
+    toast.innerHTML = `<div class="w-8 h-8 rounded-full bg-petal flex items-center justify-center text-espresso shrink-0"><i class="fa-solid fa-check"></i></div><span class="text-sm pr-2">${escapeHTML(message)}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.classList.replace('toast-enter', 'toast-exit');
+        setTimeout(() => container.contains(toast) && container.removeChild(toast), 300);
+    }, 3000);
 }
+
 function handleLogoUpload(event) {
-const file = event.target.files[0];
-if (!file) return;
-const reader = new FileReader();
-reader.onload = function(e) {
-const img = new Image();
-img.onload = function() {
-const canvas = document.createElement('canvas');
-const ctx = canvas.getContext('2d');
-canvas.width = img.width > 200 ? 200 : img.width;
-canvas.height = img.height * (canvas.width / img.width);
-ctx.fillStyle = "#F5F0E6";
-ctx.fillRect(0, 0, canvas.width, canvas.height);
-ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
-localStorage.setItem('monali_logo', compressedBase64);
-document.getElementById('storeLogo').src = compressedBase64;
-const loadingLogoEl = document.getElementById('loadingScreenLogo');
-if (loadingLogoEl) loadingLogoEl.src = compressedBase64;
-showToast('อัปเดตโลโก้ร้านแล้ว ✨');
-};
-img.src = e.target.result;
-};
-reader.readAsDataURL(file);
-event.target.value = '';
+    if(!requireAdminAuth()) return;
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = async function() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width > 200 ? 200 : img.width;
+            canvas.height = img.height * (canvas.width / img.width);
+            ctx.fillStyle = "#F5F0E6";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+            try {
+                await supabase.from('settings').upsert({ key: 'logo_base64', value: compressedBase64 });
+                document.getElementById('storeLogo').src = compressedBase64;
+                const loadingLogoEl = document.getElementById('loadingScreenLogo');
+                if (loadingLogoEl) loadingLogoEl.src = compressedBase64;
+                showToast('อัปเดตโลโก้ร้านแล้ว ✨');
+            } catch(err) { showToast('อัปเดตไม่สำเร็จ'); }
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+    event.target.value = '';
 }
 function handleBannerUpload(event) {
-const file = event.target.files[0];
-if (!file) return;
-const reader = new FileReader();
-reader.onload = function(e) {
-const img = new Image();
-img.onload = function() {
-const canvas = document.createElement('canvas');
-const ctx = canvas.getContext('2d');
-canvas.width = img.width > 1200 ? 1200 : img.width;
-canvas.height = img.height * (canvas.width / img.width);
-ctx.fillStyle = "#F5F0E6";
-ctx.fillRect(0, 0, canvas.width, canvas.height);
-ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
-localStorage.setItem('monali_banner', compressedBase64);
-document.getElementById('storeBanner').src = compressedBase64;
-showToast('อัปเดตแบนเนอร์แล้ว ✨');
-};
-img.src = e.target.result;
-};
-reader.readAsDataURL(file);
-event.target.value = '';
+    if(!requireAdminAuth()) return;
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = async function() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width > 1200 ? 1200 : img.width;
+            canvas.height = img.height * (canvas.width / img.width);
+            ctx.fillStyle = "#F5F0E6";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+            try {
+                await supabase.from('settings').upsert({ key: 'banner_base64', value: compressedBase64 });
+                document.getElementById('storeBanner').src = compressedBase64;
+                showToast('อัปเดตแบนเนอร์แล้ว ✨');
+            } catch(err) { showToast('อัปเดตไม่สำเร็จ'); }
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+    event.target.value = '';
 }
+
 function switchView(viewName) {
-const dashboardView = document.getElementById('dashboardView');
-const accountingView = document.getElementById('accountingView');
-if (viewName === 'accounting') {
-if (!requireAdminAuth()) return;
-dashboardView.classList.add('hidden');
-accountingView.classList.remove('hidden');
-renderTransactions();
-} else {
-accountingView.classList.add('hidden');
-dashboardView.classList.remove('hidden');
-scheduleRender();
+    const dashboardView = document.getElementById('dashboardView');
+    const accountingView = document.getElementById('accountingView');
+    if (viewName === 'accounting') {
+        if (!requireAdminAuth()) return;
+        dashboardView.classList.add('hidden');
+        accountingView.classList.remove('hidden');
+        renderTransactions();
+    } else {
+        accountingView.classList.add('hidden');
+        dashboardView.classList.remove('hidden');
+        scheduleRender();
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-function saveTransactions() {
-localStorage.setItem('monali_transactions', JSON.stringify(monaliTransactions));
-}
+
 function handleAddTransaction(e) {
-e.preventDefault();
-const type = document.getElementById('transType').value;
-const amount = parseFloat(document.getElementById('transAmount').value);
-const note = document.getElementById('transNote').value.trim();
-if (!amount || amount <= 0 || !note) return;
-const newTrans = {
-id: 'tx_' + Date.now(),
-type: type,
-amount: amount,
-note: note,
-date: new Date().toISOString()
-};
-monaliTransactions.unshift(newTrans);
-saveTransactions();
-document.getElementById('addTransactionForm').reset();
-renderTransactions();
-showToast('บันทึกรายการเรียบร้อย ✨');
+    e.preventDefault();
+    const type = document.getElementById('transType').value;
+    const amount = parseFloat(document.getElementById('transAmount').value);
+    const note = document.getElementById('transNote').value.trim();
+    if (!amount || amount <= 0 || !note) return;
+
+    const btn = document.querySelector('#addTransactionForm button[type="submit"]');
+    requireAdminAuthAction(btn, async () => {
+        const { error } = await supabase.from('transactions').insert({
+            type: type,
+            amount: amount,
+            note: note,
+            transaction_date: new Date().toISOString()
+        });
+        if(error) throw error;
+        document.getElementById('addTransactionForm').reset();
+        await loadData();
+        renderTransactions();
+        showToast('บันทึกรายการเรียบร้อย ✨');
+    });
 }
 function setAccFilter(mode) {
-accFilterMode = mode;
-const btns = ['Today', 'Month', 'Year', 'All'];
-btns.forEach(b => {
-const el = document.getElementById('btnFilter' + b);
-if (el) {
-if (b.toLowerCase() === mode) {
-el.className = 'px-5 py-2.5 rounded-[1.25rem] text-sm font-extrabold transition-all whitespace-nowrap bg-espresso text-ivory shadow-cute border-2 border-transparent';
-} else {
-el.className = 'px-5 py-2.5 rounded-[1.25rem] text-sm font-extrabold transition-all whitespace-nowrap bg-white text-espresso/70 border-2 border-petal hover:bg-petal-light';
-}
-}
-});
-renderTransactions();
+    accFilterMode = mode;
+    const btns = ['Today', 'Month', 'Year', 'All'];
+    btns.forEach(b => {
+        const el = document.getElementById('btnFilter' + b);
+        if (el) {
+            if (b.toLowerCase() === mode) {
+                el.className = 'px-5 py-2.5 rounded-[1.25rem] text-sm font-extrabold transition-all whitespace-nowrap bg-espresso text-ivory shadow-cute border-2 border-transparent';
+            } else {
+                el.className = 'px-5 py-2.5 rounded-[1.25rem] text-sm font-extrabold transition-all whitespace-nowrap bg-white text-espresso/70 border-2 border-petal hover:bg-petal-light';
+            }
+        }
+    });
+    renderTransactions();
 }
 function renderTransactions() {
-const listEl = document.getElementById('transactionList');
-let totalIncome = 0;
-let totalExpense = 0;
-const now = new Date();
-const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-const startOfYear = new Date(now.getFullYear(), 0, 1).getTime();
-const filteredTx = monaliTransactions.filter(tx => {
-const txTime = new Date(tx.date).getTime();
-if (accFilterMode === 'today') return txTime >= startOfDay;
-if (accFilterMode === 'month') return txTime >= startOfMonth;
-if (accFilterMode === 'year') return txTime >= startOfYear;
-return true;
-});
-if (filteredTx.length === 0) {
-listEl.innerHTML = ` <div class="text-center py-16 flex flex-col items-center bg-ivory/30 rounded-2xl border-2 border-dashed border-petal"> <div class="w-16 h-16 bg-white border-2 border-petal rounded-full flex items-center justify-center text-espresso/40 mb-3 text-3xl shadow-sm"> <i class="fa-solid fa-receipt"></i> </div> <p class="text-espresso font-bold text-base">ยังไม่มีประวัติการทำรายการ</p> <p class="text-xs text-espresso/60 mt-1 font-medium">เพิ่มรายการใหม่จากฟอร์มด้านซ้ายได้เลยค่ะ</p> </div>`;
-} else {
-const html = filteredTx.map(tx => {
-const isIncome = tx.type === 'income';
-const icon = isIncome ? '<i class="fa-solid fa-arrow-down text-emerald-500"></i>' : '<i class="fa-solid fa-arrow-up text-red-500"></i>';
-const sign = isIncome ? '+' : '-';
-const colorClass = isIncome ? 'text-emerald-600' : 'text-red-600';
-const bgClass = isIncome ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200';
-if (isIncome) totalIncome += tx.amount;
-else totalExpense += tx.amount;
-const dateStr = new Date(tx.date).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-return `<div class="flex items-center justify-between p-4 sm:p-5 rounded-2xl border-2 ${bgClass} bg-white relative group overflow-hidden shadow-sm transition-colors hover:border-petal-deep"> <div class="flex items-center gap-3 sm:gap-4 flex-1 min-w-0"> <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl ${bgClass} flex items-center justify-center shrink-0 border-2 shadow-sm text-lg sm:text-xl"> ${icon} </div> <div class="flex-1 min-w-0 pr-2"> <p class="text-sm sm:text-base font-bold text-espresso truncate">${escapeHTML(tx.note)}</p> <p class="text-[10px] sm:text-xs text-espresso/60 font-medium mt-0.5"><i class="fa-regular fa-clock"></i> ${dateStr}</p> </div> </div> <div class="flex flex-col items-end pr-2 transition-transform group-hover:-translate-x-12 duration-300 bg-white sm:bg-transparent pl-2 sm:pl-0 z-10 shrink-0"> <span class="text-lg sm:text-xl font-black ${colorClass}">${sign}${tx.amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span> </div> <button onclick="deleteTransaction('${tx.id}')" class="absolute right-0 top-0 bottom-0 w-14 bg-red-500 text-white flex items-center justify-center translate-x-full group-hover:translate-x-0 transition-transform duration-300 shadow-inner z-20" title="ลบรายการ"> <i class="fa-solid fa-trash-can text-lg"></i> </button> </div>`;
-}).join('');
-listEl.innerHTML = html;
+    const listEl = document.getElementById('transactionList');
+    let totalIncome = 0;
+    let totalExpense = 0;
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+    const startOfYear = new Date(now.getFullYear(), 0, 1).getTime();
+    const filteredTx = monaliTransactions.filter(tx => {
+        const txTime = new Date(tx.date).getTime();
+        if (accFilterMode === 'today') return txTime >= startOfDay;
+        if (accFilterMode === 'month') return txTime >= startOfMonth;
+        if (accFilterMode === 'year') return txTime >= startOfYear;
+        return true;
+    });
+    if (filteredTx.length === 0) {
+        listEl.innerHTML = ` <div class="text-center py-16 flex flex-col items-center bg-ivory/30 rounded-2xl border-2 border-dashed border-petal"> <div class="w-16 h-16 bg-white border-2 border-petal rounded-full flex items-center justify-center text-espresso/40 mb-3 text-3xl shadow-sm"> <i class="fa-solid fa-receipt"></i> </div> <p class="text-espresso font-bold text-base">ยังไม่มีประวัติการทำรายการ</p> <p class="text-xs text-espresso/60 mt-1 font-medium">เพิ่มรายการใหม่จากฟอร์มด้านซ้ายได้เลยค่ะ</p> </div>`;
+    } else {
+        const html = filteredTx.map(tx => {
+            const isIncome = tx.type === 'income';
+            const icon = isIncome ? '<i class="fa-solid fa-arrow-down text-emerald-500"></i>' : '<i class="fa-solid fa-arrow-up text-red-500"></i>';
+            const sign = isIncome ? '+' : '-';
+            const colorClass = isIncome ? 'text-emerald-600' : 'text-red-600';
+            const bgClass = isIncome ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200';
+            if (isIncome) totalIncome += tx.amount;
+            else totalExpense += tx.amount;
+            const dateStr = new Date(tx.date).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            return `<div class="flex items-center justify-between p-4 sm:p-5 rounded-2xl border-2 ${bgClass} bg-white relative group overflow-hidden shadow-sm transition-colors hover:border-petal-deep"> <div class="flex items-center gap-3 sm:gap-4 flex-1 min-w-0"> <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl ${bgClass} flex items-center justify-center shrink-0 border-2 shadow-sm text-lg sm:text-xl"> ${icon} </div> <div class="flex-1 min-w-0 pr-2"> <p class="text-sm sm:text-base font-bold text-espresso truncate">${escapeHTML(tx.note)}</p> <p class="text-[10px] sm:text-xs text-espresso/60 font-medium mt-0.5"><i class="fa-regular fa-clock"></i> ${dateStr}</p> </div> </div> <div class="flex flex-col items-end pr-2 transition-transform group-hover:-translate-x-12 duration-300 bg-white sm:bg-transparent pl-2 sm:pl-0 z-10 shrink-0"> <span class="text-lg sm:text-xl font-black ${colorClass}">${sign}${tx.amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span> </div> <button onclick="deleteTransaction('${tx.id}', this)" class="absolute right-0 top-0 bottom-0 w-14 bg-red-500 text-white flex items-center justify-center translate-x-full group-hover:translate-x-0 transition-transform duration-300 shadow-inner z-20" title="ลบรายการ"> <i class="fa-solid fa-trash-can text-lg"></i> </button> </div>`;
+        }).join('');
+        listEl.innerHTML = html;
+    }
+    let profit = totalIncome - totalExpense;
+    let profitMargin = 0;
+    if (totalIncome > 0) {
+        profitMargin = (profit / totalIncome) * 100;
+    } else if (totalExpense > 0) {
+        profitMargin = -100;
+    }
+    const profitBox = document.getElementById('accProfitBox');
+    const profitLabel = document.getElementById('accProfitLabel');
+    const profitAmount = document.getElementById('accProfitAmount');
+    const profitMarginBadge = document.getElementById('accProfitMargin');
+    if (profit < 0) {
+        profitBox.className = 'bg-white border-2 border-red-300 rounded-3xl p-4 flex flex-col justify-center shadow-soft transition-colors relative overflow-hidden group hover:shadow-cute';
+        profitBox.querySelector('div.absolute').className = 'absolute -right-4 -top-4 w-20 h-20 bg-red-50/50 rounded-full flex items-center justify-center -z-0 transition-transform duration-500 group-hover:scale-110';
+        profitLabel.className = 'text-xs sm:text-sm font-bold text-red-600 mb-1';
+        profitLabel.textContent = 'ขาดทุน';
+        profitAmount.className = 'text-xl sm:text-3xl font-black text-red-600 relative z-10';
+        profitMarginBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-lg bg-red-100 text-red-700 shadow-sm border border-transparent';
+    } else {
+        profitBox.className = 'bg-white border-2 border-blue-200 rounded-3xl p-4 flex flex-col justify-center shadow-soft transition-colors relative overflow-hidden group hover:shadow-cute';
+        profitBox.querySelector('div.absolute').className = 'absolute -right-4 -top-4 w-20 h-20 bg-blue-50/50 rounded-full flex items-center justify-center -z-0 transition-transform duration-500 group-hover:scale-110';
+        profitLabel.className = 'text-xs sm:text-sm font-bold text-blue-600 mb-1';
+        profitLabel.textContent = 'กำไรสุทธิ';
+        profitAmount.className = 'text-xl sm:text-3xl font-black text-blue-600 relative z-10';
+        profitMarginBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-lg bg-blue-100 text-blue-700 shadow-sm border border-transparent';
+    }
+    document.getElementById('accTotalIncome').textContent = totalIncome.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('accTotalExpense').textContent = totalExpense.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    profitAmount.textContent = profit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    profitMarginBadge.textContent = (profit > 0 ? '+' : '') + profitMargin.toFixed(1) + '%';
+    updateAccountingChart(totalIncome, totalExpense);
 }
-let profit = totalIncome - totalExpense;
-let profitMargin = 0;
-if (totalIncome > 0) {
-profitMargin = (profit / totalIncome) * 100;
-} else if (totalExpense > 0) {
-profitMargin = -100;
-}
-const profitBox = document.getElementById('accProfitBox');
-const profitLabel = document.getElementById('accProfitLabel');
-const profitAmount = document.getElementById('accProfitAmount');
-const profitMarginBadge = document.getElementById('accProfitMargin');
-if (profit < 0) {
-profitBox.className = 'bg-white border-2 border-red-300 rounded-3xl p-4 flex flex-col justify-center shadow-soft transition-colors relative overflow-hidden group hover:shadow-cute';
-profitBox.querySelector('div.absolute').className = 'absolute -right-4 -top-4 w-20 h-20 bg-red-50/50 rounded-full flex items-center justify-center -z-0 transition-transform duration-500 group-hover:scale-110';
-profitLabel.className = 'text-xs sm:text-sm font-bold text-red-600 mb-1';
-profitLabel.textContent = 'ขาดทุน';
-profitAmount.className = 'text-xl sm:text-3xl font-black text-red-600 relative z-10';
-profitMarginBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-lg bg-red-100 text-red-700 shadow-sm border border-transparent';
-} else {
-profitBox.className = 'bg-white border-2 border-blue-200 rounded-3xl p-4 flex flex-col justify-center shadow-soft transition-colors relative overflow-hidden group hover:shadow-cute';
-profitBox.querySelector('div.absolute').className = 'absolute -right-4 -top-4 w-20 h-20 bg-blue-50/50 rounded-full flex items-center justify-center -z-0 transition-transform duration-500 group-hover:scale-110';
-profitLabel.className = 'text-xs sm:text-sm font-bold text-blue-600 mb-1';
-profitLabel.textContent = 'กำไรสุทธิ';
-profitAmount.className = 'text-xl sm:text-3xl font-black text-blue-600 relative z-10';
-profitMarginBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-lg bg-blue-100 text-blue-700 shadow-sm border border-transparent';
-}
-document.getElementById('accTotalIncome').textContent = totalIncome.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-document.getElementById('accTotalExpense').textContent = totalExpense.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-profitAmount.textContent = profit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-profitMarginBadge.textContent = (profit > 0 ? '+' : '') + profitMargin.toFixed(1) + '%';
-updateAccountingChart(totalIncome, totalExpense);
-}
+
 function updateAccountingChart(income, expense) {
-const ctx = document.getElementById('accountingChart');
-if (!ctx) return;
-if (accChart) {
-accChart.destroy();
+    const ctx = document.getElementById('accountingChart');
+    if (!ctx) return;
+    if (accChart) {
+        accChart.destroy();
+    }
+    accChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['รายรับ (Income)', 'รายจ่าย (Expense)'],
+            datasets: [{
+                label: 'ยอดเงิน (บาท)',
+                data: [income, expense],
+                backgroundColor: [
+                    'rgba(16, 185, 129, 0.8)',
+                    'rgba(239, 68, 68, 0.8)'
+                ],
+                hoverBackgroundColor: [
+                    'rgba(16, 185, 129, 1)',
+                    'rgba(239, 68, 68, 1)'
+                ],
+                borderRadius: 8,
+                barThickness: 40
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return ' ฿' + context.parsed.y.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                        }
+                    },
+                    titleFont: { family: 'Itim' },
+                    bodyFont: { family: 'Itim' }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    border: { display: false },
+                    grid: { color: '#FCEBF0', drawTicks: false },
+                    ticks: {
+                        font: { family: 'Itim' },
+                        color: '#D4839D',
+                        callback: function(value) { return '฿' + value.toLocaleString(); }
+                    }
+                },
+                x: {
+                    border: { display: false },
+                    grid: { display: false },
+                    ticks: { font: { family: 'Itim', weight: 'bold' }, color: '#3E2723' }
+                }
+            },
+            animation: {
+                duration: 800,
+                easing: 'easeOutQuart'
+            }
+        }
+    });
 }
-accChart = new Chart(ctx, {
-type: 'bar',
-data: {
-labels: ['รายรับ (Income)', 'รายจ่าย (Expense)'],
-datasets: [{
-label: 'ยอดเงิน (บาท)',
-data: [income, expense],
-backgroundColor: [
-'rgba(16, 185, 129, 0.8)',
-'rgba(239, 68, 68, 0.8)'
-],
-hoverBackgroundColor: [
-'rgba(16, 185, 129, 1)',
-'rgba(239, 68, 68, 1)'
-],
-borderRadius: 8,
-barThickness: 40
-}]
-},
-options: {
-responsive: true,
-maintainAspectRatio: false,
-plugins: {
-legend: { display: false },
-tooltip: {
-callbacks: {
-label: function(context) {
-return ' ฿' + context.parsed.y.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-}
-},
-titleFont: { family: 'Itim' },
-bodyFont: { family: 'Itim' }
-}
-},
-scales: {
-y: {
-beginAtZero: true,
-border: { display: false },
-grid: { color: '#FCEBF0', drawTicks: false },
-ticks: {
-font: { family: 'Itim' },
-color: '#D4839D',
-callback: function(value) { return '฿' + value.toLocaleString(); }
-}
-},
-x: {
-border: { display: false },
-grid: { display: false },
-ticks: { font: { family: 'Itim', weight: 'bold' }, color: '#3E2723' }
-}
-},
-animation: {
-duration: 800,
-easing: 'easeOutQuart'
-}
-}
-});
-}
-function deleteTransaction(id) {
-monaliTransactions = monaliTransactions.filter(tx => tx.id !== id);
-saveTransactions();
-renderTransactions();
-showToast('ลบรายการแล้ว 🗑️');
+
+function deleteTransaction(id, btn) {
+    requireAdminAuthAction(btn, async () => {
+        const { error } = await supabase.from('transactions').delete().eq('id', id);
+        if(error) throw error;
+        await loadData();
+        renderTransactions();
+        showToast('ลบรายการแล้ว 🗑️');
+    });
 }
 function clearAllTransactions(e) {
-const btn = e.target.closest('button');
-if(btn.innerText.includes('ล้างประวัติ')) {
-btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> ยืนยันล้างข้อมูล';
-btn.classList.replace('bg-white', 'bg-red-500');
-btn.classList.replace('text-red-500', 'text-white');
-setTimeout(() => {
-if(btn && btn.innerText.includes('ยืนยัน')) {
-btn.innerHTML = '<i class="fa-solid fa-trash-can mr-1"></i> ล้างประวัติ';
-btn.classList.replace('bg-red-500', 'bg-white');
-btn.classList.replace('text-white', 'text-red-500');
+    const btn = e.target.closest('button');
+    if(btn.innerText.includes('ล้างประวัติ')) {
+        btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> ยืนยันล้างข้อมูล';
+        btn.classList.replace('bg-white', 'bg-red-500');
+        btn.classList.replace('text-red-500', 'text-white');
+        setTimeout(() => {
+            if(btn && btn.innerText.includes('ยืนยัน')) {
+                btn.innerHTML = '<i class="fa-solid fa-trash-can mr-1"></i> ล้างประวัติ';
+                btn.classList.replace('bg-red-500', 'bg-white');
+                btn.classList.replace('text-white', 'text-red-500');
+            }
+        }, 3000);
+    } else {
+        requireAdminAuthAction(btn, async () => {
+            const { error } = await supabase.from('transactions').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+            if(error) throw error;
+            await loadData();
+            renderTransactions();
+            showToast('ล้างประวัติทั้งหมดแล้ว 🗑️');
+            btn.innerHTML = '<i class="fa-solid fa-trash-can mr-1"></i> ล้างประวัติ';
+            btn.classList.replace('bg-red-500', 'bg-white');
+            btn.classList.replace('text-white', 'text-red-500');
+        });
+    }
 }
-}, 3000);
-} else {
-monaliTransactions = [];
-saveTransactions();
-renderTransactions();
-showToast('ล้างประวัติทั้งหมดแล้ว 🗑️');
-btn.innerHTML = '<i class="fa-solid fa-trash-can mr-1"></i> ล้างประวัติ';
-btn.classList.replace('bg-red-500', 'bg-white');
-btn.classList.replace('text-white', 'text-red-500');
-}
-}
+
 const SPARKLE_POOL_SIZE = 30;
 const sparklePool = [];
 let sparkleIndex = 0;
 function initClickSparkles() {
-for (let i = 0; i < SPARKLE_POOL_SIZE; i++) {
-const el = document.createElement('div');
-el.className = 'click-sparkle';
-document.body.appendChild(el);
-sparklePool.push(el);
-}
-document.addEventListener('pointerdown', (e) => {
-spawnSparkles(e.clientX, e.clientY);
-});
+    for (let i = 0; i < SPARKLE_POOL_SIZE; i++) {
+        const el = document.createElement('div');
+        el.className = 'click-sparkle';
+        document.body.appendChild(el);
+        sparklePool.push(el);
+    }
+    document.addEventListener('pointerdown', (e) => {
+        spawnSparkles(e.clientX, e.clientY);
+    });
 }
 function spawnSparkles(x, y) {
-const icons = [
-'fa-heart text-petal-deep',
-'fa-star text-white',
-'fa-heart text-petal-light',
-'fa-star text-petal-rich'
-];
-const numSparkles = 4 + Math.floor(Math.random() * 3);
-for (let i = 0; i < numSparkles; i++) {
-const el = sparklePool[sparkleIndex];
-sparkleIndex = (sparkleIndex + 1) % SPARKLE_POOL_SIZE;
-el.classList.remove('animate-pop');
-void el.offsetWidth;
-const iconClass = icons[Math.floor(Math.random() * icons.length)];
-el.innerHTML = `<i class="fa-solid ${iconClass} text-xs md:text-sm drop-shadow-sm"></i>`;
-const angle = Math.random() * Math.PI * 2;
-const distance = 30 + Math.random() * 40;
-const tx = (Math.cos(angle) * distance) + 'px';
-const ty = (Math.sin(angle) * distance) + 'px';
-const rot = (Math.random() - 0.5) * 360 + 'deg';
-el.style.left = x + 'px';
-el.style.top = y + 'px';
-el.style.setProperty('--tx', tx);
-el.style.setProperty('--ty', ty);
-el.style.setProperty('--rot', rot);
-el.classList.add('animate-pop');
-}
+    const icons = [
+        'fa-heart text-petal-deep',
+        'fa-star text-white',
+        'fa-heart text-petal-light',
+        'fa-star text-petal-rich'
+    ];
+    const numSparkles = 4 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < numSparkles; i++) {
+        const el = sparklePool[sparkleIndex];
+        sparkleIndex = (sparkleIndex + 1) % SPARKLE_POOL_SIZE;
+        el.classList.remove('animate-pop');
+        void el.offsetWidth;
+        const iconClass = icons[Math.floor(Math.random() * icons.length)];
+        el.innerHTML = `<i class="fa-solid ${iconClass} text-xs md:text-sm drop-shadow-sm"></i>`;
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 30 + Math.random() * 40;
+        const tx = (Math.cos(angle) * distance) + 'px';
+        const ty = (Math.sin(angle) * distance) + 'px';
+        const rot = (Math.random() - 0.5) * 360 + 'deg';
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+        el.style.setProperty('--tx', tx);
+        el.style.setProperty('--ty', ty);
+        el.style.setProperty('--rot', rot);
+        el.classList.add('animate-pop');
+    }
 }
 </script>
 </body>
