@@ -369,7 +369,6 @@ text-align: left;
 </div>
 </div>
 </nav>
-
 <main id="dashboardView" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 transition-opacity duration-300 mt-2">
 <div class="mb-6 relative group rounded-3xl overflow-hidden shadow-soft border-2 border-white cursor-pointer" onclick="document.getElementById('bannerInput').click()" title="เปลี่ยนแบนเนอร์">
 <img id="storeBanner" src="https://placehold.co/800x200/F4C9D6/3E2723?text=Banner" alt="Banner" class="w-full h-32 sm:h-48 object-cover transition-transform duration-700 group-hover:scale-105">
@@ -791,6 +790,15 @@ text-align: left;
 <i class="fa-solid fa-xmark text-lg"></i>
 </button>
 </div>
+<!-- Filter Bar -->
+<div class="px-6 py-3 bg-white border-b border-petal flex items-center justify-between shrink-0">
+<label for="filterAvailableApp" class="text-sm font-bold text-espresso flex items-center gap-2 cursor-pointer">
+<i class="fa-solid fa-filter text-petal-deep"></i> คัดกรองแอป
+</label>
+<select id="filterAvailableApp" onchange="renderAvailableList()" class="rounded-xl border-petal bg-petal-light/30 px-4 py-2 text-xs text-espresso font-bold border-2 focus:border-petal-deep focus:ring-0 outline-none cursor-pointer">
+<option value="all">แสดงทั้งหมด</option>
+</select>
+</div>
 <div class="p-6 overflow-y-auto bg-ivory/50" id="availableListContent"></div>
 </div>
 </div>
@@ -807,6 +815,15 @@ text-align: left;
 <button onclick="closeKickListModal()" class="text-espresso/50 hover:text-espresso w-8 h-8 flex items-center justify-center rounded-full hover:bg-white transition-colors">
 <i class="fa-solid fa-xmark text-lg"></i>
 </button>
+</div>
+<!-- Filter Bar -->
+<div class="px-6 py-3 bg-white border-b border-orange-200 flex items-center justify-between shrink-0">
+<label for="filterKickApp" class="text-sm font-bold text-espresso flex items-center gap-2 cursor-pointer">
+<i class="fa-solid fa-filter text-orange-500"></i> คัดกรองแอป
+</label>
+<select id="filterKickApp" onchange="renderKickList()" class="rounded-xl border-orange-200 bg-orange-50/50 px-4 py-2 text-xs text-espresso font-bold border-2 focus:border-orange-400 focus:ring-0 outline-none cursor-pointer">
+<option value="all">แสดงทั้งหมด</option>
+</select>
 </div>
 <div class="p-6 overflow-y-auto bg-ivory/50" id="kickListContent"></div>
 </div>
@@ -825,6 +842,15 @@ text-align: left;
 <i class="fa-solid fa-xmark text-lg"></i>
 </button>
 </div>
+<!-- Filter Bar -->
+<div class="px-6 py-3 bg-white border-b border-red-200 flex items-center justify-between shrink-0">
+<label for="filterWaitCutApp" class="text-sm font-bold text-espresso flex items-center gap-2 cursor-pointer">
+<i class="fa-solid fa-filter text-red-500"></i> คัดกรองแอป
+</label>
+<select id="filterWaitCutApp" onchange="renderWaitCutList()" class="rounded-xl border-red-200 bg-red-50/50 px-4 py-2 text-xs text-espresso font-bold border-2 focus:border-red-400 focus:ring-0 outline-none cursor-pointer">
+<option value="all">แสดงทั้งหมด</option>
+</select>
+</div>
 <div class="p-6 overflow-y-auto bg-ivory/50" id="waitCutListContent"></div>
 </div>
 </div>
@@ -841,6 +867,15 @@ text-align: left;
 <button onclick="closeCutoffListModal()" class="text-espresso/50 hover:text-espresso w-8 h-8 flex items-center justify-center rounded-full hover:bg-white transition-colors">
 <i class="fa-solid fa-xmark text-lg"></i>
 </button>
+</div>
+<!-- Filter Bar -->
+<div class="px-6 py-3 bg-white border-b border-purple-200 flex items-center justify-between shrink-0">
+<label for="filterCutoffApp" class="text-sm font-bold text-espresso flex items-center gap-2 cursor-pointer">
+<i class="fa-solid fa-filter text-purple-600"></i> คัดกรองแอป
+</label>
+<select id="filterCutoffApp" onchange="renderCutoffList()" class="rounded-xl border-purple-200 bg-purple-50/50 px-4 py-2 text-xs text-espresso font-bold border-2 focus:border-purple-400 focus:ring-0 outline-none cursor-pointer">
+<option value="all">แสดงทั้งหมด</option>
+</select>
 </div>
 <div class="p-6 overflow-y-auto bg-ivory/50" id="cutoffListContent"></div>
 </div>
@@ -1147,7 +1182,7 @@ var supabase = window.supabaseDb;
 
 // --- Global State ---
 let netflixAccounts = [];
-let telegramSettings = { token: '', chatId: '', pin: '0835' }; // อัปเดตเพื่อรองรับ PIN จากฐานข้อมูล
+let telegramSettings = { token: '', chatId: '', pin: '0835' }; 
 let collapsedAccounts = new Set();
 let accountIdToDelete = null;
 let screenToDelete = { id: null, accountId: null, screenIndex: null };
@@ -1238,7 +1273,6 @@ function hideLoadingScreen() {
     if(loader) loader.classList.add('hidden-loader');
 }
 
-// อัปเดตดักจับ Network Error ให้ดีขึ้นเพื่อป้องกันแอปเงียบเมื่อเน็ตหลุด
 async function loadData() {
     const statusText = document.getElementById('loading-status-text');
     if(statusText) statusText.textContent = 'กำลังโหลดข้อมูลจากฐานข้อมูล...';
@@ -1303,7 +1337,7 @@ async function loadData() {
 
         telegramSettings.token = stMap['tg_token'] || '';
         telegramSettings.chatId = stMap['tg_chat_id'] || '';
-        telegramSettings.pin = stMap['system_pin'] || '0835'; // โหลด PIN อย่างปลอดภัยจาก Table
+        telegramSettings.pin = stMap['system_pin'] || '0835'; 
 
         if (stMap['logo_base64']) {
             document.getElementById('storeLogo').src = stMap['logo_base64'];
@@ -1313,6 +1347,8 @@ async function loadData() {
         if (stMap['banner_base64']) {
             document.getElementById('storeBanner').src = stMap['banner_base64'];
         }
+
+        populateModalFilters(); // อัปเดตตัวกรองรูปกรวยเมื่อโหลดข้อมูลเสร็จ
 
         if(statusText) statusText.textContent = 'หลังบ้านพร้อมแล้วค่ะ 💖';
         scheduleRender();
@@ -1325,7 +1361,6 @@ async function loadData() {
     }
 }
 
-// อัปเดต Wrapper ป้องกันการคาย Error Constraint ออกไปให้ผู้ใช้เห็นโต้งๆ
 async function requireAdminAuthAction(btn, actionFunc) {
     if (!currentAdmin) {
         showToast('หากต้องการแก้ไขข้อมูล โปรดเข้าสู่ระบบผู้ดูแล 🔒');
@@ -1507,6 +1542,7 @@ async function resolveAppId(appName) {
     if (error) throw error;
     customApps.push(data);
     appConfigCache = {};
+    populateModalFilters(); // อัปเดตตัวกรอง
     return data.id;
 }
 
@@ -1642,6 +1678,7 @@ function handleSaveCustomApp(e) {
 
             customApps.push(data);
             appConfigCache = {};
+            populateModalFilters(); // อัปเดตตัวกรอง
             showToast(`เพิ่มแอป "${name}" เรียบร้อยแล้วค่ะ ✨`);
         }
         closeAddCustomAppModal();
@@ -1662,6 +1699,7 @@ function deleteCustomApp(appId, event) {
             if(error) throw error;
             customApps = customApps.filter(a => a.id !== appId);
             appConfigCache = {};
+            populateModalFilters(); // อัปเดตตัวกรอง
             renderPresetAppChips('addAppPresetChips', 'accountApp', document.getElementById('accountApp')?.value);
             renderPresetAppChips('editAppPresetChips', 'editAccApp', document.getElementById('editAccApp')?.value);
             scheduleRender();
@@ -1916,8 +1954,43 @@ function animateModalClose(modalId) {
     }, 300);
 }
 
-function openAvailableListModal() { renderAvailableList(); animateModalOpen('availableListModal'); }
+// --------------------------------------------------------------------------------------
+// ระบบ Filter ภายใน Modals 4 อัน (รูปกรวย)
+// --------------------------------------------------------------------------------------
+function populateModalFilters() {
+    const selects = ['filterAvailableApp', 'filterKickApp', 'filterWaitCutApp', 'filterCutoffApp'];
+    let optionsHtml = `<option value="all">แสดงทั้งหมด</option>`;
+    
+    // ดึงรายชื่อแอปทั้งหมดมาใส่
+    customApps.forEach(app => {
+        optionsHtml += `<option value="${escapeHTML(app.name)}">${escapeHTML(app.name)}</option>`;
+    });
+
+    selects.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            const currentVal = el.value;
+            el.innerHTML = optionsHtml;
+            // ถ้าแอปที่เลือกไว้ยังอยู่ หรือเป็น 'all' ก็ให้เลือกค่าเดิมไว้
+            if (currentVal && (currentVal === 'all' || customApps.some(a => a.name === currentVal))) {
+                el.value = currentVal;
+            }
+        }
+    });
+}
+
+function openAvailableListModal() { 
+    populateModalFilters();
+    // ถ้าหน้าหลักเลือกแอปไว้ ให้ Dropdown ใน Modal เลือกตามแอปนั้นให้อัตโนมัติ
+    const el = document.getElementById('filterAvailableApp');
+    if(el && (selectedAppFilter === 'all' || customApps.some(a => a.name === selectedAppFilter))) {
+        el.value = selectedAppFilter;
+    }
+    renderAvailableList(); 
+    animateModalOpen('availableListModal'); 
+}
 function closeAvailableListModal() { animateModalClose('availableListModal'); }
+
 function openAutoFormForScreen(accountId, screenIndex) {
     const acc = netflixAccounts.find(a => a.id === accountId);
     if (acc && acc.screens[screenIndex]) {
@@ -1937,13 +2010,15 @@ function openAutoFormFromAvailable(accountId, screenIndex) {
 
 function renderAvailableList() {
     const container = document.getElementById('availableListContent');
+    const filterVal = document.getElementById('filterAvailableApp').value;
+
     const htmlParts = [];
     htmlParts.push('<div class="space-y-3">');
     let count = 0;
     netflixAccounts.forEach(acc => {
         const appName = getAccountApp(acc);
-        // กรองแอพที่แสดงใน Modal ตาม Tab ที่เลือก
-        if (selectedAppFilter !== 'all' && appName.toLowerCase() !== selectedAppFilter.toLowerCase()) return;
+        // กรองตาม Dropdown (กรวย) ใน Modal
+        if (filterVal !== 'all' && appName.toLowerCase() !== filterVal.toLowerCase()) return;
         
         const appConf = getAppConfig(appName);
         acc.screens.forEach((screen, index) => {
@@ -1956,22 +2031,33 @@ function renderAvailableList() {
     });
     htmlParts.push('</div>');
     if (count === 0) {
-        container.innerHTML = `<div class="text-center py-12 flex flex-col items-center bg-white rounded-3xl border-2 border-petal shadow-sm"> <div class="w-20 h-20 bg-petal-light border-2 border-petal rounded-full flex items-center justify-center text-espresso/40 mb-4 text-4xl shadow-inner"> <i class="fa-solid fa-box-open"></i> </div> <p class="text-espresso font-bold text-lg">ไม่มีจอว่างในขณะนี้</p> </div>`;
+        container.innerHTML = `<div class="text-center py-12 flex flex-col items-center bg-white rounded-3xl border-2 border-petal shadow-sm"> <div class="w-20 h-20 bg-petal-light border-2 border-petal rounded-full flex items-center justify-center text-espresso/40 mb-4 text-4xl shadow-inner"> <i class="fa-solid fa-box-open"></i> </div> <p class="text-espresso font-bold text-lg">ไม่มีจอว่างในแอปนี้</p> </div>`;
     } else {
         container.innerHTML = htmlParts.join('');
     }
 }
-function openKickListModal() { renderKickList(); animateModalOpen('kickListModal'); }
+
+function openKickListModal() { 
+    populateModalFilters();
+    const el = document.getElementById('filterKickApp');
+    if(el && (selectedAppFilter === 'all' || customApps.some(a => a.name === selectedAppFilter))) {
+        el.value = selectedAppFilter;
+    }
+    renderKickList(); 
+    animateModalOpen('kickListModal'); 
+}
 function closeKickListModal() { animateModalClose('kickListModal'); }
+
 function renderKickList() {
     const container = document.getElementById('kickListContent');
+    const filterVal = document.getElementById('filterKickApp').value;
+
     const htmlParts = [];
     htmlParts.push('<div class="space-y-3">');
     let count = 0;
     netflixAccounts.forEach(acc => {
         const appName = getAccountApp(acc);
-        // กรองแอพที่แสดงใน Modal ตาม Tab ที่เลือก
-        if (selectedAppFilter !== 'all' && appName.toLowerCase() !== selectedAppFilter.toLowerCase()) return;
+        if (filterVal !== 'all' && appName.toLowerCase() !== filterVal.toLowerCase()) return;
         
         const appConf = getAppConfig(appName);
         acc.screens.forEach((screen, index) => {
@@ -1986,22 +2072,33 @@ function renderKickList() {
     });
     htmlParts.push('</div>');
     if (count === 0) {
-        container.innerHTML = `<div class="text-center py-12 flex flex-col items-center bg-white rounded-3xl border-2 border-petal shadow-sm"> <div class="w-20 h-20 bg-petal-light border-2 border-petal rounded-full flex items-center justify-center text-espresso/40 mb-4 text-4xl shadow-inner"> <i class="fa-regular fa-face-smile-wink"></i> </div> <p class="text-espresso font-bold text-lg">ไม่มีรายการต้องจัดการ</p> </div>`;
+        container.innerHTML = `<div class="text-center py-12 flex flex-col items-center bg-white rounded-3xl border-2 border-petal shadow-sm"> <div class="w-20 h-20 bg-petal-light border-2 border-petal rounded-full flex items-center justify-center text-espresso/40 mb-4 text-4xl shadow-inner"> <i class="fa-regular fa-face-smile-wink"></i> </div> <p class="text-espresso font-bold text-lg">ไม่มีรายการต้องจัดการในแอปนี้</p> </div>`;
     } else {
         container.innerHTML = htmlParts.join('');
     }
 }
-function openWaitCutListModal() { renderWaitCutList(); animateModalOpen('waitCutListModal'); }
+
+function openWaitCutListModal() { 
+    populateModalFilters();
+    const el = document.getElementById('filterWaitCutApp');
+    if(el && (selectedAppFilter === 'all' || customApps.some(a => a.name === selectedAppFilter))) {
+        el.value = selectedAppFilter;
+    }
+    renderWaitCutList(); 
+    animateModalOpen('waitCutListModal'); 
+}
 function closeWaitCutListModal() { animateModalClose('waitCutListModal'); }
+
 function renderWaitCutList() {
     const container = document.getElementById('waitCutListContent');
+    const filterVal = document.getElementById('filterWaitCutApp').value;
+
     const htmlParts = [];
     htmlParts.push('<div class="space-y-3">');
     let count = 0;
     netflixAccounts.forEach(acc => {
         const appName = getAccountApp(acc);
-        // กรองแอพที่แสดงใน Modal ตาม Tab ที่เลือก
-        if (selectedAppFilter !== 'all' && appName.toLowerCase() !== selectedAppFilter.toLowerCase()) return;
+        if (filterVal !== 'all' && appName.toLowerCase() !== filterVal.toLowerCase()) return;
         
         const appConf = getAppConfig(appName);
         const isAccOverdue = getAccountExpireStatus(acc.accountExpireDate) === 'overdue';
@@ -2021,28 +2118,38 @@ function renderWaitCutList() {
     });
     htmlParts.push('</div>');
     if (count === 0) {
-        container.innerHTML = `<div class="text-center py-12 flex flex-col items-center bg-white rounded-3xl border-2 border-petal shadow-sm"> <div class="w-20 h-20 bg-petal-light border-2 border-petal rounded-full flex items-center justify-center text-espresso/40 mb-4 text-4xl shadow-inner"> <i class="fa-regular fa-face-smile-wink"></i> </div> <p class="text-espresso font-bold text-lg">ไม่มีรายการรอตัด</p> </div>`;
+        container.innerHTML = `<div class="text-center py-12 flex flex-col items-center bg-white rounded-3xl border-2 border-petal shadow-sm"> <div class="w-20 h-20 bg-petal-light border-2 border-petal rounded-full flex items-center justify-center text-espresso/40 mb-4 text-4xl shadow-inner"> <i class="fa-regular fa-face-smile-wink"></i> </div> <p class="text-espresso font-bold text-lg">ไม่มีรายการรอตัดในแอปนี้</p> </div>`;
     } else {
         container.innerHTML = htmlParts.join('');
     }
 }
-function openCutoffListModal() { renderCutoffList(); animateModalOpen('cutoffListModal'); }
+
+function openCutoffListModal() { 
+    populateModalFilters();
+    const el = document.getElementById('filterCutoffApp');
+    if(el && (selectedAppFilter === 'all' || customApps.some(a => a.name === selectedAppFilter))) {
+        el.value = selectedAppFilter;
+    }
+    renderCutoffList(); 
+    animateModalOpen('cutoffListModal'); 
+}
 function closeCutoffListModal() { animateModalClose('cutoffListModal'); }
+
 function renderCutoffList() {
     const container = document.getElementById('cutoffListContent');
+    const filterVal = document.getElementById('filterCutoffApp').value;
+
     const htmlParts = [];
     htmlParts.push('<div class="space-y-3">');
     let count = 0;
     netflixAccounts.forEach(acc => {
         const appName = getAccountApp(acc);
-        // กรองแอพที่แสดงใน Modal ตาม Tab ที่เลือก
-        if (selectedAppFilter !== 'all' && appName.toLowerCase() !== selectedAppFilter.toLowerCase()) return;
+        if (filterVal !== 'all' && appName.toLowerCase() !== filterVal.toLowerCase()) return;
         
         if (acc.accountExpireDate) {
             const accStatus = getAccountExpireStatus(acc.accountExpireDate);
             if (accStatus === 'due_today') {
                 count++;
-                const appName = getAccountApp(acc);
                 const appConf = getAppConfig(appName);
                 htmlParts.push(`<div class="bg-white p-4 sm:p-5 rounded-2xl border-2 border-purple-300 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"> <div class="flex-1 min-w-0"> <div class="flex items-center gap-2 mb-1.5"> <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold ${appConf.lightBg} border-2 flex items-center gap-1"> <i class="${appConf.icon}"></i> ${escapeHTML(appName)} </span> <h4 class="font-bold text-espresso text-sm sm:text-base truncate flex items-center gap-2" title="${escapeHTML(acc.name)}"> <i class="fa-solid fa-triangle-exclamation text-purple-600"></i> ${escapeHTML(acc.name)} </h4> </div> <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-bold text-espresso"> <span class="flex items-center gap-1.5 cursor-pointer hover:text-purple-600 transition-colors bg-petal-light/50 px-2 py-1 rounded-lg border border-petal" onclick="copyText('${escapeJS(acc.email)}')"> <i class="fa-regular fa-envelope"></i> <span class="truncate max-w-[120px] sm:max-w-full">${escapeHTML(acc.email)}</span> </span> </div> <div class="text-xs font-bold text-purple-700 mt-2.5 bg-purple-50 p-2.5 rounded-xl border border-dashed border-purple-300 flex items-center gap-1.5"> <i class="fa-regular fa-calendar-xmark"></i> วันตัดบัญชี: ${formatDate(acc.accountExpireDate)} </div> </div> <div class="flex gap-2 sm:flex-col shrink-0"> <button onclick="closeCutoffListModal(); setTimeout(() => openEditAccountModal('${acc.id}'), 300)" class="flex-1 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-purple-600 border-2 border-transparent hover:bg-purple-700 transition-colors flex items-center justify-center gap-1.5 shadow-sm"> <i class="fa-solid fa-pen"></i> อัปเดตวันที่ </button> </div> </div>`);
             }
@@ -2050,7 +2157,7 @@ function renderCutoffList() {
     });
     htmlParts.push('</div>');
     if (count === 0) {
-        container.innerHTML = `<div class="text-center py-12 flex flex-col items-center bg-white rounded-3xl border-2 border-petal shadow-sm"> <div class="w-20 h-20 bg-petal-light border-2 border-petal rounded-full flex items-center justify-center text-espresso/40 mb-4 text-4xl shadow-inner"> <i class="fa-solid fa-calendar-check"></i> </div> <p class="text-espresso font-bold text-lg">ไม่มีบัญชีหลักที่หมดอายุ</p> </div>`;
+        container.innerHTML = `<div class="text-center py-12 flex flex-col items-center bg-white rounded-3xl border-2 border-petal shadow-sm"> <div class="w-20 h-20 bg-petal-light border-2 border-petal rounded-full flex items-center justify-center text-espresso/40 mb-4 text-4xl shadow-inner"> <i class="fa-solid fa-calendar-check"></i> </div> <p class="text-espresso font-bold text-lg">ไม่มีบัญชีหลักที่หมดอายุในแอปนี้</p> </div>`;
     } else {
         container.innerHTML = htmlParts.join('');
     }
