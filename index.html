@@ -1182,8 +1182,8 @@ var supabase = window.supabaseDb;
 
 // --- Global State ---
 let netflixAccounts = [];
-let telegramSettings = { token: '', chatId: '', pin: '0835' }; 
-let collapsedAccounts = new Set();
+let telegramSettings = { token: '', chatId: '' };
+let expandedAccounts = new Set(); // เปลี่ยนจาก collapsedAccounts ให้พับเป็นค่าเริ่มต้น
 let accountIdToDelete = null;
 let screenToDelete = { id: null, accountId: null, screenIndex: null };
 let selectedAppFilter = 'all';
@@ -1279,17 +1279,13 @@ async function loadData() {
 
     try {
         // Apps
-        const { data: appsData, error: appsErr } = await supabase.from('apps').select('*');
-        if (appsErr) throw appsErr;
+        const { data: appsData } = await supabase.from('apps').select('*');
         customApps = appsData || [];
         appConfigCache = {};
 
         // Accounts & Screens
-        const { data: accData, error: accErr } = await supabase.from('accounts').select('*, apps(name)');
-        if (accErr) throw accErr;
-        
-        const { data: screenData, error: screenErr } = await supabase.from('screens').select('*');
-        if (screenErr) throw screenErr;
+        const { data: accData } = await supabase.from('accounts').select('*, apps(name)');
+        const { data: screenData } = await supabase.from('screens').select('*');
 
         netflixAccounts = (accData || []).map(acc => {
             const screens = (screenData || []).filter(s => s.account_id === acc.id).sort((a,b) => a.screen_index - b.screen_index);
@@ -1313,8 +1309,7 @@ async function loadData() {
         }).sort((a,b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
         // Transactions
-        const { data: txData, error: txErr } = await supabase.from('transactions').select('*').order('transaction_date', { ascending: false });
-        if (txErr) throw txErr;
+        const { data: txData } = await supabase.from('transactions').select('*').order('transaction_date', { ascending: false });
         monaliTransactions = (txData || []).map(tx => ({
             id: tx.id,
             type: tx.type,
@@ -1324,20 +1319,16 @@ async function loadData() {
         }));
 
         // Templates
-        const { data: tplData, error: tplErr } = await supabase.from('templates').select('*').order('created_at', {ascending: true});
-        if (tplErr) throw tplErr;
+        const { data: tplData } = await supabase.from('templates').select('*').order('created_at', {ascending: true});
         formTemplates = (tplData && tplData.length > 0) ? tplData : [defaultTemplate];
 
         // Settings
-        const { data: settingsData, error: setErr } = await supabase.from('settings').select('*');
-        if (setErr) throw setErr;
-        
+        const { data: settingsData } = await supabase.from('settings').select('*');
         const stMap = {};
         (settingsData || []).forEach(s => stMap[s.key] = s.value);
 
         telegramSettings.token = stMap['tg_token'] || '';
         telegramSettings.chatId = stMap['tg_chat_id'] || '';
-        telegramSettings.pin = stMap['system_pin'] || '0835'; 
 
         if (stMap['logo_base64']) {
             document.getElementById('storeLogo').src = stMap['logo_base64'];
@@ -1348,19 +1339,18 @@ async function loadData() {
             document.getElementById('storeBanner').src = stMap['banner_base64'];
         }
 
-        populateModalFilters(); // อัปเดตตัวกรองรูปกรวยเมื่อโหลดข้อมูลเสร็จ
+        populateModalFilters();
 
         if(statusText) statusText.textContent = 'หลังบ้านพร้อมแล้วค่ะ 💖';
         scheduleRender();
     } catch (error) {
         console.error("Load Data Error:", error);
         if(statusText) statusText.textContent = 'เกิดข้อผิดพลาดในการโหลดข้อมูล';
-        let msg = error.message;
-        if (msg === 'Failed to fetch') msg = 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาตรวจสอบอินเทอร์เน็ต';
-        showToast('โหลดข้อมูลไม่สำเร็จ: ' + msg);
+        showToast('โหลดข้อมูลไม่สำเร็จ: ' + error.message);
     }
 }
 
+// Wrapper ป้องกันกดปุ่มซ้ำ และแสดง Loading UI
 async function requireAdminAuthAction(btn, actionFunc) {
     if (!currentAdmin) {
         showToast('หากต้องการแก้ไขข้อมูล โปรดเข้าสู่ระบบผู้ดูแล 🔒');
@@ -1373,14 +1363,8 @@ async function requireAdminAuthAction(btn, actionFunc) {
     try {
         await actionFunc();
     } catch (err) {
+        showToast('เกิดข้อผิดพลาด: ' + err.message);
         console.error(err);
-        let errMsg = err.message || 'เกิดข้อผิดพลาดในการดำเนินการ';
-        if (errMsg.includes('violates foreign key')) {
-            errMsg = 'ไม่สามารถดำเนินการได้ เนื่องจากข้อมูลถูกใช้งานอยู่ที่ส่วนอื่น';
-        } else if (errMsg.includes('Failed to fetch')) {
-            errMsg = 'เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ต';
-        }
-        showToast('ข้อผิดพลาด: ' + errMsg);
     } finally {
         btn.innerHTML = origHtml;
         btn.disabled = false;
@@ -1528,6 +1512,7 @@ function getAccountApp(account) {
     return customApps.length > 0 ? customApps[0].name : 'แอปทั่วไป';
 }
 
+// ช่วยคืนค่า App ID หรือสร้างใหม่ถ้าพิมพ์ชื่อแปลกๆ เข้ามา
 async function resolveAppId(appName) {
     let app = customApps.find(a => a.name.toLowerCase() === appName.toLowerCase());
     if (app) return app.id;
@@ -1542,7 +1527,7 @@ async function resolveAppId(appName) {
     if (error) throw error;
     customApps.push(data);
     appConfigCache = {};
-    populateModalFilters(); // อัปเดตตัวกรอง
+    populateModalFilters();
     return data.id;
 }
 
@@ -1678,7 +1663,7 @@ function handleSaveCustomApp(e) {
 
             customApps.push(data);
             appConfigCache = {};
-            populateModalFilters(); // อัปเดตตัวกรอง
+            populateModalFilters();
             showToast(`เพิ่มแอป "${name}" เรียบร้อยแล้วค่ะ ✨`);
         }
         closeAddCustomAppModal();
@@ -1699,18 +1684,14 @@ function deleteCustomApp(appId, event) {
             if(error) throw error;
             customApps = customApps.filter(a => a.id !== appId);
             appConfigCache = {};
-            populateModalFilters(); // อัปเดตตัวกรอง
+            populateModalFilters();
             renderPresetAppChips('addAppPresetChips', 'accountApp', document.getElementById('accountApp')?.value);
             renderPresetAppChips('editAppPresetChips', 'editAccApp', document.getElementById('editAccApp')?.value);
             scheduleRender();
             requestAnimationFrame(() => renderManageAppsList());
-            showToast(`ลบแอปออกจากรายการแล้ว 🗑️`);
+            showToast(`ลบแอปออกจากรายการแล้ว 🗑️️`);
         } catch(err) {
-            let errMsg = err.message || 'เกิดข้อผิดพลาด';
-            if (errMsg.includes('violates foreign key')) {
-                errMsg = 'ไม่สามารถลบได้ มีบัญชีที่ผูกใช้งานอยู่กับแอปนี้';
-            }
-            showToast('ข้อผิดพลาด: ' + errMsg);
+            showToast('ไม่สามารถลบได้ อาจมีบัญชีที่ใช้งานอยู่: ' + err.message);
         }
     })();
 }
@@ -1735,6 +1716,29 @@ function renderManageAppsList() {
         htmlParts.push(`<div class="flex items-center justify-between p-3.5 rounded-2xl bg-white border-2 border-petal shadow-sm hover:border-petal-deep transition-colors"> <div class="flex items-center gap-3 min-w-0"> <span class="w-10 h-10 rounded-xl ${conf.badge} flex items-center justify-center text-sm shadow-sm shrink-0 border border-transparent"> <i class="${conf.icon}"></i> </span> <span class="font-bold text-sm text-espresso truncate">${escapeHTML(app.name)}</span> </div> <button onclick="deleteCustomApp('${app.id}')" class="w-10 h-10 rounded-xl bg-white border border-petal text-espresso/40 hover:text-red-500 hover:border-red-200 flex items-center justify-center text-sm shadow-sm transition-colors" title="ลบแอป"> <i class="fa-solid fa-trash-can"></i> </button> </div>`);
     });
     container.innerHTML = htmlParts.join('');
+}
+
+// --------------------------------------------------------------------------------------
+// ระบบ Filter ภายใน Modals 4 อัน (รูปกรวย)
+// --------------------------------------------------------------------------------------
+function populateModalFilters() {
+    const selects = ['filterAvailableApp', 'filterKickApp', 'filterWaitCutApp', 'filterCutoffApp'];
+    let optionsHtml = `<option value="all">แสดงทั้งหมด</option>`;
+    
+    customApps.forEach(app => {
+        optionsHtml += `<option value="${escapeHTML(app.name)}">${escapeHTML(app.name)}</option>`;
+    });
+
+    selects.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            const currentVal = el.value;
+            el.innerHTML = optionsHtml;
+            if (currentVal && (currentVal === 'all' || customApps.some(a => a.name === currentVal))) {
+                el.value = currentVal;
+            }
+        }
+    });
 }
 
 function renderDashboard() {
@@ -1771,6 +1775,7 @@ function renderDashboard() {
     if (document.getElementById('statKickScreens')) document.getElementById('statKickScreens').textContent = kickCount;
     if (document.getElementById('statWaitCutScreens')) document.getElementById('statWaitCutScreens').textContent = waitCutCount;
     if (document.getElementById('statCutoffAccounts')) document.getElementById('statCutoffAccounts').textContent = cutoffCount;
+    
     if (totalCount === 0) {
         listContainer.innerHTML = '';
         emptyState.classList.remove('hidden');
@@ -1819,9 +1824,10 @@ function renderDashboard() {
         });
         htmlParts.push(`<div class="pt-2 mb-4"> <div class="flex items-center justify-between pb-2 border-b-2 border-petal"> <div class="flex items-center gap-2.5"> <span class="px-3 py-1.5 rounded-xl text-xs font-bold ${appConf.badge} flex items-center gap-1.5 shadow-sm border border-transparent"> <i class="${appConf.icon}"></i> ${escapeHTML(appName)} </span> <span class="text-xs font-bold text-espresso/80">${accounts.length} บัญชี</span> </div> <div class="flex items-center gap-2.5 text-[11px] text-espresso font-bold bg-white px-3 py-1.5 rounded-xl shadow-sm border border-petal"> <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow-sm"></span> ว่าง ${appAvailCount}</span> <span class="text-espresso/30">|</span> <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-petal-deep inline-block shadow-sm"></span> ใช้งาน ${appSoldCount}</span> </div> </div> </div> <div class="space-y-4 sm:space-y-5 mb-8">`);
         accounts.forEach(account => {
-            const isCollapsed = collapsedAccounts.has(account.id);
-            const containerClass = isCollapsed ? 'space-y-2.5 sm:space-y-3 hidden' : 'space-y-2.5 sm:space-y-3';
-            const iconClass = isCollapsed ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-up';
+            const isExpanded = expandedAccounts.has(account.id);
+            const containerClass = isExpanded ? 'space-y-2.5 sm:space-y-3' : 'space-y-2.5 sm:space-y-3 hidden';
+            const iconClass = isExpanded ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down';
+            
             const accStatus = getAccountExpireStatus(account.accountExpireDate);
             const isCutoff = accStatus === 'due_today';
             const isOverdue = accStatus === 'overdue';
@@ -1910,14 +1916,14 @@ function getStatusConfig(status) {
 function toggleScreens(accountId) {
     const container = document.getElementById(`screens-container-${accountId}`);
     const icon = document.getElementById(`icon-toggle-${accountId}`);
-    if (collapsedAccounts.has(accountId)) {
-        collapsedAccounts.delete(accountId);
-        container.classList.remove('hidden');
-        icon.className = 'fa-solid fa-chevron-up text-sm';
-    } else {
-        collapsedAccounts.add(accountId);
+    if (expandedAccounts.has(accountId)) {
+        expandedAccounts.delete(accountId);
         container.classList.add('hidden');
         icon.className = 'fa-solid fa-chevron-down text-sm';
+    } else {
+        expandedAccounts.add(accountId);
+        container.classList.remove('hidden');
+        icon.className = 'fa-solid fa-chevron-up text-sm';
     }
 }
 
@@ -1954,34 +1960,8 @@ function animateModalClose(modalId) {
     }, 300);
 }
 
-// --------------------------------------------------------------------------------------
-// ระบบ Filter ภายใน Modals 4 อัน (รูปกรวย)
-// --------------------------------------------------------------------------------------
-function populateModalFilters() {
-    const selects = ['filterAvailableApp', 'filterKickApp', 'filterWaitCutApp', 'filterCutoffApp'];
-    let optionsHtml = `<option value="all">แสดงทั้งหมด</option>`;
-    
-    // ดึงรายชื่อแอปทั้งหมดมาใส่
-    customApps.forEach(app => {
-        optionsHtml += `<option value="${escapeHTML(app.name)}">${escapeHTML(app.name)}</option>`;
-    });
-
-    selects.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            const currentVal = el.value;
-            el.innerHTML = optionsHtml;
-            // ถ้าแอปที่เลือกไว้ยังอยู่ หรือเป็น 'all' ก็ให้เลือกค่าเดิมไว้
-            if (currentVal && (currentVal === 'all' || customApps.some(a => a.name === currentVal))) {
-                el.value = currentVal;
-            }
-        }
-    });
-}
-
 function openAvailableListModal() { 
     populateModalFilters();
-    // ถ้าหน้าหลักเลือกแอปไว้ ให้ Dropdown ใน Modal เลือกตามแอปนั้นให้อัตโนมัติ
     const el = document.getElementById('filterAvailableApp');
     if(el && (selectedAppFilter === 'all' || customApps.some(a => a.name === selectedAppFilter))) {
         el.value = selectedAppFilter;
@@ -2017,7 +1997,6 @@ function renderAvailableList() {
     let count = 0;
     netflixAccounts.forEach(acc => {
         const appName = getAccountApp(acc);
-        // กรองตาม Dropdown (กรวย) ใน Modal
         if (filterVal !== 'all' && appName.toLowerCase() !== filterVal.toLowerCase()) return;
         
         const appConf = getAppConfig(appName);
@@ -2417,7 +2396,7 @@ function executeDeleteAccount(btn) {
         if (!accountIdToDelete) return;
         const { error } = await supabase.from('accounts').delete().eq('id', accountIdToDelete);
         if(error) throw error;
-        collapsedAccounts.delete(accountIdToDelete);
+        expandedAccounts.delete(accountIdToDelete);
         await loadData();
         closeDeleteModal();
         showToast('ลบข้อมูลเรียบร้อยแล้วค่ะ 🗑️');
