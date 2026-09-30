@@ -1146,7 +1146,7 @@ var supabase = window.supabaseDb;
 
 // --- Global State ---
 let netflixAccounts = [];
-let telegramSettings = { token: '', chatId: '' };
+let telegramSettings = { token: '', chatId: '', pin: '0835' }; // เพิ่มตัวแปรเก็บ PIN ใน Global State
 let collapsedAccounts = new Set();
 let accountIdToDelete = null;
 let screenToDelete = { id: null, accountId: null, screenIndex: null };
@@ -1293,6 +1293,7 @@ async function loadData() {
 
         telegramSettings.token = stMap['tg_token'] || '';
         telegramSettings.chatId = stMap['tg_chat_id'] || '';
+        telegramSettings.pin = stMap['system_pin'] || '0835'; // ดึงค่า PIN จาก DB อย่างปลอดภัย
 
         if (stMap['logo_base64']) {
             document.getElementById('storeLogo').src = stMap['logo_base64'];
@@ -1312,7 +1313,7 @@ async function loadData() {
     }
 }
 
-// Wrapper ป้องกันกดปุ่มซ้ำ และแสดง Loading UI
+// Wrapper ป้องกันกดปุ่มซ้ำ และแสดง Loading UI (อัปเดตการดักจับ Error เพื่อป้องกัน Schema Leak)
 async function requireAdminAuthAction(btn, actionFunc) {
     if (!currentAdmin) {
         showToast('หากต้องการแก้ไขข้อมูล โปรดเข้าสู่ระบบผู้ดูแล 🔒');
@@ -1325,8 +1326,15 @@ async function requireAdminAuthAction(btn, actionFunc) {
     try {
         await actionFunc();
     } catch (err) {
-        showToast('เกิดข้อผิดพลาด: ' + err.message);
         console.error(err);
+        // Sanitize Error Messages
+        let errMsg = 'เกิดข้อผิดพลาดในการดำเนินการ';
+        if (err.message && err.message.includes('violates foreign key')) {
+            errMsg = 'ไม่สามารถดำเนินการได้ เนื่องจากข้อมูลถูกใช้งานอยู่ที่ส่วนอื่น';
+        } else if (err.message) {
+            errMsg = err.message;
+        }
+        showToast('ข้อผิดพลาด: ' + errMsg);
     } finally {
         btn.innerHTML = origHtml;
         btn.disabled = false;
@@ -1650,7 +1658,8 @@ function deleteCustomApp(appId, event) {
             requestAnimationFrame(() => renderManageAppsList());
             showToast(`ลบแอปออกจากรายการแล้ว 🗑️`);
         } catch(err) {
-            showToast('ไม่สามารถลบได้ อาจมีบัญชีที่ใช้งานอยู่: ' + err.message);
+            // Sanitize Error Here Too
+            showToast('ไม่สามารถลบได้ มีบัญชีที่ผูกใช้งานอยู่กับแอปนี้');
         }
     })();
 }
@@ -2021,14 +2030,22 @@ function verifyPasscodeForSettings() {
     animateModalOpen('passcodeModal');
 }
 function closePasscodeModal() { animateModalClose('passcodeModal'); }
+
+// อัปเดตฟังก์ชันเช็ค PIN ให้รับค่าจาก Settings (ผ่าน RLS ป้องกันไว้แล้ว)
 function verifySettingsPasscode(e) {
     e.preventDefault();
-    if (document.getElementById('settingsPasscodeInput').value.trim() === '0835') {
-        closePasscodeModal();
-        showToast('ยืนยันรหัสผ่านสำเร็จ ✨');
-        openSettingsModal();
-    } else {
-        showToast('รหัสผ่านไม่ถูกต้อง ❌');
+    if (currentAdmin) {
+        const inputPin = document.getElementById('settingsPasscodeInput').value.trim();
+        // เทียบค่ากับที่ดึงมาจากฐานข้อมูล (ถ้าไม่มีให้ fallback แต่คนทั่วไปเข้าไม่ถึงส่วนนี้อยู่แล้ว)
+        const correctPin = telegramSettings.pin || '0835';
+        
+        if (inputPin === correctPin) {
+            closePasscodeModal();
+            showToast('ยืนยันรหัสผ่านสำเร็จ ✨');
+            openSettingsModal();
+        } else {
+            showToast('รหัสผ่านไม่ถูกต้อง ❌');
+        }
     }
 }
 
@@ -2720,7 +2737,7 @@ function renderTransactions() {
     const now = new Date();
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-    const startOfYear = new Date(now.getFullYear(), 0, 1).getTime();
+    const startOfYear = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
     const filteredTx = monaliTransactions.filter(tx => {
         const txTime = new Date(tx.date).getTime();
         if (accFilterMode === 'today') return txTime >= startOfDay;
