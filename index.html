@@ -1171,45 +1171,6 @@ text-align: left;
 </div>
 <div id="toastContainer" class="fixed top-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
-<!-- YouTube Music Player Elements -->
-<div id="ytplayer" class="absolute pointer-events-none opacity-0 w-[10px] h-[10px]"></div>
-
-<!-- Floating Music Player Widget -->
-<div id="musicPlayerWidget" class="fixed bottom-6 left-6 z-[85] bg-white/90 backdrop-blur-md border-2 border-petal shadow-glass rounded-2xl p-3 flex items-center gap-3 transition-transform hover:scale-105 hidden">
-    <div class="w-10 h-10 rounded-full bg-petal flex items-center justify-center text-espresso relative overflow-hidden group cursor-pointer shadow-inner border border-petal-light" onclick="toggleMusic()">
-        <i id="musicPlayIcon" class="fa-solid fa-play z-10"></i>
-        <div id="musicWave" class="absolute inset-0 bg-petal-deep opacity-0 group-hover:opacity-20 transition-opacity"></div>
-    </div>
-    <div class="flex flex-col max-w-[120px] sm:max-w-[150px]">
-        <span class="text-[10px] font-bold text-petal-deep uppercase tracking-wider mb-0.5 flex items-center gap-1"><i class="fa-solid fa-radio text-[8px] animate-pulse"></i> Shared Radio</span>
-        <span id="musicTitle" class="text-xs font-bold text-espresso truncate cursor-pointer hover:underline" onclick="openMusicSettings()">Loading...</span>
-    </div>
-    <button onclick="openMusicSettings()" class="w-8 h-8 rounded-full bg-petal-light text-espresso/60 hover:text-espresso flex items-center justify-center transition-colors ml-1 border border-transparent hover:border-petal" title="เปลี่ยนเพลง">
-        <i class="fa-solid fa-music text-xs"></i>
-    </button>
-</div>
-
-<!-- Modal: Music Settings -->
-<div id="musicModal" class="fixed inset-0 bg-espresso/60 z-[90] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-    <div class="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden p-6 border-2 border-petal">
-        <div class="flex justify-between items-center mb-5">
-            <h3 class="text-xl font-bold text-espresso flex items-center gap-2"><i class="fa-solid fa-compact-disc text-petal-deep animate-spin" style="animation-duration: 3s;"></i> เปลี่ยนเพลง</h3>
-            <button onclick="closeMusicModal()" class="text-espresso/50 hover:text-espresso w-8 h-8 flex items-center justify-center rounded-full hover:bg-white transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
-        </div>
-        <form onsubmit="saveMusicSettings(event)" class="space-y-4">
-            <div>
-                <label class="block text-sm font-bold text-espresso mb-1.5">ลิงก์เพลงจาก YouTube</label>
-                <input type="text" id="ytLinkInput" required class="w-full rounded-2xl border-petal bg-white px-4 py-3.5 text-sm text-espresso border-2 focus:border-petal-deep focus:ring-0 transition-colors" placeholder="https://www.youtube.com/watch?v=...">
-                <p class="text-[10px] font-medium text-espresso/60 mt-1.5 bg-petal-light/50 p-2 rounded-lg border border-petal">💡 แนะนำให้ใช้เพลงทั่วไป, Cover, หรือ Lofi (หากเป็นเพลงลิขสิทธิ์จากค่ายเพลงโดยตรง มักจะถูกบล็อกไม่ให้เล่นนอก YouTube)</p>
-            </div>
-            <div class="flex gap-2 pt-2">
-                <button type="button" onclick="closeMusicModal()" class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-espresso bg-white border border-petal hover:bg-petal-light transition-colors">ยกเลิก</button>
-                <button type="submit" class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-espresso bg-petal border-2 border-transparent hover:bg-petal-deep shadow-cute transition-colors">เปิดเพลงนี้</button>
-            </div>
-        </form>
-    </div>
-</div>
-
 <script>
 // --- Supabase Config & Init ---
 // ป้องกันการประกาศตัวแปรซ้ำเมื่อเกิด Hot Reload
@@ -1241,11 +1202,275 @@ let userManuallySelectedColor = false;
 let appConfigCache = {};
 let formTemplates = [];
 
-// --- Music State ---
+// --- YouTube Music Functions ---
 let ytPlayer;
 let isYtReady = false;
-let localMusicState = { id: '', playing: false };
+let localMusicState = { id: '', playing: false, timestamp: 0, updatedAt: 0 };
 let userHasInteracted = false;
+let isSeeking = false;
+
+// ระบบป้องกันเปิดหลายแท็บแล้วเสียงตีกัน (Echo)
+let isMainTab = true;
+if (window.BroadcastChannel) {
+    const bc = new BroadcastChannel('monali_music');
+    bc.onmessage = (event) => {
+        if (event.data === 'check_main') {
+            if (isMainTab && userHasInteracted) bc.postMessage('im_main');
+        } else if (event.data === 'im_main') {
+            isMainTab = false;
+            if (ytPlayer && typeof ytPlayer.mute === 'function') ytPlayer.mute();
+        } else if (event.data === 'main_closed') {
+            isMainTab = true;
+            if (ytPlayer && typeof ytPlayer.unMute === 'function') ytPlayer.unMute();
+        }
+    };
+    window.addEventListener('beforeunload', () => {
+        if (isMainTab) bc.postMessage('main_closed');
+    });
+    bc.postMessage('check_main');
+}
+
+function loadYoutubeAPI() {
+    if (document.getElementById('youtube-api-script')) return;
+    const tag = document.createElement('script');
+    tag.id = 'youtube-api-script';
+    tag.src = "https://www.youtube.com/iframe_api";
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+}
+
+window.onYouTubeIframeAPIReady = function() {
+    ytPlayer = new YT.Player('ytplayer', {
+        height: '200',
+        width: '300',
+        videoId: 'mUjhiT0zcA', // ใช้ Lofi ที่เสถียรเป็นค่าเริ่มต้น
+        playerVars: { 
+            'autoplay': 0, 
+            'controls': 0, 
+            'playsinline': 1,
+            'enablejsapi': 1,
+            'origin': window.location.origin
+        },
+        events: {
+            'onReady': () => { 
+                isYtReady = true; 
+                pollMusicState(); 
+                setInterval(pollMusicState, 3000); 
+            },
+            'onStateChange': (event) => {
+                if (event.data === YT.PlayerState.PLAYING) {
+                    let title = 'กำลังเล่นเพลง...';
+                    try { title = ytPlayer.getVideoData()?.title || title; } catch(e){}
+                    document.getElementById('musicTitle').textContent = title;
+                    // ถ้าแท็บนี้ไม่ใช่หน้าต่างหลัก ให้ปิดเสียงเพื่อป้องกันเสียงตีกัน
+                    if (!isMainTab && ytPlayer && typeof ytPlayer.mute === 'function') ytPlayer.mute();
+                }
+            },
+            'onError': (event) => {
+                console.log('YT Error:', event.data);
+                document.getElementById('musicTitle').textContent = 'เพลงถูกบล็อก (เปลี่ยนเพลง)';
+                const icon = document.getElementById('musicPlayIcon');
+                const wave = document.getElementById('musicWave');
+                if (icon) icon.className = 'fa-solid fa-play z-10 text-espresso/70';
+                if (wave) {
+                    wave.classList.remove('animate-pulse');
+                    wave.style.opacity = '0';
+                }
+            }
+        }
+    });
+}
+
+async function pollMusicState() {
+    const widget = document.getElementById('musicPlayerWidget');
+    if (!currentAdmin) {
+        widget.classList.add('hidden');
+        if(isYtReady && ytPlayer && typeof ytPlayer.pauseVideo === 'function') ytPlayer.pauseVideo();
+        return;
+    } else {
+        widget.classList.remove('hidden');
+    }
+
+    try {
+        const { data } = await supabase.from('settings').select('*').in('key', ['music_yt_id', 'music_is_playing', 'music_timestamp', 'music_updated_at']);
+        let dbId = 'mUjhiT0zcA';
+        let dbPlaying = false;
+        let dbTimestamp = 0;
+        let dbUpdatedAt = 0;
+        
+        if (data) {
+            const idRow = data.find(r => r.key === 'music_yt_id');
+            const playRow = data.find(r => r.key === 'music_is_playing');
+            const tsRow = data.find(r => r.key === 'music_timestamp');
+            const upRow = data.find(r => r.key === 'music_updated_at');
+            
+            if (idRow) dbId = idRow.value;
+            if (playRow) dbPlaying = playRow.value === 'true';
+            if (tsRow) dbTimestamp = parseFloat(tsRow.value) || 0;
+            if (upRow) dbUpdatedAt = parseInt(upRow.value) || 0;
+        }
+
+        // ถ้าสถานะเปลี่ยน หรือเวลาเหลื่อมกันเกิน 5 วินาที ให้อัปเดตและซิงค์ใหม่
+        if (dbId !== localMusicState.id || dbPlaying !== localMusicState.playing || Math.abs(dbTimestamp - localMusicState.timestamp) > 5) {
+            localMusicState.id = dbId;
+            localMusicState.playing = dbPlaying;
+            localMusicState.timestamp = dbTimestamp;
+            localMusicState.updatedAt = dbUpdatedAt;
+            applyMusicState();
+        } else {
+            // ถ้าระบบกำลังเล่นอยู่ ให้เช็คเวลาว่าตรงกับเซิร์ฟเวอร์ไหม (Sync Time)
+            if (dbPlaying && isYtReady && ytPlayer && typeof ytPlayer.getCurrentTime === 'function' && userHasInteracted) {
+                let now = Date.now();
+                let expectedTime = dbTimestamp + ((now - dbUpdatedAt) / 1000);
+                let actualTime = ytPlayer.getCurrentTime();
+                
+                // ถ้าเวลาคลาดเคลื่อนเกิน 4 วินาที ให้กรอไปจุดที่ถูกต้องเพื่อซิงค์เนื้อร้อง
+                if (Math.abs(expectedTime - actualTime) > 4 && actualTime > 0 && !isSeeking) {
+                    isSeeking = true;
+                    ytPlayer.seekTo(expectedTime, true);
+                    setTimeout(() => { isSeeking = false; }, 2000);
+                }
+            }
+        }
+    } catch (e) {
+        console.warn("Music Sync Error", e);
+    }
+}
+
+function applyMusicState() {
+    if (!isYtReady || !ytPlayer || typeof ytPlayer.getPlayerState !== 'function') return;
+    
+    let state = -1;
+    try { state = ytPlayer.getPlayerState(); } catch(e){}
+
+    let currentLoadedId = localMusicState.id;
+    try { currentLoadedId = ytPlayer.getVideoData()?.video_id; } catch(e){}
+    
+    // คำนวณเวลาเนื้อร้อง ณ ปัจจุบันที่ควรจะเป็น
+    let expectedTime = 0;
+    if (localMusicState.playing && localMusicState.updatedAt > 0) {
+        expectedTime = localMusicState.timestamp + ((Date.now() - localMusicState.updatedAt) / 1000);
+    } else {
+        expectedTime = localMusicState.timestamp;
+    }
+    
+    if (currentLoadedId !== localMusicState.id && localMusicState.id) {
+        if (localMusicState.playing && userHasInteracted) {
+            ytPlayer.loadVideoById({videoId: localMusicState.id, startSeconds: expectedTime});
+        } else {
+            ytPlayer.cueVideoById({videoId: localMusicState.id, startSeconds: expectedTime});
+        }
+    } else {
+        if (localMusicState.playing) {
+            if (userHasInteracted) {
+                if (state !== YT.PlayerState.PLAYING && state !== YT.PlayerState.BUFFERING) {
+                    ytPlayer.playVideo();
+                }
+                if (!isSeeking) {
+                    let actualTime = ytPlayer.getCurrentTime();
+                    if (Math.abs(expectedTime - actualTime) > 4) {
+                        isSeeking = true;
+                        ytPlayer.seekTo(expectedTime, true);
+                        setTimeout(() => { isSeeking = false; }, 2000);
+                    }
+                }
+            }
+        } else {
+            if (state === YT.PlayerState.PLAYING || state === YT.PlayerState.BUFFERING) {
+                ytPlayer.pauseVideo();
+            }
+        }
+    }
+
+    const icon = document.getElementById('musicPlayIcon');
+    const wave = document.getElementById('musicWave');
+    const titleEl = document.getElementById('musicTitle');
+    
+    if (localMusicState.playing) {
+        icon.className = 'fa-solid fa-pause z-10 text-espresso';
+        wave.classList.add('animate-pulse');
+        wave.style.opacity = '0.5';
+        if(!titleEl.textContent || titleEl.textContent === 'Loading...' || titleEl.textContent === 'หยุดชั่วคราว') {
+             titleEl.textContent = 'กำลังซิงค์เพลง...';
+        }
+    } else {
+        icon.className = 'fa-solid fa-play z-10 text-espresso/70';
+        wave.classList.remove('animate-pulse');
+        wave.style.opacity = '0';
+        titleEl.textContent = 'หยุดชั่วคราว';
+    }
+}
+
+async function toggleMusic() {
+    if (!requireAdminAuth()) return;
+    if (!userHasInteracted) userHasInteracted = true;
+    
+    const newState = !localMusicState.playing;
+    let currentTime = 0;
+    if (isYtReady && ytPlayer && typeof ytPlayer.getCurrentTime === 'function') {
+        currentTime = ytPlayer.getCurrentTime();
+    }
+
+    localMusicState.playing = newState;
+    localMusicState.timestamp = currentTime;
+    localMusicState.updatedAt = Date.now();
+    applyMusicState();
+    
+    await supabase.from('settings').upsert([
+        { key: 'music_is_playing', value: newState ? 'true' : 'false' },
+        { key: 'music_timestamp', value: currentTime.toString() },
+        { key: 'music_updated_at', value: Date.now().toString() }
+    ]);
+}
+
+function openMusicSettings() {
+    if (!requireAdminAuth()) return;
+    document.getElementById('ytLinkInput').value = '';
+    animateModalOpen('musicModal');
+}
+function closeMusicModal() { animateModalClose('musicModal'); }
+
+function extractYtId(url) {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|music\.youtube\.com\/watch\?v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
+
+async function saveMusicSettings(e) {
+    e.preventDefault();
+    const url = document.getElementById('ytLinkInput').value.trim();
+    const videoId = extractYtId(url);
+    
+    if (!videoId) {
+        showToast('ลิงก์ YouTube ไม่ถูกต้อง ❌');
+        return;
+    }
+
+    const btn = e.target.querySelector('button[type="submit"]');
+    requireAdminAuthAction(btn, async () => {
+        userHasInteracted = true;
+        localMusicState.id = videoId;
+        localMusicState.playing = true;
+        localMusicState.timestamp = 0;
+        localMusicState.updatedAt = Date.now();
+        
+        if(isYtReady && ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
+            ytPlayer.loadVideoById({videoId: videoId, startSeconds: 0});
+        }
+
+        await supabase.from('settings').upsert([
+            { key: 'music_yt_id', value: videoId },
+            { key: 'music_is_playing', value: 'true' },
+            { key: 'music_timestamp', value: '0' },
+            { key: 'music_updated_at', value: Date.now().toString() }
+        ]);
+        
+        closeMusicModal();
+        showToast('เปลี่ยนเพลงและซิงค์ให้ทุกคนแล้ว 🎵');
+        applyMusicState();
+    });
+}
+// --- End YouTube Music Functions ---
 
 const defaultTemplate = {
     id: 'tpl_default',
