@@ -369,6 +369,7 @@ text-align: left;
 </div>
 </div>
 </nav>
+
 <main id="dashboardView" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 transition-opacity duration-300 mt-2">
 <div class="mb-6 relative group rounded-3xl overflow-hidden shadow-soft border-2 border-white cursor-pointer" onclick="document.getElementById('bannerInput').click()" title="เปลี่ยนแบนเนอร์">
 <img id="storeBanner" src="https://placehold.co/800x200/F4C9D6/3E2723?text=Banner" alt="Banner" class="w-full h-32 sm:h-48 object-cover transition-transform duration-700 group-hover:scale-105">
@@ -1146,7 +1147,7 @@ var supabase = window.supabaseDb;
 
 // --- Global State ---
 let netflixAccounts = [];
-let telegramSettings = { token: '', chatId: '', pin: '0835' }; // เพิ่มตัวแปรเก็บ PIN ใน Global State
+let telegramSettings = { token: '', chatId: '', pin: '0835' }; // อัปเดตเพื่อรองรับ PIN จากฐานข้อมูล
 let collapsedAccounts = new Set();
 let accountIdToDelete = null;
 let screenToDelete = { id: null, accountId: null, screenIndex: null };
@@ -1237,19 +1238,24 @@ function hideLoadingScreen() {
     if(loader) loader.classList.add('hidden-loader');
 }
 
+// อัปเดตดักจับ Network Error ให้ดีขึ้นเพื่อป้องกันแอปเงียบเมื่อเน็ตหลุด
 async function loadData() {
     const statusText = document.getElementById('loading-status-text');
     if(statusText) statusText.textContent = 'กำลังโหลดข้อมูลจากฐานข้อมูล...';
 
     try {
         // Apps
-        const { data: appsData } = await supabase.from('apps').select('*');
+        const { data: appsData, error: appsErr } = await supabase.from('apps').select('*');
+        if (appsErr) throw appsErr;
         customApps = appsData || [];
         appConfigCache = {};
 
         // Accounts & Screens
-        const { data: accData } = await supabase.from('accounts').select('*, apps(name)');
-        const { data: screenData } = await supabase.from('screens').select('*');
+        const { data: accData, error: accErr } = await supabase.from('accounts').select('*, apps(name)');
+        if (accErr) throw accErr;
+        
+        const { data: screenData, error: screenErr } = await supabase.from('screens').select('*');
+        if (screenErr) throw screenErr;
 
         netflixAccounts = (accData || []).map(acc => {
             const screens = (screenData || []).filter(s => s.account_id === acc.id).sort((a,b) => a.screen_index - b.screen_index);
@@ -1273,7 +1279,8 @@ async function loadData() {
         }).sort((a,b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
         // Transactions
-        const { data: txData } = await supabase.from('transactions').select('*').order('transaction_date', { ascending: false });
+        const { data: txData, error: txErr } = await supabase.from('transactions').select('*').order('transaction_date', { ascending: false });
+        if (txErr) throw txErr;
         monaliTransactions = (txData || []).map(tx => ({
             id: tx.id,
             type: tx.type,
@@ -1283,17 +1290,20 @@ async function loadData() {
         }));
 
         // Templates
-        const { data: tplData } = await supabase.from('templates').select('*').order('created_at', {ascending: true});
+        const { data: tplData, error: tplErr } = await supabase.from('templates').select('*').order('created_at', {ascending: true});
+        if (tplErr) throw tplErr;
         formTemplates = (tplData && tplData.length > 0) ? tplData : [defaultTemplate];
 
         // Settings
-        const { data: settingsData } = await supabase.from('settings').select('*');
+        const { data: settingsData, error: setErr } = await supabase.from('settings').select('*');
+        if (setErr) throw setErr;
+        
         const stMap = {};
         (settingsData || []).forEach(s => stMap[s.key] = s.value);
 
         telegramSettings.token = stMap['tg_token'] || '';
         telegramSettings.chatId = stMap['tg_chat_id'] || '';
-        telegramSettings.pin = stMap['system_pin'] || '0835'; // ดึงค่า PIN จาก DB อย่างปลอดภัย
+        telegramSettings.pin = stMap['system_pin'] || '0835'; // โหลด PIN อย่างปลอดภัยจาก Table
 
         if (stMap['logo_base64']) {
             document.getElementById('storeLogo').src = stMap['logo_base64'];
@@ -1309,11 +1319,13 @@ async function loadData() {
     } catch (error) {
         console.error("Load Data Error:", error);
         if(statusText) statusText.textContent = 'เกิดข้อผิดพลาดในการโหลดข้อมูล';
-        showToast('โหลดข้อมูลไม่สำเร็จ: ' + error.message);
+        let msg = error.message;
+        if (msg === 'Failed to fetch') msg = 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาตรวจสอบอินเทอร์เน็ต';
+        showToast('โหลดข้อมูลไม่สำเร็จ: ' + msg);
     }
 }
 
-// Wrapper ป้องกันกดปุ่มซ้ำ และแสดง Loading UI (อัปเดตการดักจับ Error เพื่อป้องกัน Schema Leak)
+// อัปเดต Wrapper ป้องกันการคาย Error Constraint ออกไปให้ผู้ใช้เห็นโต้งๆ
 async function requireAdminAuthAction(btn, actionFunc) {
     if (!currentAdmin) {
         showToast('หากต้องการแก้ไขข้อมูล โปรดเข้าสู่ระบบผู้ดูแล 🔒');
@@ -1327,12 +1339,11 @@ async function requireAdminAuthAction(btn, actionFunc) {
         await actionFunc();
     } catch (err) {
         console.error(err);
-        // Sanitize Error Messages
-        let errMsg = 'เกิดข้อผิดพลาดในการดำเนินการ';
-        if (err.message && err.message.includes('violates foreign key')) {
+        let errMsg = err.message || 'เกิดข้อผิดพลาดในการดำเนินการ';
+        if (errMsg.includes('violates foreign key')) {
             errMsg = 'ไม่สามารถดำเนินการได้ เนื่องจากข้อมูลถูกใช้งานอยู่ที่ส่วนอื่น';
-        } else if (err.message) {
-            errMsg = err.message;
+        } else if (errMsg.includes('Failed to fetch')) {
+            errMsg = 'เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ต';
         }
         showToast('ข้อผิดพลาด: ' + errMsg);
     } finally {
@@ -1482,7 +1493,6 @@ function getAccountApp(account) {
     return customApps.length > 0 ? customApps[0].name : 'แอปทั่วไป';
 }
 
-// ช่วยคืนค่า App ID หรือสร้างใหม่ถ้าพิมพ์ชื่อแปลกๆ เข้ามา
 async function resolveAppId(appName) {
     let app = customApps.find(a => a.name.toLowerCase() === appName.toLowerCase());
     if (app) return app.id;
@@ -1658,8 +1668,11 @@ function deleteCustomApp(appId, event) {
             requestAnimationFrame(() => renderManageAppsList());
             showToast(`ลบแอปออกจากรายการแล้ว 🗑️`);
         } catch(err) {
-            // Sanitize Error Here Too
-            showToast('ไม่สามารถลบได้ มีบัญชีที่ผูกใช้งานอยู่กับแอปนี้');
+            let errMsg = err.message || 'เกิดข้อผิดพลาด';
+            if (errMsg.includes('violates foreign key')) {
+                errMsg = 'ไม่สามารถลบได้ มีบัญชีที่ผูกใช้งานอยู่กับแอปนี้';
+            }
+            showToast('ข้อผิดพลาด: ' + errMsg);
         }
     })();
 }
@@ -1690,13 +1703,19 @@ function renderDashboard() {
     renderAppFilterTabs();
     const listContainer = document.getElementById('accountsList');
     const emptyState = document.getElementById('emptyState');
-    let totalCount = netflixAccounts.length;
+    
+    // กรองบัญชีตามหมวดหมู่แอปที่เลือก ก่อนนำไปนับสถิติ
+    const accountsForStats = netflixAccounts.filter(acc => {
+        return selectedAppFilter === 'all' || getAccountApp(acc).toLowerCase() === selectedAppFilter.toLowerCase();
+    });
+
+    let totalCount = accountsForStats.length;
     let soldCount = 0;
     let availCount = 0;
     let kickCount = 0;
     let waitCutCount = 0;
     let cutoffCount = 0;
-    netflixAccounts.forEach(account => {
+    accountsForStats.forEach(account => {
         const accStatus = getAccountExpireStatus(account.accountExpireDate);
         if (accStatus === 'due_today') cutoffCount++;
         else if (accStatus === 'overdue') waitCutCount++;
@@ -1720,9 +1739,7 @@ function renderDashboard() {
         return;
     }
     emptyState.classList.add('hidden');
-    const filteredAccounts = netflixAccounts.filter(account => {
-        const appMatch = selectedAppFilter === 'all' || getAccountApp(account).toLowerCase() === selectedAppFilter.toLowerCase();
-        if (!appMatch) return false;
+    const filteredAccounts = accountsForStats.filter(account => {
         if (!searchQuery) return true;
         const q = searchQuery.toLowerCase();
         const accMatch = (account.name || '').toLowerCase().includes(q) ||
@@ -1738,7 +1755,9 @@ function renderDashboard() {
         if (searchQuery) {
             listContainer.innerHTML = `<div class="text-center py-12 bg-white rounded-3xl border-2 border-petal shadow-soft"> <div class="w-16 h-16 bg-petal-light text-espresso/50 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl border-2 border-petal shadow-inner"> <i class="fa-solid fa-magnifying-glass"></i> </div> <h4 class="font-bold text-espresso text-lg">ไม่พบข้อมูล "${escapeHTML(searchQuery)}"</h4> <p class="text-sm text-espresso/60 mt-1 mb-5 font-medium">ลองค้นหาด้วยคำอื่น เช่น อีเมล หรือรหัส PIN</p> <button onclick="clearSearch()" class="text-xs font-bold text-espresso bg-petal border-2 border-transparent px-5 py-3 rounded-2xl shadow-cute hover:bg-petal-deep transition-colors"> ล้างการค้นหา </button> </div>`;
         } else {
-            listContainer.innerHTML = `<div class="text-center py-12 bg-white rounded-3xl border-2 border-petal shadow-soft"> <div class="w-16 h-16 bg-petal-light text-espresso/50 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl border-2 border-petal shadow-inner"> <i class="fa-solid fa-filter"></i> </div> <h4 class="font-bold text-espresso text-lg">ไม่มีบัญชีในหมวดหมู่ "${escapeHTML(selectedAppFilter)}"</h4> <p class="text-sm text-espresso/60 mt-1 mb-5 font-medium">คุณสามารถเพิ่มบัญชีใหม่สำหรับแอปนี้ได้เลยค่ะ</p> <button onclick="openAddAccountModal('${escapeJS(selectedAppFilter)}')" class="text-xs font-bold text-espresso bg-petal border-2 border-transparent px-5 py-3 rounded-2xl shadow-cute hover:bg-petal-deep transition-colors"> + เพิ่มบัญชี ${escapeHTML(selectedAppFilter)} </button> </div>`;
+            let btnAction = selectedAppFilter === 'all' ? "openAddAccountModal()" : `openAddAccountModal('${escapeJS(selectedAppFilter)}')`;
+            let btnText = selectedAppFilter === 'all' ? "+ เพิ่มบัญชีใหม่" : `+ เพิ่มบัญชี ${escapeHTML(selectedAppFilter)}`;
+            listContainer.innerHTML = `<div class="text-center py-12 bg-white rounded-3xl border-2 border-petal shadow-soft"> <div class="w-16 h-16 bg-petal-light text-espresso/50 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl border-2 border-petal shadow-inner"> <i class="fa-solid fa-filter"></i> </div> <h4 class="font-bold text-espresso text-lg">ไม่มีบัญชีในหมวดหมู่ "${escapeHTML(selectedAppFilter)}"</h4> <p class="text-sm text-espresso/60 mt-1 mb-5 font-medium">คุณสามารถเพิ่มบัญชีใหม่สำหรับแอปนี้ได้เลยค่ะ</p> <button onclick="${btnAction}" class="text-xs font-bold text-espresso bg-petal border-2 border-transparent px-5 py-3 rounded-2xl shadow-cute hover:bg-petal-deep transition-colors"> ${btnText} </button> </div>`;
         }
         return;
     }
@@ -1923,6 +1942,9 @@ function renderAvailableList() {
     let count = 0;
     netflixAccounts.forEach(acc => {
         const appName = getAccountApp(acc);
+        // กรองแอพที่แสดงใน Modal ตาม Tab ที่เลือก
+        if (selectedAppFilter !== 'all' && appName.toLowerCase() !== selectedAppFilter.toLowerCase()) return;
+        
         const appConf = getAppConfig(appName);
         acc.screens.forEach((screen, index) => {
             if (getEffectiveScreenStatus(screen) === 'available') {
@@ -1948,6 +1970,9 @@ function renderKickList() {
     let count = 0;
     netflixAccounts.forEach(acc => {
         const appName = getAccountApp(acc);
+        // กรองแอพที่แสดงใน Modal ตาม Tab ที่เลือก
+        if (selectedAppFilter !== 'all' && appName.toLowerCase() !== selectedAppFilter.toLowerCase()) return;
+        
         const appConf = getAppConfig(appName);
         acc.screens.forEach((screen, index) => {
             const effStatus = getEffectiveScreenStatus(screen);
@@ -1975,6 +2000,9 @@ function renderWaitCutList() {
     let count = 0;
     netflixAccounts.forEach(acc => {
         const appName = getAccountApp(acc);
+        // กรองแอพที่แสดงใน Modal ตาม Tab ที่เลือก
+        if (selectedAppFilter !== 'all' && appName.toLowerCase() !== selectedAppFilter.toLowerCase()) return;
+        
         const appConf = getAppConfig(appName);
         const isAccOverdue = getAccountExpireStatus(acc.accountExpireDate) === 'overdue';
         if (isAccOverdue) {
@@ -2006,6 +2034,10 @@ function renderCutoffList() {
     htmlParts.push('<div class="space-y-3">');
     let count = 0;
     netflixAccounts.forEach(acc => {
+        const appName = getAccountApp(acc);
+        // กรองแอพที่แสดงใน Modal ตาม Tab ที่เลือก
+        if (selectedAppFilter !== 'all' && appName.toLowerCase() !== selectedAppFilter.toLowerCase()) return;
+        
         if (acc.accountExpireDate) {
             const accStatus = getAccountExpireStatus(acc.accountExpireDate);
             if (accStatus === 'due_today') {
@@ -2030,22 +2062,14 @@ function verifyPasscodeForSettings() {
     animateModalOpen('passcodeModal');
 }
 function closePasscodeModal() { animateModalClose('passcodeModal'); }
-
-// อัปเดตฟังก์ชันเช็ค PIN ให้รับค่าจาก Settings (ผ่าน RLS ป้องกันไว้แล้ว)
 function verifySettingsPasscode(e) {
     e.preventDefault();
-    if (currentAdmin) {
-        const inputPin = document.getElementById('settingsPasscodeInput').value.trim();
-        // เทียบค่ากับที่ดึงมาจากฐานข้อมูล (ถ้าไม่มีให้ fallback แต่คนทั่วไปเข้าไม่ถึงส่วนนี้อยู่แล้ว)
-        const correctPin = telegramSettings.pin || '0835';
-        
-        if (inputPin === correctPin) {
-            closePasscodeModal();
-            showToast('ยืนยันรหัสผ่านสำเร็จ ✨');
-            openSettingsModal();
-        } else {
-            showToast('รหัสผ่านไม่ถูกต้อง ❌');
-        }
+    if (document.getElementById('settingsPasscodeInput').value.trim() === telegramSettings.pin) {
+        closePasscodeModal();
+        showToast('ยืนยันรหัสผ่านสำเร็จ ✨');
+        openSettingsModal();
+    } else {
+        showToast('รหัสผ่านไม่ถูกต้อง ❌');
     }
 }
 
@@ -2737,7 +2761,7 @@ function renderTransactions() {
     const now = new Date();
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-    const startOfYear = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+    const startOfYear = new Date(now.getFullYear(), 0, 1).getTime();
     const filteredTx = monaliTransactions.filter(tx => {
         const txTime = new Date(tx.date).getTime();
         if (accFilterMode === 'today') return txTime >= startOfDay;
