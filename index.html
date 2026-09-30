@@ -303,7 +303,7 @@ text-align: left;
 <div class="absolute inset-[-14px] border-[3px] border-dashed border-petal-deep rounded-full opacity-40" style="animation: spin 15s linear infinite;"></div>
 <div class="absolute inset-[-6px] border-2 border-petal-light rounded-full opacity-80" style="animation: spin 10s linear infinite reverse;"></div>
 <div class="w-32 h-32 bg-white rounded-full shadow-glow flex items-center justify-center relative z-10 border-4 border-white p-1 transition-transform duration-500 group-hover:scale-105">
-<img id="loadingScreenLogo" src="https://placehold.co/150x150/F4C9D6/3E2723?text=Logo" alt="Loading Logo" class="w-full h-full object-cover rounded-full shadow-inner relative z-10">
+<img id="loadingScreenLogo" src="https://placehold.co/300x300/F4C9D6/3E2723?text=Logo" alt="Loading Logo" class="w-full h-full object-cover rounded-full shadow-inner relative z-10">
 </div>
 <div class="absolute -top-3 -right-3 bg-white w-8 h-8 rounded-full shadow-sm border-2 border-petal-light flex items-center justify-center z-20 animate-bounce" style="animation-duration: 2s;">
 <i class="fa-solid fa-star text-yellow-400 text-xs"></i>
@@ -349,7 +349,7 @@ text-align: left;
 <!-- Logo & Brand -->
 <div class="flex items-center gap-4 sm:gap-5">
 <div class="relative group cursor-pointer shrink-0" onclick="document.getElementById('logoInput').click()" title="เปลี่ยนโลโก้ร้าน">
-<img id="storeLogo" src="https://placehold.co/100x100/F4C9D6/3E2723?text=Logo" alt="Logo" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl sm:rounded-3xl object-cover shadow-cute border-2 border-white">
+<img id="storeLogo" src="https://placehold.co/300x300/F4C9D6/3E2723?text=Logo" alt="Logo" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl sm:rounded-3xl object-cover shadow-cute border-2 border-white">
 <div class="absolute inset-0 bg-black/40 rounded-2xl sm:rounded-3xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
 <i class="fa-solid fa-camera text-white text-xs"></i>
 </div>
@@ -371,7 +371,7 @@ text-align: left;
 </nav>
 <main id="dashboardView" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 transition-opacity duration-300 mt-2">
 <div class="mb-6 relative group rounded-3xl overflow-hidden shadow-soft border-2 border-white cursor-pointer" onclick="document.getElementById('bannerInput').click()" title="เปลี่ยนแบนเนอร์">
-<img id="storeBanner" src="https://placehold.co/800x200/F4C9D6/3E2723?text=Banner" alt="Banner" class="w-full h-32 sm:h-48 object-cover transition-transform duration-700 group-hover:scale-105">
+<img id="storeBanner" src="https://placehold.co/1200x300/F4C9D6/3E2723?text=Banner" alt="Banner" class="w-full h-32 sm:h-48 object-cover transition-transform duration-700 group-hover:scale-105">
 <div class="absolute inset-0 bg-espresso/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
 <i class="fa-solid fa-camera text-ivory text-3xl mb-2"></i>
 <span class="text-ivory font-medium shadow-sm">คลิกเพื่อเปลี่ยนแบนเนอร์</span>
@@ -1183,7 +1183,7 @@ var supabase = window.supabaseDb;
 // --- Global State ---
 let netflixAccounts = [];
 let telegramSettings = { token: '', chatId: '' };
-let expandedAccounts = new Set(); // เปลี่ยนจาก collapsedAccounts ให้พับเป็นค่าเริ่มต้น
+let collapsedAccounts = new Set();
 let accountIdToDelete = null;
 let screenToDelete = { id: null, accountId: null, screenIndex: null };
 let selectedAppFilter = 'all';
@@ -1289,6 +1289,8 @@ async function loadData() {
 
         netflixAccounts = (accData || []).map(acc => {
             const screens = (screenData || []).filter(s => s.account_id === acc.id).sort((a,b) => a.screen_index - b.screen_index);
+            // Default collapse accounts
+            collapsedAccounts.add(acc.id);
             return {
                 id: acc.id,
                 app: acc.apps?.name || 'แอปทั่วไป',
@@ -1329,6 +1331,7 @@ async function loadData() {
 
         telegramSettings.token = stMap['tg_token'] || '';
         telegramSettings.chatId = stMap['tg_chat_id'] || '';
+        telegramSettings.pin = stMap['system_pin'] || '0835';
 
         if (stMap['logo_base64']) {
             document.getElementById('storeLogo').src = stMap['logo_base64'];
@@ -1363,7 +1366,14 @@ async function requireAdminAuthAction(btn, actionFunc) {
     try {
         await actionFunc();
     } catch (err) {
-        showToast('เกิดข้อผิดพลาด: ' + err.message);
+        // Sanitize Error Message
+        let msg = err.message;
+        if(msg.includes('foreign key constraint')) {
+            msg = 'ไม่สามารถลบได้ เนื่องจากข้อมูลนี้ถูกใช้งานอยู่ค่ะ';
+        } else if(msg.includes('Failed to fetch')) {
+            msg = 'ปัญหาการเชื่อมต่ออินเทอร์เน็ตค่ะ';
+        }
+        showToast('เกิดข้อผิดพลาด: ' + msg);
         console.error(err);
     } finally {
         btn.innerHTML = origHtml;
@@ -1689,9 +1699,11 @@ function deleteCustomApp(appId, event) {
             renderPresetAppChips('editAppPresetChips', 'editAccApp', document.getElementById('editAccApp')?.value);
             scheduleRender();
             requestAnimationFrame(() => renderManageAppsList());
-            showToast(`ลบแอปออกจากรายการแล้ว 🗑️️`);
+            showToast(`ลบแอปออกจากรายการแล้ว 🗑️`);
         } catch(err) {
-            showToast('ไม่สามารถลบได้ อาจมีบัญชีที่ใช้งานอยู่: ' + err.message);
+            let msg = err.message;
+            if(msg.includes('foreign key constraint')) msg = 'ไม่สามารถลบได้ อาจมีบัญชีที่ใช้งานแอปนี้อยู่';
+            showToast(msg);
         }
     })();
 }
@@ -1824,9 +1836,9 @@ function renderDashboard() {
         });
         htmlParts.push(`<div class="pt-2 mb-4"> <div class="flex items-center justify-between pb-2 border-b-2 border-petal"> <div class="flex items-center gap-2.5"> <span class="px-3 py-1.5 rounded-xl text-xs font-bold ${appConf.badge} flex items-center gap-1.5 shadow-sm border border-transparent"> <i class="${appConf.icon}"></i> ${escapeHTML(appName)} </span> <span class="text-xs font-bold text-espresso/80">${accounts.length} บัญชี</span> </div> <div class="flex items-center gap-2.5 text-[11px] text-espresso font-bold bg-white px-3 py-1.5 rounded-xl shadow-sm border border-petal"> <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow-sm"></span> ว่าง ${appAvailCount}</span> <span class="text-espresso/30">|</span> <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-petal-deep inline-block shadow-sm"></span> ใช้งาน ${appSoldCount}</span> </div> </div> </div> <div class="space-y-4 sm:space-y-5 mb-8">`);
         accounts.forEach(account => {
-            const isExpanded = expandedAccounts.has(account.id);
-            const containerClass = isExpanded ? 'space-y-2.5 sm:space-y-3' : 'space-y-2.5 sm:space-y-3 hidden';
-            const iconClass = isExpanded ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down';
+            const isCollapsed = collapsedAccounts.has(account.id);
+            const containerClass = isCollapsed ? 'space-y-2.5 sm:space-y-3 hidden' : 'space-y-2.5 sm:space-y-3';
+            const iconClass = isCollapsed ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-up';
             
             const accStatus = getAccountExpireStatus(account.accountExpireDate);
             const isCutoff = accStatus === 'due_today';
@@ -1916,14 +1928,14 @@ function getStatusConfig(status) {
 function toggleScreens(accountId) {
     const container = document.getElementById(`screens-container-${accountId}`);
     const icon = document.getElementById(`icon-toggle-${accountId}`);
-    if (expandedAccounts.has(accountId)) {
-        expandedAccounts.delete(accountId);
-        container.classList.add('hidden');
-        icon.className = 'fa-solid fa-chevron-down text-sm';
-    } else {
-        expandedAccounts.add(accountId);
+    if (collapsedAccounts.has(accountId)) {
+        collapsedAccounts.delete(accountId);
         container.classList.remove('hidden');
         icon.className = 'fa-solid fa-chevron-up text-sm';
+    } else {
+        collapsedAccounts.add(accountId);
+        container.classList.add('hidden');
+        icon.className = 'fa-solid fa-chevron-down text-sm';
     }
 }
 
@@ -2029,14 +2041,15 @@ function closeKickListModal() { animateModalClose('kickListModal'); }
 
 function renderKickList() {
     const container = document.getElementById('kickListContent');
-    const filterVal = document.getElementById('filterKickApp').value;
+    const filterVal = document.getElementById('filterKickApp');
+    const currentFilter = filterVal ? filterVal.value : 'all';
 
     const htmlParts = [];
     htmlParts.push('<div class="space-y-3">');
     let count = 0;
     netflixAccounts.forEach(acc => {
         const appName = getAccountApp(acc);
-        if (filterVal !== 'all' && appName.toLowerCase() !== filterVal.toLowerCase()) return;
+        if (currentFilter !== 'all' && appName.toLowerCase() !== currentFilter.toLowerCase()) return;
         
         const appConf = getAppConfig(appName);
         acc.screens.forEach((screen, index) => {
@@ -2378,7 +2391,7 @@ function executeDeleteScreen(btn) {
         if(error) throw error;
         await loadData();
         closeDeleteScreenModal();
-        showToast('ลบจอดังกล่าวเรียบร้อยแล้วค่ะ 🗑️');
+        showToast('ลบจอดังกล่าวเรียบร้อยแล้วค่ะ 🗑️️');
     });
 }
 
@@ -2396,7 +2409,7 @@ function executeDeleteAccount(btn) {
         if (!accountIdToDelete) return;
         const { error } = await supabase.from('accounts').delete().eq('id', accountIdToDelete);
         if(error) throw error;
-        expandedAccounts.delete(accountIdToDelete);
+        collapsedAccounts.delete(accountIdToDelete);
         await loadData();
         closeDeleteModal();
         showToast('ลบข้อมูลเรียบร้อยแล้วค่ะ 🗑️');
@@ -2740,12 +2753,12 @@ function handleLogoUpload(event) {
         img.onload = async function() {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            canvas.width = img.width > 200 ? 200 : img.width;
+            canvas.width = img.width > 512 ? 512 : img.width;
             canvas.height = img.height * (canvas.width / img.width);
             ctx.fillStyle = "#F5F0E6";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.9);
             try {
                 await supabase.from('settings').upsert({ key: 'logo_base64', value: compressedBase64 });
                 document.getElementById('storeLogo').src = compressedBase64;
