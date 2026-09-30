@@ -2454,6 +2454,21 @@ async function logoutAdmin() {
     await loadData();
 }
 
+function openAutoFormModal(presetData = null) {
+    updateTemplateDropdown();
+    document.getElementById('afEmail').value = presetData?.email || '';
+    document.getElementById('afPassword').value = presetData?.password || '';
+    document.getElementById('afScreen').value = presetData?.screen || '';
+    document.getElementById('afPin').value = presetData?.pin || '';
+    document.getElementById('afExpire').value = presetData?.expire || '';
+    generateFormText();
+    animateModalOpen('autoFormModal');
+}
+
+function closeAutoFormModal() { 
+    animateModalClose('autoFormModal'); 
+}
+
 function updateTemplateDropdown() {
     const select = document.getElementById('templateSelect');
     const currentValue = select.value;
