@@ -3011,6 +3011,7 @@ function renderTransactions() {
 
     // อัปเดตป้ายกำกับวันที่แสดงผล
     const displayLabel = document.getElementById('accDisplayDateLabel');
+    const dateInput = document.getElementById('accDatePickerInput');
     const badgeLabel = document.getElementById('accHistoryPeriodBadge');
     const selDateObj = new Date(selY, selM - 1, selD);
     const thaiDateText = selDateObj.toLocaleDateString('th-TH', { 
@@ -3021,6 +3022,7 @@ function renderTransactions() {
     });
 
     if (displayLabel) displayLabel.textContent = thaiDateText;
+    if (dateInput) dateInput.value = selectedAccDate;
     if (badgeLabel) {
         if (accFilterMode === 'day') badgeLabel.textContent = `วันที่ ${thaiDateText}`;
         else if (accFilterMode === 'month') badgeLabel.textContent = `เดือนนี้ (${now.toLocaleDateString('th-TH', { month: 'short', year: 'numeric' })})`;
