@@ -96,7 +96,6 @@ content: ''; position: absolute; background: #ffffff; border-radius: 50%;
 .c3 { top: 60%; width: 300px; height: 90px; --scale: 1.8; animation-duration: 50s; animation-delay: -5s; }
 .c4 { top: 78%; width: 220px; height: 70px; --scale: 1.4; animation-duration: 70s; animation-delay: -45s; opacity: 0.7; }
 .c5 { top: 25%; width: 280px; height: 85px; --scale: 1.6; animation-duration: 55s; animation-delay: -25s; }
-/* --- Loading Screen Styles --- */
 #loading-screen {
 position: fixed;
 inset: 0;
@@ -167,7 +166,6 @@ opacity: 1;
 transform: translateY(0);
 visibility: visible;
 }
-/* --- Animations for Pop-up and Float --- */
 @keyframes floatUpDown {
 0%, 100% { transform: translateY(0); }
 50% { transform: translateY(-15px); }
@@ -251,7 +249,6 @@ aspect-ratio: 1;
 bottom: 20%;
 right: 5%;
 }
-/* Click Sparkle Effect */
 .click-sparkle {
 position: fixed;
 pointer-events: none;
@@ -268,7 +265,6 @@ animation: popSparkle 0.7s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 50% { transform: translate(var(--tx), var(--ty)) scale(1.2) rotate(var(--rot)); opacity: 1; }
 100% { transform: translate(calc(var(--tx) * 1.2), calc(var(--ty) * 1.2)) scale(0) rotate(calc(var(--rot) * 1.5)); opacity: 0; }
 }
-/* Normalize date input for iOS Safari so it matches other text fields */
 input[type="date"] {
 -webkit-appearance: none;
 -moz-appearance: none;
@@ -285,7 +281,6 @@ text-align: left;
 </style>
 </head>
 <body class="font-sans text-espresso min-h-screen pb-16">
-<!-- Loading Screen -->
 <div id="loading-screen">
 <div class="absolute inset-[-50%] z-0 pointer-events-none" style="background-image: radial-gradient(#F8B1C8 3.5px, transparent 3.5px); background-size: 50px 50px; opacity: 0.15; animation: panBg 40s linear infinite;"></div>
 <i class="fa-solid fa-heart absolute text-white/70 text-[18rem] sm:text-[25rem] -top-10 -left-10 sm:-top-20 sm:-left-20 z-0 animate-pulse" style="animation-duration: 4s;"></i>
@@ -342,11 +337,9 @@ text-align: left;
 <div class="cloud c4"></div>
 <div class="cloud c5"></div>
 </div>
-<!-- แถบเมนู Navbar แบบกระจกฝ้า (Glassmorphism) ลอยตัวและปรับขนาดความกว้างให้พอดี -->
 <nav class="sticky top-4 z-40 mx-4 mt-4 transition-all duration-300">
 <div class="max-w-4xl mx-auto">
 <div class="bg-white/70 backdrop-blur-md border-2 border-white/50 shadow-glass rounded-3xl h-20 sm:h-24 flex items-center justify-between px-6 sm:px-8">
-<!-- Logo & Brand -->
 <div class="flex items-center gap-4 sm:gap-5">
 <div class="relative group cursor-pointer shrink-0" onclick="document.getElementById('logoInput').click()" title="เปลี่ยนโลโก้ร้าน">
 <img id="storeLogo" src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20width%3D%22300%22%20height%3D%22300%22%20fill%3D%22%23F4C9D6%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2250%22%20font-weight%3D%22bold%22%20fill%3D%22%233E2723%22%3ELogo%3C%2Ftext%3E%3C%2Fsvg%3E" alt="Logo" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl sm:rounded-3xl object-cover shadow-cute border-2 border-white">
@@ -356,12 +349,10 @@ text-align: left;
 </div>
 <input type="file" id="logoInput" accept="image/*" class="hidden" onchange="handleLogoUpload(event)">
 <div class="flex flex-col justify-center mt-1">
-<!-- ชื่อร้าน 3D พาสเทล -->
 <span class="font-kanit italic font-black uppercase text-3xl sm:text-[2.5rem] tracking-[0.2em] leading-none mb-1" style="color: #FF8EA6; -webkit-text-stroke: 1.5px #FFFFFF; text-shadow: 3px 3px 0px #FFB3C6, 4px 4px 12px rgba(255, 142, 166, 0.6);">MONALI</span>
 <span class="font-extrabold text-[13px] sm:text-[15px] text-espresso/80 leading-tight tracking-wider">- ระบบจัดการหลังร้าน -</span>
 </div>
 </div>
-<!-- Admin Button (Right side) แบบไอคอนตั้งค่าเท่านั้น -->
 <button onclick="openAdminModal()" class="relative bg-white/80 hover:bg-white border-2 border-petal-light hover:border-petal-deep w-10 h-10 sm:w-11 sm:h-11 rounded-[1rem] transition-all shadow-sm hover:shadow-cute flex items-center justify-center group shrink-0" title="ตั้งค่า/ผู้ดูแลระบบ">
 <i class="fa-solid fa-gear text-petal-deep text-lg sm:text-xl group-hover:scale-110 transition-transform"></i>
 <span id="adminBadgeDot" class="hidden" style="display: none !important;"></span>
@@ -378,7 +369,6 @@ text-align: left;
 </div>
 <input type="file" id="bannerInput" accept="image/*" class="hidden" onchange="handleBannerUpload(event)">
 </div>
-<!-- 6 Compact Dashboard Stats (สี่เหลี่ยมเล็กเป็นสีชมพูพาสเทลและไอคอนสีเอสเพรสโซโทนเดียวกันทั้งหมด) -->
 <div class="grid grid-cols-3 sm:grid-cols-6 gap-y-6 sm:gap-y-10 gap-x-2 sm:gap-x-4 mb-8 pt-4 sm:pt-6 px-1">
 <div class="relative group cursor-pointer transition-transform duration-300 hover:-translate-y-1.5 pt-6 sm:pt-8">
 <div class="w-[85%] max-w-[110px] h-[30px] sm:h-[38px] mx-auto cloud-stat"></div>
@@ -453,7 +443,6 @@ text-align: left;
 </div>
 </div>
 </div>
-<!-- Search Bar and 4 Rectangular Action Buttons -->
 <div class="mb-6 space-y-4">
 <div class="relative">
 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -464,7 +453,6 @@ text-align: left;
 <i class="fa-solid fa-circle-xmark text-lg"></i>
 </button>
 </div>
-<!-- 4 Action Buttons under Search Bar -->
 <div class="grid grid-cols-4 gap-2 sm:gap-3 mt-2">
 <button onclick="openAutoFormModal()" class="relative overflow-hidden group py-3 rounded-[1.25rem] bg-white border-2 border-petal text-espresso hover:bg-petal-light/60 transition-all flex flex-col items-center justify-center shadow-sm hover:shadow-md hover:-translate-y-0.5" title="สร้างฟอร์มข้อความ">
 <div class="absolute inset-0 opacity-[0.04]" style="background-image: repeating-linear-gradient(-45deg, currentColor 0, currentColor 2px, transparent 2px, transparent 8px);"></div>
@@ -528,9 +516,7 @@ text-align: left;
 </button>
 </div>
 </main>
-<!-- ระบบบัญชี รายรับ-รายจ่าย -->
 <main id="accountingView" class="hidden max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 transition-opacity duration-300">
-<!-- Header & Filter -->
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
 <div class="flex items-center gap-3">
 <button onclick="switchView('dashboard')" class="w-10 h-10 rounded-2xl bg-white border-2 border-petal text-espresso hover:bg-petal-light hover:border-petal-deep transition-all shadow-sm flex items-center justify-center text-lg">
@@ -542,7 +528,6 @@ text-align: left;
 </h2>
 </div>
 </div>
-<!-- ปุ่ม Filter โค้งมน -->
 <div class="flex bg-petal-light/30 p-1.5 rounded-[1.5rem] border-2 border-petal gap-1 overflow-x-auto no-scrollbar">
 <button onclick="setAccFilter('today')" id="btnFilterToday" class="px-5 py-2.5 rounded-[1.25rem] text-sm font-extrabold transition-all whitespace-nowrap bg-espresso text-ivory shadow-cute border-2 border-transparent">วันนี้</button>
 <button onclick="setAccFilter('month')" id="btnFilterMonth" class="px-5 py-2.5 rounded-[1.25rem] text-sm font-extrabold transition-all whitespace-nowrap bg-white text-espresso/70 border-2 border-petal hover:bg-petal-light">เดือนนี้</button>
@@ -550,7 +535,6 @@ text-align: left;
 <button onclick="setAccFilter('all')" id="btnFilterAll" class="px-5 py-2.5 rounded-[1.25rem] text-sm font-extrabold transition-all whitespace-nowrap bg-white text-espresso/70 border-2 border-petal hover:bg-petal-light">ทั้งหมด</button>
 </div>
 </div>
-<!-- 3 Stats Boxes -->
 <div class="grid grid-cols-3 gap-3 sm:gap-4 mb-6">
 <div class="bg-white border-2 border-emerald-200 rounded-3xl p-4 flex flex-col justify-center shadow-soft relative overflow-hidden group hover:shadow-cute transition-all">
 <div class="absolute -right-4 -top-4 w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center -z-0 transition-transform duration-500 group-hover:scale-110"></div>
@@ -562,7 +546,6 @@ text-align: left;
 <span class="text-xs sm:text-sm font-bold text-red-600 mb-1 relative z-10">รายจ่ายทั้งหมด</span>
 <span class="text-xl sm:text-3xl font-black text-red-500 relative z-10" id="accTotalExpense">0</span>
 </div>
-<!-- กำไรสุทธิ + Margin -->
 <div id="accProfitBox" class="bg-white border-2 border-blue-200 rounded-3xl p-4 flex flex-col justify-center shadow-soft transition-colors relative overflow-hidden group hover:shadow-cute">
 <div class="absolute -right-4 -top-4 w-20 h-20 bg-blue-50/50 rounded-full flex items-center justify-center -z-0 transition-transform duration-500 group-hover:scale-110"></div>
 <div class="flex justify-between items-start relative z-10">
@@ -573,7 +556,6 @@ text-align: left;
 </div>
 </div>
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-<!-- Left: Small Form -->
 <div class="lg:col-span-1 space-y-6">
 <form id="addTransactionForm" onsubmit="handleAddTransaction(event)" class="bg-white p-5 rounded-3xl border-2 border-petal shadow-soft space-y-4 sticky top-32">
 <h4 class="text-base font-bold text-espresso border-b-2 border-petal pb-2 flex items-center gap-2">
@@ -592,13 +574,10 @@ text-align: left;
 </button>
 </form>
 </div>
-<!-- Right: Chart & Transaction List -->
 <div class="lg:col-span-2 space-y-6">
-<!-- กราฟแท่ง -->
 <div class="bg-white p-5 rounded-3xl border-2 border-petal shadow-soft relative h-48">
 <canvas id="accountingChart"></canvas>
 </div>
-<!-- ประวัติรายการ -->
 <div class="bg-white p-5 rounded-3xl border-2 border-petal shadow-soft h-[400px] flex flex-col">
 <div class="flex items-center justify-between border-b-2 border-petal pb-3 mb-4">
 <h4 class="text-base font-bold text-espresso flex items-center gap-2">
@@ -608,14 +587,11 @@ text-align: left;
 <i class="fa-solid fa-trash-can mr-1"></i> ล้างประวัติ
 </button>
 </div>
-<div id="transactionList" class="flex-1 overflow-y-auto space-y-3 no-scrollbar pr-1">
-<!-- Items injected here -->
-</div>
+<div id="transactionList" class="flex-1 overflow-y-auto space-y-3 no-scrollbar pr-1"></div>
 </div>
 </div>
 </div>
 </main>
-<!-- Modal: Add Account -->
 <div id="addAccountModal" class="fixed inset-0 bg-espresso/60 z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
 <div class="bg-white rounded-[2rem] w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-petal">
 <div class="px-6 py-5 border-b border-petal flex justify-between items-center bg-petal-light/50 shrink-0">
@@ -661,7 +637,6 @@ text-align: left;
 </div>
 </div>
 </div>
-<!-- Modal: Edit Account -->
 <div id="editAccountModal" class="fixed inset-0 bg-espresso/60 z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
 <div class="bg-white rounded-[2rem] w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-petal">
 <div class="px-6 py-5 border-b border-petal flex justify-between items-center bg-petal-light/50 shrink-0">
@@ -707,7 +682,6 @@ text-align: left;
 </div>
 </div>
 </div>
-<!-- Modal: Edit Screen -->
 <div id="editScreenModal" class="fixed inset-0 bg-espresso/60 z-50 hidden flex items-end sm:items-center justify-center sm:p-4 opacity-0 transition-opacity duration-300">
 <div class="bg-white rounded-t-[2rem] sm:rounded-[2rem] w-full max-w-md shadow-2xl transform translate-y-full sm:translate-y-0 sm:scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-petal">
 <div class="px-5 sm:px-6 py-5 border-b border-petal flex justify-between items-center shrink-0 w-full bg-petal-light/50">
@@ -753,8 +727,7 @@ text-align: left;
 <div class="flex items-end">
 <label class="flex items-center gap-2 cursor-pointer bg-emerald-50 px-3 py-3 rounded-2xl border-2 border-emerald-200 w-full hover:bg-emerald-100 transition-colors shadow-sm">
 <input type="checkbox" id="autoRecordIncome" class="w-4 h-4 rounded text-emerald-500 focus:ring-emerald-500 border-emerald-300">
-<span class="text-[10px] sm:text-xs font-bold text-emerald-700 leading-tight">บันทึกรายรับ
-ลงระบบบัญชี</span>
+<span class="text-[10px] sm:text-xs font-bold text-emerald-700 leading-tight">บันทึกรายรับ ลงระบบบัญชี</span>
 </label>
 </div>
 </div>
@@ -776,8 +749,6 @@ text-align: left;
 </div>
 </div>
 </div>
-
-<!-- Modal: Available List -->
 <div id="availableListModal" class="fixed inset-0 bg-espresso/60 z-[55] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
 <div class="bg-white rounded-[2rem] w-full max-w-lg shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-petal">
 <div class="px-6 py-5 border-b border-petal flex justify-between items-center bg-petal-light/50 shrink-0">
@@ -791,7 +762,6 @@ text-align: left;
 <i class="fa-solid fa-xmark text-lg"></i>
 </button>
 </div>
-<!-- Filter Bar -->
 <div class="px-6 py-3 bg-white border-b border-petal flex items-center justify-between shrink-0">
 <label for="filterAvailableApp" class="text-sm font-bold text-espresso flex items-center gap-2 cursor-pointer">
 <i class="fa-solid fa-filter text-petal-deep"></i> คัดกรองแอป
@@ -803,7 +773,6 @@ text-align: left;
 <div class="p-6 overflow-y-auto bg-ivory/50" id="availableListContent"></div>
 </div>
 </div>
-<!-- Modal: Kick List -->
 <div id="kickListModal" class="fixed inset-0 bg-espresso/60 z-[55] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
 <div class="bg-white rounded-[2rem] w-full max-w-lg shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-orange-200">
 <div class="px-6 py-5 border-b border-orange-200 flex justify-between items-center bg-orange-50/80 shrink-0">
@@ -817,7 +786,6 @@ text-align: left;
 <i class="fa-solid fa-xmark text-lg"></i>
 </button>
 </div>
-<!-- Filter Bar -->
 <div class="px-6 py-3 bg-white border-b border-orange-200 flex items-center justify-between shrink-0">
 <label for="filterKickApp" class="text-sm font-bold text-espresso flex items-center gap-2 cursor-pointer">
 <i class="fa-solid fa-filter text-orange-500"></i> คัดกรองแอป
@@ -829,7 +797,6 @@ text-align: left;
 <div class="p-6 overflow-y-auto bg-ivory/50" id="kickListContent"></div>
 </div>
 </div>
-<!-- Modal: Wait Cut / Overdue Accounts List -->
 <div id="waitCutListModal" class="fixed inset-0 bg-espresso/60 z-[55] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
 <div class="bg-white rounded-[2rem] w-full max-w-lg shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-red-200">
 <div class="px-6 py-5 border-b border-red-200 flex justify-between items-center bg-red-50/80 shrink-0">
@@ -843,7 +810,6 @@ text-align: left;
 <i class="fa-solid fa-xmark text-lg"></i>
 </button>
 </div>
-<!-- Filter Bar -->
 <div class="px-6 py-3 bg-white border-b border-red-200 flex items-center justify-between shrink-0">
 <label for="filterWaitCutApp" class="text-sm font-bold text-espresso flex items-center gap-2 cursor-pointer">
 <i class="fa-solid fa-filter text-red-500"></i> คัดกรองแอป
@@ -855,7 +821,6 @@ text-align: left;
 <div class="p-6 overflow-y-auto bg-ivory/50" id="waitCutListContent"></div>
 </div>
 </div>
-<!-- Modal: Cutoff List -->
 <div id="cutoffListModal" class="fixed inset-0 bg-espresso/60 z-[55] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
 <div class="bg-white rounded-[2rem] w-full max-w-lg shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-purple-200">
 <div class="px-6 py-5 border-b border-purple-200 flex justify-between items-center bg-purple-50/80 shrink-0">
@@ -869,7 +834,6 @@ text-align: left;
 <i class="fa-solid fa-xmark text-lg"></i>
 </button>
 </div>
-<!-- Filter Bar -->
 <div class="px-6 py-3 bg-white border-b border-purple-200 flex items-center justify-between shrink-0">
 <label for="filterCutoffApp" class="text-sm font-bold text-espresso flex items-center gap-2 cursor-pointer">
 <i class="fa-solid fa-filter text-purple-600"></i> คัดกรองแอป
@@ -881,7 +845,6 @@ text-align: left;
 <div class="p-6 overflow-y-auto bg-ivory/50" id="cutoffListContent"></div>
 </div>
 </div>
-<!-- Modal: Passcode Verify -->
 <div id="passcodeModal" class="fixed inset-0 bg-espresso/60 z-[75] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
 <div class="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden p-6 text-center border-2 border-petal">
 <div class="w-16 h-16 bg-petal-light border-2 border-petal rounded-full flex items-center justify-center mx-auto mb-4 text-espresso text-2xl shadow-inner">
@@ -900,7 +863,6 @@ text-align: left;
 </form>
 </div>
 </div>
-<!-- Modal: Settings -->
 <div id="settingsModal" class="fixed inset-0 bg-espresso/60 z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
 <div class="bg-white rounded-[2rem] w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden border-2 border-petal">
 <div class="px-6 py-5 border-b border-petal flex justify-between items-center bg-petal-light/50">
@@ -935,7 +897,6 @@ text-align: left;
 </div>
 </div>
 </div>
-<!-- Modal: Admin -->
 <div id="adminModal" class="fixed inset-0 bg-espresso/60 z-[70] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
 <div class="bg-white rounded-[2rem] w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-petal">
 <div class="px-6 py-5 border-b border-petal flex justify-between items-center bg-petal-light/50 shrink-0">
@@ -976,6 +937,12 @@ text-align: left;
 <label class="block text-xs font-bold text-espresso/70 uppercase mb-1.5">รหัสผ่าน (Password)</label>
 <input type="password" id="loginAdminPassword" required class="w-full rounded-2xl border-petal bg-white px-4 py-3.5 text-sm text-espresso border-2 focus:border-petal-deep focus:ring-0 transition-colors" placeholder="••••">
 </div>
+<div class="flex items-center justify-between text-xs font-bold text-espresso/80 pt-1">
+<label class="flex items-center gap-2 cursor-pointer select-none">
+<input type="checkbox" id="rememberDeviceCheckbox" class="w-4 h-4 rounded text-petal-deep border-petal focus:ring-petal-deep accent-[#D4839D]" checked>
+<span>จดจำอุปกรณ์นี้ (ไม่ต้องเข้าสู่ระบบบ่อยๆ)</span>
+</label>
+</div>
 <button type="submit" class="w-full py-3.5 bg-petal border-2 border-transparent text-espresso font-bold rounded-2xl text-sm shadow-cute hover:bg-petal-deep transition-colors">
 ยืนยันการเข้าสู่ระบบ
 </button>
@@ -987,7 +954,6 @@ text-align: left;
 </div>
 </div>
 </div>
-<!-- Modal: Auto Form -->
 <div id="autoFormModal" class="fixed inset-0 bg-espresso/60 z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
 <div class="bg-white rounded-[2rem] w-full max-w-2xl shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-petal">
 <div class="px-6 py-5 border-b border-petal flex justify-between items-center bg-petal-light/50 shrink-0">
@@ -1045,7 +1011,6 @@ text-align: left;
 </div>
 </div>
 </div>
-<!-- Modal: Edit Template -->
 <div id="editTemplateModal" class="fixed inset-0 bg-espresso/60 z-[60] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
 <div class="bg-white rounded-[2rem] w-full max-w-lg shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden p-6 flex flex-col max-h-[90vh] border-2 border-petal">
 <div class="flex justify-between items-center mb-5 shrink-0">
@@ -1086,7 +1051,6 @@ text-align: left;
 </div>
 </div>
 </div>
-<!-- Modal: Manage Apps -->
 <div id="manageAppsModal" class="fixed inset-0 bg-espresso/60 z-[65] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
 <div class="bg-white rounded-[2rem] w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-petal">
 <div class="px-6 py-5 border-b border-petal flex justify-between items-center bg-petal-light/50 shrink-0">
@@ -1111,7 +1075,6 @@ text-align: left;
 </div>
 </div>
 </div>
-<!-- Modal: Add Custom App -->
 <div id="addCustomAppModal" class="fixed inset-0 bg-espresso/60 z-[80] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
 <div class="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden p-6 border-2 border-petal">
 <div class="flex justify-between items-center mb-5">
@@ -1141,7 +1104,6 @@ text-align: left;
 </form>
 </div>
 </div>
-<!-- Modal: Delete Screen Confirm -->
 <div id="deleteScreenModal" class="fixed inset-0 bg-espresso/60 z-[60] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
 <div class="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden p-6 text-center border-2 border-petal">
 <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-2xl border-2 border-red-100 shadow-inner">
@@ -1155,7 +1117,6 @@ text-align: left;
 </div>
 </div>
 </div>
-<!-- Modal: Delete Account Confirm -->
 <div id="deleteConfirmModal" class="fixed inset-0 bg-espresso/60 z-[60] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
 <div class="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden p-6 text-center border-2 border-petal">
 <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-2xl border-2 border-red-100 shadow-inner">
@@ -1172,16 +1133,19 @@ text-align: left;
 <div id="toastContainer" class="fixed top-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
 <script>
-// --- Supabase Config & Init ---
-// ป้องกันการประกาศตัวแปรซ้ำเมื่อเกิด Hot Reload
 var SUPABASE_URL = 'https://dlepafxydlugwkilbqbo.supabase.co';
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRsZXBhZnh5ZGx1Z3draWxicWJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3MzA5NzQsImV4cCI6MjEwNjMwNjk3NH0.wOyXhfs9ZqEOiSUD1HRQSvkq1gZBVbcLWRMMhkClrmU';
 if (!window.supabaseDb) {
-    window.supabaseDb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window.supabaseDb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true
+        }
+    });
 }
 var supabase = window.supabaseDb;
 
-// --- Global State ---
 let netflixAccounts = [];
 let telegramSettings = { token: '', chatId: '' };
 let collapsedAccounts = new Set();
@@ -1201,276 +1165,6 @@ let selectedNewAppColor = 'petal';
 let userManuallySelectedColor = false;
 let appConfigCache = {};
 let formTemplates = [];
-
-// --- YouTube Music Functions ---
-let ytPlayer;
-let isYtReady = false;
-let localMusicState = { id: '', playing: false, timestamp: 0, updatedAt: 0 };
-let userHasInteracted = false;
-let isSeeking = false;
-
-// ระบบป้องกันเปิดหลายแท็บแล้วเสียงตีกัน (Echo)
-let isMainTab = true;
-if (window.BroadcastChannel) {
-    const bc = new BroadcastChannel('monali_music');
-    bc.onmessage = (event) => {
-        if (event.data === 'check_main') {
-            if (isMainTab && userHasInteracted) bc.postMessage('im_main');
-        } else if (event.data === 'im_main') {
-            isMainTab = false;
-            if (ytPlayer && typeof ytPlayer.mute === 'function') ytPlayer.mute();
-        } else if (event.data === 'main_closed') {
-            isMainTab = true;
-            if (ytPlayer && typeof ytPlayer.unMute === 'function') ytPlayer.unMute();
-        }
-    };
-    window.addEventListener('beforeunload', () => {
-        if (isMainTab) bc.postMessage('main_closed');
-    });
-    bc.postMessage('check_main');
-}
-
-function loadYoutubeAPI() {
-    if (document.getElementById('youtube-api-script')) return;
-    const tag = document.createElement('script');
-    tag.id = 'youtube-api-script';
-    tag.src = "https://www.youtube.com/iframe_api";
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-}
-
-window.onYouTubeIframeAPIReady = function() {
-    ytPlayer = new YT.Player('ytplayer', {
-        height: '200',
-        width: '300',
-        videoId: 'mUjhiT0zcA', // ใช้ Lofi ที่เสถียรเป็นค่าเริ่มต้น
-        playerVars: { 
-            'autoplay': 0, 
-            'controls': 0, 
-            'playsinline': 1,
-            'enablejsapi': 1,
-            'origin': window.location.origin
-        },
-        events: {
-            'onReady': () => { 
-                isYtReady = true; 
-                pollMusicState(); 
-                setInterval(pollMusicState, 3000); 
-            },
-            'onStateChange': (event) => {
-                if (event.data === YT.PlayerState.PLAYING) {
-                    let title = 'กำลังเล่นเพลง...';
-                    try { title = ytPlayer.getVideoData()?.title || title; } catch(e){}
-                    document.getElementById('musicTitle').textContent = title;
-                    // ถ้าแท็บนี้ไม่ใช่หน้าต่างหลัก ให้ปิดเสียงเพื่อป้องกันเสียงตีกัน
-                    if (!isMainTab && ytPlayer && typeof ytPlayer.mute === 'function') ytPlayer.mute();
-                }
-            },
-            'onError': (event) => {
-                console.log('YT Error:', event.data);
-                document.getElementById('musicTitle').textContent = 'เพลงถูกบล็อก (เปลี่ยนเพลง)';
-                const icon = document.getElementById('musicPlayIcon');
-                const wave = document.getElementById('musicWave');
-                if (icon) icon.className = 'fa-solid fa-play z-10 text-espresso/70';
-                if (wave) {
-                    wave.classList.remove('animate-pulse');
-                    wave.style.opacity = '0';
-                }
-            }
-        }
-    });
-}
-
-async function pollMusicState() {
-    const widget = document.getElementById('musicPlayerWidget');
-    if (!currentAdmin) {
-        widget.classList.add('hidden');
-        if(isYtReady && ytPlayer && typeof ytPlayer.pauseVideo === 'function') ytPlayer.pauseVideo();
-        return;
-    } else {
-        widget.classList.remove('hidden');
-    }
-
-    try {
-        const { data } = await supabase.from('settings').select('*').in('key', ['music_yt_id', 'music_is_playing', 'music_timestamp', 'music_updated_at']);
-        let dbId = 'mUjhiT0zcA';
-        let dbPlaying = false;
-        let dbTimestamp = 0;
-        let dbUpdatedAt = 0;
-        
-        if (data) {
-            const idRow = data.find(r => r.key === 'music_yt_id');
-            const playRow = data.find(r => r.key === 'music_is_playing');
-            const tsRow = data.find(r => r.key === 'music_timestamp');
-            const upRow = data.find(r => r.key === 'music_updated_at');
-            
-            if (idRow) dbId = idRow.value;
-            if (playRow) dbPlaying = playRow.value === 'true';
-            if (tsRow) dbTimestamp = parseFloat(tsRow.value) || 0;
-            if (upRow) dbUpdatedAt = parseInt(upRow.value) || 0;
-        }
-
-        // ถ้าสถานะเปลี่ยน หรือเวลาเหลื่อมกันเกิน 5 วินาที ให้อัปเดตและซิงค์ใหม่
-        if (dbId !== localMusicState.id || dbPlaying !== localMusicState.playing || Math.abs(dbTimestamp - localMusicState.timestamp) > 5) {
-            localMusicState.id = dbId;
-            localMusicState.playing = dbPlaying;
-            localMusicState.timestamp = dbTimestamp;
-            localMusicState.updatedAt = dbUpdatedAt;
-            applyMusicState();
-        } else {
-            // ถ้าระบบกำลังเล่นอยู่ ให้เช็คเวลาว่าตรงกับเซิร์ฟเวอร์ไหม (Sync Time)
-            if (dbPlaying && isYtReady && ytPlayer && typeof ytPlayer.getCurrentTime === 'function' && userHasInteracted) {
-                let now = Date.now();
-                let expectedTime = dbTimestamp + ((now - dbUpdatedAt) / 1000);
-                let actualTime = ytPlayer.getCurrentTime();
-                
-                // ถ้าเวลาคลาดเคลื่อนเกิน 4 วินาที ให้กรอไปจุดที่ถูกต้องเพื่อซิงค์เนื้อร้อง
-                if (Math.abs(expectedTime - actualTime) > 4 && actualTime > 0 && !isSeeking) {
-                    isSeeking = true;
-                    ytPlayer.seekTo(expectedTime, true);
-                    setTimeout(() => { isSeeking = false; }, 2000);
-                }
-            }
-        }
-    } catch (e) {
-        console.warn("Music Sync Error", e);
-    }
-}
-
-function applyMusicState() {
-    if (!isYtReady || !ytPlayer || typeof ytPlayer.getPlayerState !== 'function') return;
-    
-    let state = -1;
-    try { state = ytPlayer.getPlayerState(); } catch(e){}
-
-    let currentLoadedId = localMusicState.id;
-    try { currentLoadedId = ytPlayer.getVideoData()?.video_id; } catch(e){}
-    
-    // คำนวณเวลาเนื้อร้อง ณ ปัจจุบันที่ควรจะเป็น
-    let expectedTime = 0;
-    if (localMusicState.playing && localMusicState.updatedAt > 0) {
-        expectedTime = localMusicState.timestamp + ((Date.now() - localMusicState.updatedAt) / 1000);
-    } else {
-        expectedTime = localMusicState.timestamp;
-    }
-    
-    if (currentLoadedId !== localMusicState.id && localMusicState.id) {
-        if (localMusicState.playing && userHasInteracted) {
-            ytPlayer.loadVideoById({videoId: localMusicState.id, startSeconds: expectedTime});
-        } else {
-            ytPlayer.cueVideoById({videoId: localMusicState.id, startSeconds: expectedTime});
-        }
-    } else {
-        if (localMusicState.playing) {
-            if (userHasInteracted) {
-                if (state !== YT.PlayerState.PLAYING && state !== YT.PlayerState.BUFFERING) {
-                    ytPlayer.playVideo();
-                }
-                if (!isSeeking) {
-                    let actualTime = ytPlayer.getCurrentTime();
-                    if (Math.abs(expectedTime - actualTime) > 4) {
-                        isSeeking = true;
-                        ytPlayer.seekTo(expectedTime, true);
-                        setTimeout(() => { isSeeking = false; }, 2000);
-                    }
-                }
-            }
-        } else {
-            if (state === YT.PlayerState.PLAYING || state === YT.PlayerState.BUFFERING) {
-                ytPlayer.pauseVideo();
-            }
-        }
-    }
-
-    const icon = document.getElementById('musicPlayIcon');
-    const wave = document.getElementById('musicWave');
-    const titleEl = document.getElementById('musicTitle');
-    
-    if (localMusicState.playing) {
-        icon.className = 'fa-solid fa-pause z-10 text-espresso';
-        wave.classList.add('animate-pulse');
-        wave.style.opacity = '0.5';
-        if(!titleEl.textContent || titleEl.textContent === 'Loading...' || titleEl.textContent === 'หยุดชั่วคราว') {
-             titleEl.textContent = 'กำลังซิงค์เพลง...';
-        }
-    } else {
-        icon.className = 'fa-solid fa-play z-10 text-espresso/70';
-        wave.classList.remove('animate-pulse');
-        wave.style.opacity = '0';
-        titleEl.textContent = 'หยุดชั่วคราว';
-    }
-}
-
-async function toggleMusic() {
-    if (!requireAdminAuth()) return;
-    if (!userHasInteracted) userHasInteracted = true;
-    
-    const newState = !localMusicState.playing;
-    let currentTime = 0;
-    if (isYtReady && ytPlayer && typeof ytPlayer.getCurrentTime === 'function') {
-        currentTime = ytPlayer.getCurrentTime();
-    }
-
-    localMusicState.playing = newState;
-    localMusicState.timestamp = currentTime;
-    localMusicState.updatedAt = Date.now();
-    applyMusicState();
-    
-    await supabase.from('settings').upsert([
-        { key: 'music_is_playing', value: newState ? 'true' : 'false' },
-        { key: 'music_timestamp', value: currentTime.toString() },
-        { key: 'music_updated_at', value: Date.now().toString() }
-    ]);
-}
-
-function openMusicSettings() {
-    if (!requireAdminAuth()) return;
-    document.getElementById('ytLinkInput').value = '';
-    animateModalOpen('musicModal');
-}
-function closeMusicModal() { animateModalClose('musicModal'); }
-
-function extractYtId(url) {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|music\.youtube\.com\/watch\?v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
-}
-
-async function saveMusicSettings(e) {
-    e.preventDefault();
-    const url = document.getElementById('ytLinkInput').value.trim();
-    const videoId = extractYtId(url);
-    
-    if (!videoId) {
-        showToast('ลิงก์ YouTube ไม่ถูกต้อง ❌');
-        return;
-    }
-
-    const btn = e.target.querySelector('button[type="submit"]');
-    requireAdminAuthAction(btn, async () => {
-        userHasInteracted = true;
-        localMusicState.id = videoId;
-        localMusicState.playing = true;
-        localMusicState.timestamp = 0;
-        localMusicState.updatedAt = Date.now();
-        
-        if(isYtReady && ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
-            ytPlayer.loadVideoById({videoId: videoId, startSeconds: 0});
-        }
-
-        await supabase.from('settings').upsert([
-            { key: 'music_yt_id', value: videoId },
-            { key: 'music_is_playing', value: 'true' },
-            { key: 'music_timestamp', value: '0' },
-            { key: 'music_updated_at', value: Date.now().toString() }
-        ]);
-        
-        closeMusicModal();
-        showToast('เปลี่ยนเพลงและซิงค์ให้ทุกคนแล้ว 🎵');
-        applyMusicState();
-    });
-}
-// --- End YouTube Music Functions ---
 
 const defaultTemplate = {
     id: 'tpl_default',
@@ -1492,32 +1186,24 @@ const APP_COLOR_PALETTES = [
 window.addEventListener('DOMContentLoaded', async () => {
     initClickSparkles();
     setupAuthListener();
-    loadYoutubeAPI(); // บังคับโหลด API ตอนเริ่มทำงาน
+    checkAutoLoginSession();
 
     const progressBar = document.getElementById('loading-progress-bar');
     const percentageText = document.getElementById('loading-percentage');
     const enterBtn = document.getElementById('enter-system-btn');
-    if(progressBar && percentageText) {
+    if (progressBar && percentageText) {
         let p = 0;
         let intv = setInterval(() => {
             p += 2;
-            if(p >= 100) {
+            if (p >= 100) {
                 p = 100;
                 clearInterval(intv);
-                if(enterBtn) enterBtn.classList.add('show');
+                if (enterBtn) enterBtn.classList.add('show');
             }
             progressBar.style.width = p + '%';
             percentageText.textContent = p + '%';
-        }, 40);
+        }, 30);
     }
-
-    // ปลดล็อกการเล่นเสียงเมื่อผู้ใช้แตะหน้าจอครั้งแรก
-    document.body.addEventListener('click', () => {
-        if (!userHasInteracted) {
-            userHasInteracted = true;
-            if (localMusicState.playing && isYtReady) applyMusicState();
-        }
-    });
 
     setInterval(() => {
         cachedTodayTime = new Date().setHours(0,0,0,0);
@@ -1527,204 +1213,43 @@ window.addEventListener('DOMContentLoaded', async () => {
     }, 60000);
 });
 
-// --- YouTube Music Functions ---
-function loadYoutubeAPI() {
-    if (document.getElementById('youtube-api-script')) return;
-    const tag = document.createElement('script');
-    tag.id = 'youtube-api-script';
-    tag.src = "https://www.youtube.com/iframe_api";
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-}
-
-window.onYouTubeIframeAPIReady = function() {
-    ytPlayer = new YT.Player('ytplayer', {
-        height: '10',
-        width: '10',
-        videoId: '7NOSDKb0HlU', // เปลี่ยนค่าเริ่มต้นจาก Live เป็นคลิปปกติเพื่อความเสถียร
-        playerVars: { 
-            'autoplay': 0, 
-            'controls': 0, 
-            'playsinline': 1,
-            'enablejsapi': 1,
-            'origin': window.location.origin
-        },
-        events: {
-            'onReady': () => { 
-                isYtReady = true; 
-                pollMusicState(); 
-                setInterval(pollMusicState, 3000); 
-            },
-            'onStateChange': (event) => {
-                if (event.data === YT.PlayerState.PLAYING) {
-                    let title = 'กำลังเล่นเพลง...';
-                    try { title = ytPlayer.getVideoData()?.title || title; } catch(e){}
-                    document.getElementById('musicTitle').textContent = title;
-                }
-            },
-            'onError': (event) => {
-                console.log('YT Error:', event.data);
-                document.getElementById('musicTitle').textContent = 'เพลงถูกบล็อก (ให้เปลี่ยนเพลง)';
-                // หยุด UI ชั่วคราวเมื่อเพลงเล่นไม่ได้
-                const icon = document.getElementById('musicPlayIcon');
-                const wave = document.getElementById('musicWave');
-                if (icon) icon.className = 'fa-solid fa-play z-10 text-espresso/70';
-                if (wave) {
-                    wave.classList.remove('animate-pulse');
-                    wave.style.opacity = '0';
-                }
-            }
-        }
-    });
-}
-
-async function pollMusicState() {
-    const widget = document.getElementById('musicPlayerWidget');
-    if (!currentAdmin) {
-        widget.classList.add('hidden');
-        if(isYtReady && ytPlayer && typeof ytPlayer.pauseVideo === 'function') ytPlayer.pauseVideo();
-        return;
-    } else {
-        widget.classList.remove('hidden');
-    }
-
+async function checkAutoLoginSession() {
     try {
-        const { data } = await supabase.from('settings').select('*').in('key', ['music_yt_id', 'music_is_playing']);
-        let dbId = '7NOSDKb0HlU';
-        let dbPlaying = false;
-        
-        if (data) {
-            const idRow = data.find(r => r.key === 'music_yt_id');
-            const playRow = data.find(r => r.key === 'music_is_playing');
-            if (idRow) dbId = idRow.value;
-            if (playRow) dbPlaying = playRow.value === 'true';
-        }
-
-        if (dbId !== localMusicState.id || dbPlaying !== localMusicState.playing) {
-            localMusicState.id = dbId;
-            localMusicState.playing = dbPlaying;
-            applyMusicState();
+        const isRemembered = localStorage.getItem('monali_remember_device') === 'true';
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session && isRemembered) {
+            const { data: isAdmin } = await supabase.rpc('is_admin');
+            if (isAdmin) {
+                currentAdmin = session.user;
+                const nameLabel = document.getElementById('currentAdminNameLabel');
+                if (nameLabel) nameLabel.textContent = session.user.email;
+                updateAdminStateUI();
+                checkAdminPermissionsUI();
+            }
         }
     } catch (e) {
-        console.warn("Music Sync Error", e);
+        console.warn("Auto-login check error", e);
     }
 }
-
-function applyMusicState() {
-    if (!isYtReady || !ytPlayer || typeof ytPlayer.getPlayerState !== 'function') return;
-    
-    let state = -1;
-    try { state = ytPlayer.getPlayerState(); } catch(e){}
-
-    let currentLoadedId = localMusicState.id;
-    try { currentLoadedId = ytPlayer.getVideoData()?.video_id; } catch(e){}
-    
-    if (currentLoadedId !== localMusicState.id && localMusicState.id) {
-        if (localMusicState.playing && userHasInteracted) {
-            ytPlayer.loadVideoById(localMusicState.id);
-        } else {
-            ytPlayer.cueVideoById(localMusicState.id);
-        }
-    } else {
-        if (localMusicState.playing) {
-            if (userHasInteracted && state !== YT.PlayerState.PLAYING && state !== YT.PlayerState.BUFFERING) {
-                ytPlayer.playVideo();
-            }
-        } else {
-            if (state === YT.PlayerState.PLAYING || state === YT.PlayerState.BUFFERING) {
-                ytPlayer.pauseVideo();
-            }
-        }
-    }
-
-    const icon = document.getElementById('musicPlayIcon');
-    const wave = document.getElementById('musicWave');
-    const titleEl = document.getElementById('musicTitle');
-    
-    if (localMusicState.playing) {
-        icon.className = 'fa-solid fa-pause z-10 text-espresso';
-        wave.classList.add('animate-pulse');
-        wave.style.opacity = '0.5';
-        if(!titleEl.textContent || titleEl.textContent === 'Loading...' || titleEl.textContent === 'หยุดชั่วคราว') {
-             titleEl.textContent = 'กำลังซิงค์เพลง...';
-        }
-    } else {
-        icon.className = 'fa-solid fa-play z-10 text-espresso/70';
-        wave.classList.remove('animate-pulse');
-        wave.style.opacity = '0';
-        titleEl.textContent = 'หยุดชั่วคราว';
-    }
-}
-
-async function toggleMusic() {
-    if (!requireAdminAuth()) return;
-    if (!userHasInteracted) userHasInteracted = true;
-    
-    const newState = !localMusicState.playing;
-    localMusicState.playing = newState;
-    applyMusicState();
-    
-    await supabase.from('settings').upsert({ key: 'music_is_playing', value: newState ? 'true' : 'false' });
-}
-
-function openMusicSettings() {
-    if (!requireAdminAuth()) return;
-    document.getElementById('ytLinkInput').value = '';
-    animateModalOpen('musicModal');
-}
-function closeMusicModal() { animateModalClose('musicModal'); }
-
-function extractYtId(url) {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|music\.youtube\.com\/watch\?v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
-}
-
-async function saveMusicSettings(e) {
-    e.preventDefault();
-    const url = document.getElementById('ytLinkInput').value.trim();
-    const videoId = extractYtId(url);
-    
-    if (!videoId) {
-        showToast('ลิงก์ YouTube ไม่ถูกต้อง ❌');
-        return;
-    }
-
-    const btn = e.target.querySelector('button[type="submit"]');
-    requireAdminAuthAction(btn, async () => {
-        userHasInteracted = true;
-        localMusicState.id = videoId;
-        localMusicState.playing = true;
-        
-        if(isYtReady && ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
-            ytPlayer.loadVideoById(videoId);
-            ytPlayer.playVideo();
-        }
-
-        await supabase.from('settings').upsert({ key: 'music_yt_id', value: videoId });
-        await supabase.from('settings').upsert({ key: 'music_is_playing', value: 'true' });
-        
-        closeMusicModal();
-        showToast('เปลี่ยนเพลงและซิงค์ให้ทุกคนแล้ว 🎵');
-        applyMusicState();
-    });
-}
-// --- End YouTube Music Functions ---
 
 function setupAuthListener() {
     supabase.auth.onAuthStateChange(async (event, session) => {
+        const isRemembered = localStorage.getItem('monali_remember_device') === 'true';
         if (session) {
             const { data: isAdmin } = await supabase.rpc('is_admin');
             if (isAdmin) {
                 currentAdmin = session.user;
                 const nameLabel = document.getElementById('currentAdminNameLabel');
-                if(nameLabel) nameLabel.textContent = session.user.email;
+                if (nameLabel) nameLabel.textContent = session.user.email;
             } else {
                 currentAdmin = null;
                 await supabase.auth.signOut();
             }
         } else {
             currentAdmin = null;
+            if (!isRemembered) {
+                localStorage.removeItem('monali_remember_device');
+            }
         }
         updateAdminStateUI();
         checkAdminPermissionsUI();
@@ -1734,20 +1259,18 @@ function setupAuthListener() {
 
 function hideLoadingScreen() {
     const loader = document.getElementById('loading-screen');
-    if(loader) loader.classList.add('hidden-loader');
+    if (loader) loader.classList.add('hidden-loader');
 }
 
 async function loadData() {
     const statusText = document.getElementById('loading-status-text');
-    if(statusText) statusText.textContent = 'กำลังโหลดข้อมูลจากฐานข้อมูล...';
+    if (statusText) statusText.textContent = 'กำลังโหลดข้อมูลจากฐานข้อมูล...';
 
     try {
-        // Apps
         const { data: appsData } = await supabase.from('apps').select('*');
         customApps = appsData || [];
         appConfigCache = {};
 
-        // Accounts & Screens
         const { data: accData } = await supabase.from('accounts').select('*, apps(name)');
         const { data: screenData } = await supabase.from('screens').select('*');
 
@@ -1772,7 +1295,6 @@ async function loadData() {
             };
         }).sort((a,b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
-        // Transactions
         const { data: txData } = await supabase.from('transactions').select('*').order('transaction_date', { ascending: false });
         monaliTransactions = (txData || []).map(tx => ({
             id: tx.id,
@@ -1782,11 +1304,9 @@ async function loadData() {
             date: tx.transaction_date
         }));
 
-        // Templates
         const { data: tplData } = await supabase.from('templates').select('*').order('created_at', {ascending: true});
         formTemplates = (tplData && tplData.length > 0) ? tplData : [defaultTemplate];
 
-        // Settings
         const { data: settingsData } = await supabase.from('settings').select('*');
         const stMap = {};
         (settingsData || []).forEach(s => stMap[s.key] = s.value);
@@ -1803,16 +1323,15 @@ async function loadData() {
             document.getElementById('storeBanner').src = stMap['banner_base64'];
         }
 
-        if(statusText) statusText.textContent = 'หลังบ้านพร้อมแล้วค่ะ 💖';
+        if (statusText) statusText.textContent = 'หลังบ้านพร้อมแล้วค่ะ 💖';
         scheduleRender();
     } catch (error) {
         console.error("Load Data Error:", error);
-        if(statusText) statusText.textContent = 'เกิดข้อผิดพลาดในการโหลดข้อมูล';
+        if (statusText) statusText.textContent = 'เกิดข้อผิดพลาดในการโหลดข้อมูล';
         showToast('โหลดข้อมูลไม่สำเร็จ: ' + error.message);
     }
 }
 
-// Wrapper ป้องกันกดปุ่มซ้ำ และแสดง Loading UI
 async function requireAdminAuthAction(btn, actionFunc) {
     if (!currentAdmin) {
         showToast('หากต้องการแก้ไขข้อมูล โปรดเข้าสู่ระบบผู้ดูแล 🔒');
@@ -1847,7 +1366,7 @@ function scheduleRender() {
     pendingRender = true;
     requestAnimationFrame(() => {
         renderDashboard();
-        if(!document.getElementById('accountingView').classList.contains('hidden')) {
+        if (!document.getElementById('accountingView').classList.contains('hidden')) {
             renderTransactions();
         }
         pendingRender = false;
@@ -2002,6 +1521,7 @@ function getEffectiveScreenStatus(screen) {
     }
     return 'sold';
 }
+
 function getAccountExpireStatus(accountExpireDate) {
     if (!accountExpireDate) return 'active';
     const accExpTime = fastParseDateToTime(accountExpireDate);
@@ -2035,10 +1555,12 @@ function renderAppFilterTabs() {
         countLabel.textContent = selectedAppFilter === 'all' ? `ทั้งหมด (${netflixAccounts.length})` : `${selectedAppFilter} (${appCounts[selectedAppFilter] || 0})`;
     }
 }
+
 function setAppFilter(appName) {
     selectedAppFilter = appName;
     scheduleRender();
 }
+
 function handleSearch(event) {
     searchQuery = event.target.value.trim();
     const clearBtn = document.getElementById('clearSearchBtn');
@@ -2049,6 +1571,7 @@ function handleSearch(event) {
     }
     scheduleRender();
 }
+
 function clearSearch() {
     searchQuery = '';
     const searchInput = document.getElementById('searchInput');
@@ -2069,6 +1592,7 @@ function renderPresetAppChips(containerId, inputId, selectedValue = '') {
     htmlParts.push(`<button type="button" onclick="openAddCustomAppModal('${inputId}')" class="px-3 py-1.5 rounded-xl text-xs font-bold text-espresso bg-petal border-2 border-transparent hover:border-petal-deep transition-colors flex items-center gap-1"> <i class="fa-solid fa-plus"></i> เพิ่มแอป </button>`);
     container.innerHTML = htmlParts.join('');
 }
+
 function selectAppChip(inputId, appName) {
     const input = document.getElementById(inputId);
     if (input) {
@@ -2119,7 +1643,7 @@ function handleSaveCustomApp(e) {
                 color: selectedNewAppColor,
                 icon: auto.icon
             }).select().single();
-            if(error) throw error;
+            if (error) throw error;
 
             customApps.push(data);
             appConfigCache = {};
@@ -2140,7 +1664,7 @@ function deleteCustomApp(appId, event) {
     (async () => {
         try {
             const { error } = await supabase.from('apps').delete().eq('id', appId);
-            if(error) throw error;
+            if (error) throw error;
             customApps = customApps.filter(a => a.id !== appId);
             appConfigCache = {};
             renderPresetAppChips('addAppPresetChips', 'accountApp', document.getElementById('accountApp')?.value);
@@ -2187,7 +1711,6 @@ function renderDashboard() {
     let waitCutCount = 0;
     let cutoffCount = 0;
 
-    // คำนวณ Stats ตามตัวกรองที่เลือกไว้
     netflixAccounts.forEach(account => {
         const appName = getAccountApp(account);
         if (selectedAppFilter === 'all' || appName.toLowerCase() === selectedAppFilter.toLowerCase()) {
@@ -2251,7 +1774,6 @@ function renderDashboard() {
         grouped[appName].push(account);
     });
     
-    // ตั้งค่าเริ่มต้น: ถ้าผู้ใช้ไม่ได้กดเปิดปิดเอง ให้พับเก็บจอทุกอันไปเลย
     filteredAccounts.forEach(account => {
         if (!collapsedAccounts.has(account.id) && !account.userToggled) {
             collapsedAccounts.add(account.id);
@@ -2364,7 +1886,7 @@ function toggleScreens(accountId) {
     const container = document.getElementById(`screens-container-${accountId}`);
     const icon = document.getElementById(`icon-toggle-${accountId}`);
     const account = netflixAccounts.find(a => a.id === accountId);
-    if(account) account.userToggled = true; // จำไว้ว่าผู้ใช้กดเองแล้ว
+    if (account) account.userToggled = true;
 
     if (collapsedAccounts.has(accountId)) {
         collapsedAccounts.delete(accountId);
@@ -2389,6 +1911,7 @@ function animateModalOpen(modalId) {
         content.classList.remove('scale-95', 'translate-y-full');
     }
 }
+
 function animateModalClose(modalId) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
@@ -2417,6 +1940,7 @@ function openAvailableListModal() {
     animateModalOpen('availableListModal'); 
 }
 function closeAvailableListModal() { animateModalClose('availableListModal'); }
+
 function openAutoFormForScreen(accountId, screenIndex) {
     const acc = netflixAccounts.find(a => a.id === accountId);
     if (acc && acc.screens[screenIndex]) {
@@ -2429,6 +1953,7 @@ function openAutoFormForScreen(accountId, screenIndex) {
         });
     }
 }
+
 function openAutoFormFromAvailable(accountId, screenIndex) {
     closeAvailableListModal();
     setTimeout(() => { openAutoFormForScreen(accountId, screenIndex); }, 300);
@@ -2436,7 +1961,7 @@ function openAutoFormFromAvailable(accountId, screenIndex) {
 
 function updateFilterDropdownOptions(selectId) {
     const select = document.getElementById(selectId);
-    if(!select) return;
+    if (!select) return;
     const allAppNames = new Set(netflixAccounts.map(a => getAccountApp(a)));
     const htmlParts = ['<option value="all">แสดงทั้งหมด</option>'];
     Array.from(allAppNames).sort().forEach(name => {
@@ -2473,6 +1998,7 @@ function renderAvailableList() {
         container.innerHTML = htmlParts.join('');
     }
 }
+
 function openKickListModal() { 
     updateFilterDropdownOptions('filterKickApp');
     document.getElementById('filterKickApp').value = selectedAppFilter === 'all' ? 'all' : selectedAppFilter;
@@ -2480,6 +2006,7 @@ function openKickListModal() {
     animateModalOpen('kickListModal'); 
 }
 function closeKickListModal() { animateModalClose('kickListModal'); }
+
 function renderKickList() {
     const container = document.getElementById('kickListContent');
     const filterApp = document.getElementById('filterKickApp')?.value || 'all';
@@ -2510,6 +2037,7 @@ function renderKickList() {
         container.innerHTML = htmlParts.join('');
     }
 }
+
 function openWaitCutListModal() { 
     updateFilterDropdownOptions('filterWaitCutApp');
     document.getElementById('filterWaitCutApp').value = selectedAppFilter === 'all' ? 'all' : selectedAppFilter;
@@ -2517,6 +2045,7 @@ function openWaitCutListModal() {
     animateModalOpen('waitCutListModal'); 
 }
 function closeWaitCutListModal() { animateModalClose('waitCutListModal'); }
+
 function renderWaitCutList() {
     const container = document.getElementById('waitCutListContent');
     const filterApp = document.getElementById('filterWaitCutApp')?.value || 'all';
@@ -2552,6 +2081,7 @@ function renderWaitCutList() {
         container.innerHTML = htmlParts.join('');
     }
 }
+
 function openCutoffListModal() { 
     updateFilterDropdownOptions('filterCutoffApp');
     document.getElementById('filterCutoffApp').value = selectedAppFilter === 'all' ? 'all' : selectedAppFilter;
@@ -2559,6 +2089,7 @@ function openCutoffListModal() {
     animateModalOpen('cutoffListModal'); 
 }
 function closeCutoffListModal() { animateModalClose('cutoffListModal'); }
+
 function renderCutoffList() {
     const container = document.getElementById('cutoffListContent');
     const filterApp = document.getElementById('filterCutoffApp')?.value || 'all';
@@ -2594,6 +2125,7 @@ function verifyPasscodeForSettings() {
     animateModalOpen('passcodeModal');
 }
 function closePasscodeModal() { animateModalClose('passcodeModal'); }
+
 function verifySettingsPasscode(e) {
     e.preventDefault();
     if (document.getElementById('settingsPasscodeInput').value.trim() === '0835') {
@@ -2607,28 +2139,30 @@ function verifySettingsPasscode(e) {
 
 function openAdminModal() { updateAdminStateUI(); animateModalOpen('adminModal'); }
 function closeAdminModal() { animateModalClose('adminModal'); }
+
 function checkAdminPermissionsUI() {
     const lockedBanner = document.getElementById('adminLockedBanner');
     const badge = document.getElementById('adminBadgeDot');
     if (!currentAdmin) {
-        if(lockedBanner) lockedBanner.classList.remove('hidden');
-        if(badge) { badge.classList.remove('hidden'); badge.style.display = 'block'; }
+        if (lockedBanner) lockedBanner.classList.remove('hidden');
+        if (badge) { badge.classList.remove('hidden'); badge.style.display = 'block'; }
     } else {
-        if(lockedBanner) lockedBanner.classList.add('hidden');
-        if(badge) { badge.classList.add('hidden'); badge.style.display = 'none'; }
+        if (lockedBanner) lockedBanner.classList.add('hidden');
+        if (badge) { badge.classList.add('hidden'); badge.style.display = 'none'; }
     }
 }
+
 function updateAdminStateUI() {
     const stateSection = document.getElementById('adminLoginStateSection');
     const loginFormContainer = document.getElementById('adminLoginFormContainer');
     const nameLabel = document.getElementById('currentAdminNameLabel');
     if (currentAdmin) {
-        if(stateSection) stateSection.classList.remove('hidden');
-        if(loginFormContainer) loginFormContainer.classList.add('hidden');
-        if(nameLabel) nameLabel.textContent = currentAdmin.email || 'ผู้ดูแลระบบ';
+        if (stateSection) stateSection.classList.remove('hidden');
+        if (loginFormContainer) loginFormContainer.classList.add('hidden');
+        if (nameLabel) nameLabel.textContent = currentAdmin.email || 'ผู้ดูแลระบบ';
     } else {
-        if(stateSection) stateSection.classList.add('hidden');
-        if(loginFormContainer) loginFormContainer.classList.remove('hidden');
+        if (stateSection) stateSection.classList.add('hidden');
+        if (loginFormContainer) loginFormContainer.classList.remove('hidden');
     }
 }
 
@@ -2658,7 +2192,7 @@ async function handleAddAccount(e) {
         };
 
         const { data: newAcc, error: accErr } = await supabase.from('accounts').insert(accData).select().single();
-        if(accErr) throw accErr;
+        if (accErr) throw accErr;
 
         const screensToInsert = Array(5).fill().map((_, idx) => ({
             account_id: newAcc.id,
@@ -2666,7 +2200,7 @@ async function handleAddAccount(e) {
             status: 'available',
         }));
         const { error: scrErr } = await supabase.from('screens').insert(screensToInsert);
-        if(scrErr) throw scrErr;
+        if (scrErr) throw scrErr;
 
         await loadData();
         closeAddAccountModal();
@@ -2706,7 +2240,7 @@ async function handleEditAccount(e) {
             expire_date: document.getElementById('editAccExpireDate').value || null
         }).eq('id', id);
 
-        if(error) throw error;
+        if (error) throw error;
         await loadData();
         closeEditAccountModal();
         showToast('แก้ไขข้อมูลบัญชีเรียบร้อยแล้วค่ะ ✨');
@@ -2724,8 +2258,8 @@ function openEditScreenModal(accountId, screenIndex) {
     document.getElementById('editScreenTitle').textContent = `จอ ${screenIndex + 1} (${account.name})`;
     const savedStatus = screen.status === 'kick' ? 'sold' : screen.status;
     const radios = document.getElementsByName('screenStatus');
-    for(let i=0; i<radios.length; i++) {
-        if(radios[i].value === savedStatus) { radios[i].checked = true; break; }
+    for (let i = 0; i < radios.length; i++) {
+        if (radios[i].value === savedStatus) { radios[i].checked = true; break; }
     }
     document.getElementById('expireDate').value = screen.expireDate || '';
     document.getElementById('screenPin').value = screen.pin || '';
@@ -2747,7 +2281,7 @@ async function handleEditScreen(e) {
         if (!account) return;
 
         const selectedRadio = document.querySelector('input[name="screenStatus"]:checked');
-        if(!selectedRadio) { showToast('กรุณาเลือกสถานะของจอ ❌'); return; }
+        if (!selectedRadio) { showToast('กรุณาเลือกสถานะของจอ ❌'); return; }
 
         const price = parseFloat(document.getElementById('screenPrice').value) || 0;
         const autoRecord = document.getElementById('autoRecordIncome').checked;
@@ -2760,7 +2294,7 @@ async function handleEditScreen(e) {
             notes: document.getElementById('screenNotes').value,
             price: price
         }).eq('id', screenId);
-        if(error) throw error;
+        if (error) throw error;
 
         if (autoRecord && price > 0 && statusVal === 'sold') {
             const appName = getAccountApp(account);
@@ -2781,24 +2315,24 @@ async function handleEditScreen(e) {
 function addNewScreen(accountId) {
     if (!requireAdminAuth()) return;
     const btn = window.event ? window.event.currentTarget : null;
-    if(btn) btn.disabled = true;
+    if (btn) btn.disabled = true;
     (async () => {
         try {
             const account = netflixAccounts.find(a => a.id === accountId);
-            if(!account) return;
+            if (!account) return;
             const nextIdx = account.screens.length > 0 ? Math.max(...account.screens.map(s => s.screen_index || 0)) + 1 : 0;
             const { error } = await supabase.from('screens').insert({
                 account_id: accountId,
                 screen_index: nextIdx,
                 status: 'available'
             });
-            if(error) throw error;
+            if (error) throw error;
             await loadData();
             showToast(`เพิ่มจอให้บัญชี ${account.name} แล้ว ✨`);
         } catch(err) {
             showToast('เกิดข้อผิดพลาด: ' + err.message);
         } finally {
-            if(btn) btn.disabled = false;
+            if (btn) btn.disabled = false;
         }
     })();
 }
@@ -2821,7 +2355,7 @@ function executeDeleteScreen(btn) {
     requireAdminAuthAction(btn, async () => {
         if (!screenToDelete.id) return;
         const { error } = await supabase.from('screens').delete().eq('id', screenToDelete.id);
-        if(error) throw error;
+        if (error) throw error;
         await loadData();
         closeDeleteScreenModal();
         showToast('ลบจอดังกล่าวเรียบร้อยแล้วค่ะ 🗑️');
@@ -2841,11 +2375,11 @@ function executeDeleteAccount(btn) {
     requireAdminAuthAction(btn, async () => {
         if (!accountIdToDelete) return;
         const { error } = await supabase.from('accounts').delete().eq('id', accountIdToDelete);
-        if(error) throw error;
+        if (error) throw error;
         collapsedAccounts.delete(accountIdToDelete);
         await loadData();
         closeDeleteModal();
-        showToast('ลบข้อมูลเรียบร้อยแล้วค่ะ 🗑️️');
+        showToast('ลบข้อมูลเรียบร้อยแล้วค่ะ 🗑');
     });
 }
 
@@ -2889,6 +2423,7 @@ async function sendTelegramMessage(text) {
         return { success: false, error: error.message };
     }
 }
+
 async function testTelegramSettings(btn) {
     const originalText = btn.innerHTML;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> กำลังส่ง...';
@@ -2918,7 +2453,6 @@ async function testTelegramSettings(btn) {
     btn.innerHTML = originalText; btn.disabled = false;
 }
 
-// เช็คสถานะการส่งข้อความรายวันแบบไม่ให้ซ้ำ โดยเช็คจากฐานข้อมูลกลาง
 async function checkDailyNotifications() {
     if (!telegramSettings.token || !telegramSettings.chatId) return;
 
@@ -2949,6 +2483,7 @@ async function manualSendDailySummary(btn) {
     btn.innerHTML = originalText;
     btn.disabled = false;
 }
+
 async function sendDailySummary() {
     const today = new Date();
     today.setHours(0,0,0,0);
@@ -2998,6 +2533,8 @@ async function handleAdminLogin(e) {
     e.preventDefault();
     const email = document.getElementById('loginAdminEmail').value.trim();
     const pass = document.getElementById('loginAdminPassword').value.trim();
+    const rememberCheckbox = document.getElementById('rememberDeviceCheckbox');
+    const isRemember = rememberCheckbox ? rememberCheckbox.checked : true;
     const btn = document.querySelector('#adminLoginForm button[type="submit"]');
 
     const origText = btn.innerHTML;
@@ -3019,11 +2556,17 @@ async function handleAdminLogin(e) {
         }
 
         currentAdmin = data.user;
+        if (isRemember) {
+            localStorage.setItem('monali_remember_device', 'true');
+        } else {
+            localStorage.removeItem('monali_remember_device');
+        }
+
         document.getElementById('loginAdminEmail').value = '';
         document.getElementById('loginAdminPassword').value = '';
         updateAdminStateUI();
         checkAdminPermissionsUI();
-        showToast(`ยินดีต้อนรับเข้าสู่ระบบ ✨`);
+        showToast(isRemember ? 'เข้าสู่ระบบและจดจำอุปกรณ์นี้แล้ว ✨' : 'ยินดีต้อนรับเข้าสู่ระบบ ✨');
         closeAdminModal();
 
         await loadData();
@@ -3034,7 +2577,9 @@ async function handleAdminLogin(e) {
         btn.disabled = false;
     }
 }
+
 async function logoutAdmin() {
+    localStorage.removeItem('monali_remember_device');
     await supabase.auth.signOut();
     currentAdmin = null;
     updateAdminStateUI();
@@ -3065,6 +2610,7 @@ function updateTemplateDropdown() {
     select.innerHTML = htmlParts.join('');
     if (currentValue && formTemplates.some(t => t.id === currentValue)) select.value = currentValue;
 }
+
 function generateFormText() {
     const select = document.getElementById('templateSelect');
     const template = formTemplates.find(t => t.id === select.value);
@@ -3081,6 +2627,7 @@ function generateFormText() {
     for (const [key, value] of Object.entries(data)) result = result.split(key).join(value);
     document.getElementById('afResult').value = result;
 }
+
 function copyAutoForm() {
     const resultText = document.getElementById('afResult').value;
     if (!resultText) { showToast('ไม่มีข้อความให้คัดลอก ❌'); return; }
@@ -3121,11 +2668,13 @@ function openEditTemplateModal(id = null) {
     animateModalOpen('editTemplateModal');
 }
 function closeEditTemplateModal() { animateModalClose('editTemplateModal'); }
+
 function editCurrentTemplate() {
     const id = document.getElementById('templateSelect').value;
     if (id && id !== 'tpl_default') openEditTemplateModal(id);
     else openEditTemplateModal();
 }
+
 function saveTemplate(btn) {
     requireAdminAuthAction(btn, async () => {
         const id = document.getElementById('editTemplateId').value;
@@ -3146,6 +2695,7 @@ function saveTemplate(btn) {
         showToast('บันทึกรูปแบบเรียบร้อย ✨');
     });
 }
+
 function deleteCurrentTemplate(btn) {
     requireAdminAuthAction(btn, async () => {
         const id = document.getElementById('editTemplateId').value;
@@ -3156,9 +2706,10 @@ function deleteCurrentTemplate(btn) {
         updateTemplateDropdown();
         generateFormText();
         closeEditTemplateModal();
-        showToast('ลบรูปแบบเรียบร้อย 🗑️️');
+        showToast('ลบรูปแบบเรียบร้อย 🗑');
     });
 }
+
 function insertTemplateVar(variable) {
     const textarea = document.getElementById('templateContent');
     const start = textarea.selectionStart;
@@ -3180,6 +2731,7 @@ function copyText(text) {
     document.body.removeChild(el);
     showToast('คัดลอกข้อความแล้ว ✨');
 }
+
 function showToast(message) {
     const container = document.getElementById('toastContainer');
     const toast = document.createElement('div');
@@ -3193,7 +2745,7 @@ function showToast(message) {
 }
 
 function handleLogoUpload(event) {
-    if(!requireAdminAuth()) return;
+    if (!requireAdminAuth()) return;
     const file = event.target.files[0];
     if (!file) return;
     const reader = new FileReader();
@@ -3221,8 +2773,9 @@ function handleLogoUpload(event) {
     reader.readAsDataURL(file);
     event.target.value = '';
 }
+
 function handleBannerUpload(event) {
-    if(!requireAdminAuth()) return;
+    if (!requireAdminAuth()) return;
     const file = event.target.files[0];
     if (!file) return;
     const reader = new FileReader();
@@ -3280,13 +2833,14 @@ function handleAddTransaction(e) {
             note: note,
             transaction_date: new Date().toISOString()
         });
-        if(error) throw error;
+        if (error) throw error;
         document.getElementById('addTransactionForm').reset();
         await loadData();
         renderTransactions();
         showToast('บันทึกรายการเรียบร้อย ✨');
     });
 }
+
 function setAccFilter(mode) {
     accFilterMode = mode;
     const btns = ['Today', 'Month', 'Year', 'All'];
@@ -3302,6 +2856,7 @@ function setAccFilter(mode) {
     });
     renderTransactions();
 }
+
 function renderTransactions() {
     const listEl = document.getElementById('transactionList');
     let totalIncome = 0;
@@ -3434,20 +2989,21 @@ function updateAccountingChart(income, expense) {
 function deleteTransaction(id, btn) {
     requireAdminAuthAction(btn, async () => {
         const { error } = await supabase.from('transactions').delete().eq('id', id);
-        if(error) throw error;
+        if (error) throw error;
         await loadData();
         renderTransactions();
         showToast('ลบรายการแล้ว 🗑️');
     });
 }
+
 function clearAllTransactions(e) {
     const btn = e.target.closest('button');
-    if(btn.innerText.includes('ล้างประวัติ')) {
+    if (btn.innerText.includes('ล้างประวัติ')) {
         btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> ยืนยันล้างข้อมูล';
         btn.classList.replace('bg-white', 'bg-red-500');
         btn.classList.replace('text-red-500', 'text-white');
         setTimeout(() => {
-            if(btn && btn.innerText.includes('ยืนยัน')) {
+            if (btn && btn.innerText.includes('ยืนยัน')) {
                 btn.innerHTML = '<i class="fa-solid fa-trash-can mr-1"></i> ล้างประวัติ';
                 btn.classList.replace('bg-red-500', 'bg-white');
                 btn.classList.replace('text-white', 'text-red-500');
@@ -3456,10 +3012,10 @@ function clearAllTransactions(e) {
     } else {
         requireAdminAuthAction(btn, async () => {
             const { error } = await supabase.from('transactions').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-            if(error) throw error;
+            if (error) throw error;
             await loadData();
             renderTransactions();
-            showToast('ล้างประวัติทั้งหมดแล้ว 🗑️');
+            showToast('ล้างประวัติทั้งหมดแล้ว 🗑️️');
             btn.innerHTML = '<i class="fa-solid fa-trash-can mr-1"></i> ล้างประวัติ';
             btn.classList.replace('bg-red-500', 'bg-white');
             btn.classList.replace('text-white', 'text-red-500');
@@ -3481,6 +3037,7 @@ function initClickSparkles() {
         spawnSparkles(e.clientX, e.clientY);
     });
 }
+
 function spawnSparkles(x, y) {
     const icons = [
         'fa-heart text-petal-deep',
