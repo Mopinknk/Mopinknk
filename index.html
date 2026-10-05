@@ -517,7 +517,7 @@ text-align: left;
 </div>
 </main>
 <main id="accountingView" class="hidden max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 transition-opacity duration-300">
-<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
 <div class="flex items-center gap-3">
 <button onclick="switchView('dashboard')" class="w-10 h-10 rounded-2xl bg-white border-2 border-petal text-espresso hover:bg-petal-light hover:border-petal-deep transition-all shadow-sm flex items-center justify-center text-lg">
 <i class="fa-solid fa-arrow-left"></i>
@@ -529,12 +529,37 @@ text-align: left;
 </div>
 </div>
 <div class="flex bg-petal-light/30 p-1.5 rounded-[1.5rem] border-2 border-petal gap-1 overflow-x-auto no-scrollbar">
-<button onclick="setAccFilter('today')" id="btnFilterToday" class="px-5 py-2.5 rounded-[1.25rem] text-sm font-extrabold transition-all whitespace-nowrap bg-espresso text-ivory shadow-cute border-2 border-transparent">วันนี้</button>
-<button onclick="setAccFilter('month')" id="btnFilterMonth" class="px-5 py-2.5 rounded-[1.25rem] text-sm font-extrabold transition-all whitespace-nowrap bg-white text-espresso/70 border-2 border-petal hover:bg-petal-light">เดือนนี้</button>
-<button onclick="setAccFilter('year')" id="btnFilterYear" class="px-5 py-2.5 rounded-[1.25rem] text-sm font-extrabold transition-all whitespace-nowrap bg-white text-espresso/70 border-2 border-petal hover:bg-petal-light">ปีนี้</button>
-<button onclick="setAccFilter('all')" id="btnFilterAll" class="px-5 py-2.5 rounded-[1.25rem] text-sm font-extrabold transition-all whitespace-nowrap bg-white text-espresso/70 border-2 border-petal hover:bg-petal-light">ทั้งหมด</button>
+<button onclick="setAccFilter('day')" id="btnFilterDay" class="px-4 sm:px-5 py-2.5 rounded-[1.25rem] text-xs sm:text-sm font-extrabold transition-all whitespace-nowrap bg-espresso text-ivory shadow-cute border-2 border-transparent flex items-center gap-1.5"><i class="fa-regular fa-calendar-days text-petal-deep"></i> เลือกวัน</button>
+<button onclick="setAccFilter('month')" id="btnFilterMonth" class="px-4 sm:px-5 py-2.5 rounded-[1.25rem] text-xs sm:text-sm font-extrabold transition-all whitespace-nowrap bg-white text-espresso/70 border-2 border-petal hover:bg-petal-light">เดือนนี้</button>
+<button onclick="setAccFilter('year')" id="btnFilterYear" class="px-4 sm:px-5 py-2.5 rounded-[1.25rem] text-xs sm:text-sm font-extrabold transition-all whitespace-nowrap bg-white text-espresso/70 border-2 border-petal hover:bg-petal-light">ปีนี้</button>
+<button onclick="setAccFilter('all')" id="btnFilterAll" class="px-4 sm:px-5 py-2.5 rounded-[1.25rem] text-xs sm:text-sm font-extrabold transition-all whitespace-nowrap bg-white text-espresso/70 border-2 border-petal hover:bg-petal-light">ทั้งหมด</button>
 </div>
 </div>
+
+<!-- แถบปฏิทินเลือกวันดูรายรับ-รายจ่าย (Daily Calendar Navigator) -->
+<div id="accDayNavContainer" class="bg-white border-2 border-petal rounded-3xl p-3.5 sm:p-4 mb-6 shadow-soft flex flex-col sm:flex-row items-center justify-between gap-3 transition-all">
+<div class="flex items-center justify-between w-full sm:w-auto gap-2">
+<button type="button" onclick="changeAccDay(-1)" class="w-10 h-10 rounded-2xl bg-petal-light hover:bg-petal text-espresso font-bold flex items-center justify-center transition-colors border-2 border-petal shadow-sm shrink-0" title="วันก่อนหน้า">
+<i class="fa-solid fa-chevron-left text-sm"></i>
+</button>
+<div class="flex items-center gap-2 bg-petal-light/30 border-2 border-petal rounded-2xl px-3 sm:px-4 py-2 shrink-0">
+<i class="fa-regular fa-calendar-days text-petal-deep text-lg"></i>
+<span id="accDisplayDateLabel" class="text-xs sm:text-sm font-extrabold text-espresso truncate">กำลังโหลดวันที่...</span>
+</div>
+<button type="button" onclick="changeAccDay(1)" class="w-10 h-10 rounded-2xl bg-petal-light hover:bg-petal text-espresso font-bold flex items-center justify-center transition-colors border-2 border-petal shadow-sm shrink-0" title="วันถัดไป">
+<i class="fa-solid fa-chevron-right text-sm"></i>
+</button>
+</div>
+<div class="flex items-center justify-end w-full sm:w-auto gap-2">
+<div class="relative flex items-center">
+<input type="date" id="accDatePickerInput" onchange="handleAccDateChange(event)" class="rounded-2xl border-2 border-petal bg-white px-3 py-2 text-xs font-bold text-espresso focus:border-petal-deep focus:ring-0 shadow-sm cursor-pointer hover:border-petal-deep transition-colors">
+</div>
+<button type="button" onclick="setAccDayToday()" class="px-3.5 py-2 rounded-2xl text-xs font-bold bg-petal hover:bg-petal-deep text-espresso border-2 border-transparent transition-colors shadow-sm flex items-center gap-1 shrink-0">
+<i class="fa-solid fa-rotate-left"></i> วันนี้
+</button>
+</div>
+</div>
+
 <div class="grid grid-cols-3 gap-3 sm:gap-4 mb-6">
 <div class="bg-white border-2 border-emerald-200 rounded-3xl p-4 flex flex-col justify-center shadow-soft relative overflow-hidden group hover:shadow-cute transition-all">
 <div class="absolute -right-4 -top-4 w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center -z-0 transition-transform duration-500 group-hover:scale-110"></div>
@@ -561,6 +586,10 @@ text-align: left;
 <h4 class="text-base font-bold text-espresso border-b-2 border-petal pb-2 flex items-center gap-2">
 <i class="fa-solid fa-plus-circle text-petal-deep"></i> บันทึกรายการ
 </h4>
+<div>
+<label class="block text-xs font-bold text-espresso/70 mb-1">วันที่ทำรายการ</label>
+<input type="date" id="transDate" class="w-full rounded-xl border-petal bg-white px-3 py-2 text-sm font-bold text-espresso border-2 focus:border-petal-deep focus:ring-0">
+</div>
 <div class="grid grid-cols-2 gap-2">
 <select id="transType" class="w-full rounded-xl border-petal bg-white px-3 py-2 text-sm font-bold text-espresso border-2 focus:border-petal-deep focus:ring-0 cursor-pointer">
 <option value="income">รายรับ (+)</option>
@@ -582,6 +611,7 @@ text-align: left;
 <div class="flex items-center justify-between border-b-2 border-petal pb-3 mb-4">
 <h4 class="text-base font-bold text-espresso flex items-center gap-2">
 <i class="fa-solid fa-list-ul text-petal-deep"></i> ประวัติรายการ
+<span id="accHistoryPeriodBadge" class="text-xs bg-petal-light text-espresso font-bold px-2.5 py-0.5 rounded-xl border border-petal">วันนี้</span>
 </h4>
 <button onclick="clearAllTransactions(event)" class="text-xs text-red-500 font-bold bg-white px-3 py-1.5 rounded-xl border-2 border-red-200 hover:bg-red-50 transition-colors shadow-sm">
 <i class="fa-solid fa-trash-can mr-1"></i> ล้างประวัติ
@@ -1154,9 +1184,16 @@ let screenToDelete = { id: null, accountId: null, screenIndex: null };
 let selectedAppFilter = 'all';
 let searchQuery = '';
 let monaliTransactions = [];
-let accFilterMode = 'today';
+let accFilterMode = 'day';
+let selectedAccDate = getLocalDateString();
 let accChart = null;
 let cachedTodayTime = new Date().setHours(0,0,0,0);
+function getLocalDateString(d = new Date()) {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
 let cachedTomorrowTime = new Date(cachedTodayTime).setDate(new Date(cachedTodayTime).getDate() + 1);
 let pendingRender = false;
 let currentAdmin = null;
@@ -2822,6 +2859,14 @@ function switchView(viewName) {
         if (!requireAdminAuth()) return;
         dashboardView.classList.add('hidden');
         accountingView.classList.remove('hidden');
+        
+        // กำหนดวันที่เริ่มต้นให้ตรงกับวันที่เลือกอยู่
+        const dateInput = document.getElementById('accDatePickerInput');
+        if (dateInput) dateInput.value = selectedAccDate;
+        const transDateInput = document.getElementById('transDate');
+        if (transDateInput && !transDateInput.value) transDateInput.value = selectedAccDate;
+        
+        updateAccFilterButtonsUI();
         renderTransactions();
     } else {
         accountingView.classList.add('hidden');
@@ -2838,16 +2883,34 @@ function handleAddTransaction(e) {
     const note = document.getElementById('transNote').value.trim();
     if (!amount || amount <= 0 || !note) return;
 
+    const transDateVal = document.getElementById('transDate')?.value || getLocalDateString();
+    const [y, m, d] = transDateVal.split('-').map(Number);
+    const now = new Date();
+    const txDateIso = new Date(y, m - 1, d, now.getHours(), now.getMinutes(), now.getSeconds()).toISOString();
+
     const btn = document.querySelector('#addTransactionForm button[type="submit"]');
     requireAdminAuthAction(btn, async () => {
         const { error } = await supabase.from('transactions').insert({
             type: type,
             amount: amount,
             note: note,
-            transaction_date: new Date().toISOString()
+            transaction_date: txDateIso
         });
         if (error) throw error;
         document.getElementById('addTransactionForm').reset();
+        
+        // ตั้งค่าวันที่ของฟอร์มให้ตรงกับวันที่บันทึกล่าสุด
+        const transDateInput = document.getElementById('transDate');
+        if (transDateInput) transDateInput.value = transDateVal;
+        
+        // ถ้ากำลังดูวันที่นั้นอยู่ หรือต้องการดูผลทันที
+        selectedAccDate = transDateVal;
+        accFilterMode = 'day';
+        
+        const dateInput = document.getElementById('accDatePickerInput');
+        if (dateInput) dateInput.value = selectedAccDate;
+        
+        updateAccFilterButtonsUI();
         await loadData();
         renderTransactions();
         showToast('บันทึกรายการเรียบร้อย ✨');
@@ -2856,37 +2919,135 @@ function handleAddTransaction(e) {
 
 function setAccFilter(mode) {
     accFilterMode = mode;
-    const btns = ['Today', 'Month', 'Year', 'All'];
+    if (mode === 'day') {
+        const dateInput = document.getElementById('accDatePickerInput');
+        if (dateInput) {
+            dateInput.value = selectedAccDate;
+            try { if (dateInput.showPicker) dateInput.showPicker(); } catch(err){}
+        }
+    }
+    updateAccFilterButtonsUI();
+    renderTransactions();
+}
+
+function changeAccDay(delta) {
+    const current = fastParseDateToTime(selectedAccDate) || new Date().setHours(0,0,0,0);
+    const d = new Date(current);
+    d.setDate(d.getDate() + delta);
+    selectedAccDate = getLocalDateString(d);
+    accFilterMode = 'day';
+    
+    const dateInput = document.getElementById('accDatePickerInput');
+    if (dateInput) dateInput.value = selectedAccDate;
+    
+    const transDateInput = document.getElementById('transDate');
+    if (transDateInput) transDateInput.value = selectedAccDate;
+    
+    updateAccFilterButtonsUI();
+    renderTransactions();
+}
+
+function handleAccDateChange(event) {
+    const val = event.target.value;
+    if (!val) return;
+    selectedAccDate = val;
+    accFilterMode = 'day';
+    
+    const transDateInput = document.getElementById('transDate');
+    if (transDateInput) transDateInput.value = selectedAccDate;
+    
+    updateAccFilterButtonsUI();
+    renderTransactions();
+}
+
+function setAccDayToday() {
+    selectedAccDate = getLocalDateString();
+    const dateInput = document.getElementById('accDatePickerInput');
+    if (dateInput) dateInput.value = selectedAccDate;
+    const transDateInput = document.getElementById('transDate');
+    if (transDateInput) transDateInput.value = selectedAccDate;
+    setAccFilter('day');
+}
+
+function updateAccFilterButtonsUI() {
+    const btns = ['Day', 'Month', 'Year', 'All'];
     btns.forEach(b => {
         const el = document.getElementById('btnFilter' + b);
         if (el) {
-            if (b.toLowerCase() === mode) {
-                el.className = 'px-5 py-2.5 rounded-[1.25rem] text-sm font-extrabold transition-all whitespace-nowrap bg-espresso text-ivory shadow-cute border-2 border-transparent';
+            const isDay = (b === 'Day');
+            const flexClass = isDay ? ' flex items-center gap-1.5' : '';
+            if (b.toLowerCase() === accFilterMode.toLowerCase()) {
+                el.className = 'px-4 sm:px-5 py-2.5 rounded-[1.25rem] text-xs sm:text-sm font-extrabold transition-all whitespace-nowrap bg-espresso text-ivory shadow-cute border-2 border-transparent' + flexClass;
             } else {
-                el.className = 'px-5 py-2.5 rounded-[1.25rem] text-sm font-extrabold transition-all whitespace-nowrap bg-white text-espresso/70 border-2 border-petal hover:bg-petal-light';
+                el.className = 'px-4 sm:px-5 py-2.5 rounded-[1.25rem] text-xs sm:text-sm font-extrabold transition-all whitespace-nowrap bg-white text-espresso/70 border-2 border-petal hover:bg-petal-light' + flexClass;
             }
         }
     });
-    renderTransactions();
+
+    const dayNav = document.getElementById('accDayNavContainer');
+    if (dayNav) {
+        if (accFilterMode === 'day') {
+            dayNav.classList.remove('hidden');
+        } else {
+            dayNav.classList.add('hidden');
+        }
+    }
 }
 
 function renderTransactions() {
     const listEl = document.getElementById('transactionList');
     let totalIncome = 0;
     let totalExpense = 0;
+
+    // คำนวณช่วงเวลาเริ่มต้นและสิ้นสุดของวันที่เลือก
+    const [selY, selM, selD] = selectedAccDate.split('-').map(Number);
+    const startOfSelDay = new Date(selY, selM - 1, selD, 0, 0, 0, 0).getTime();
+    const endOfSelDay = new Date(selY, selM - 1, selD, 23, 59, 59, 999).getTime();
+
+    // คำนวณช่วงเวลาเดือนนี้และปีนี้
     const now = new Date();
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-    const startOfYear = new Date(now.getFullYear(), 0, 1).getTime();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0).getTime();
+    const startOfYear = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0).getTime();
+
+    // อัปเดตป้ายกำกับวันที่แสดงผล
+    const displayLabel = document.getElementById('accDisplayDateLabel');
+    const badgeLabel = document.getElementById('accHistoryPeriodBadge');
+    const selDateObj = new Date(selY, selM - 1, selD);
+    const thaiDateText = selDateObj.toLocaleDateString('th-TH', { 
+        weekday: 'short', 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+    });
+
+    if (displayLabel) displayLabel.textContent = thaiDateText;
+    if (badgeLabel) {
+        if (accFilterMode === 'day') badgeLabel.textContent = `วันที่ ${thaiDateText}`;
+        else if (accFilterMode === 'month') badgeLabel.textContent = `เดือนนี้ (${now.toLocaleDateString('th-TH', { month: 'short', year: 'numeric' })})`;
+        else if (accFilterMode === 'year') badgeLabel.textContent = `ปีนี้ (${now.toLocaleDateString('th-TH', { year: 'numeric' })})`;
+        else badgeLabel.textContent = 'รายการทั้งหมด';
+    }
+
     const filteredTx = monaliTransactions.filter(tx => {
         const txTime = new Date(tx.date).getTime();
-        if (accFilterMode === 'today') return txTime >= startOfDay;
-        if (accFilterMode === 'month') return txTime >= startOfMonth;
-        if (accFilterMode === 'year') return txTime >= startOfYear;
+        if (accFilterMode === 'day') {
+            return txTime >= startOfSelDay && txTime <= endOfSelDay;
+        }
+        if (accFilterMode === 'month') {
+            return txTime >= startOfMonth;
+        }
+        if (accFilterMode === 'year') {
+            return txTime >= startOfYear;
+        }
         return true;
     });
+
     if (filteredTx.length === 0) {
-        listEl.innerHTML = ` <div class="text-center py-16 flex flex-col items-center bg-ivory/30 rounded-2xl border-2 border-dashed border-petal"> <div class="w-16 h-16 bg-white border-2 border-petal rounded-full flex items-center justify-center text-espresso/40 mb-3 text-3xl shadow-sm"> <i class="fa-solid fa-receipt"></i> </div> <p class="text-espresso font-bold text-base">ยังไม่มีประวัติการทำรายการ</p> <p class="text-xs text-espresso/60 mt-1 font-medium">เพิ่มรายการใหม่จากฟอร์มด้านซ้ายได้เลยค่ะ</p> </div>`;
+        let emptyMsg = 'ยังไม่มีประวัติการทำรายการในช่วงเวลานี้';
+        if (accFilterMode === 'day') emptyMsg = `ยังไม่มีรายการในวันที่ ${thaiDateText}`;
+        else if (accFilterMode === 'month') emptyMsg = 'ยังไม่มีรายการในเดือนนี้';
+        else if (accFilterMode === 'year') emptyMsg = 'ยังไม่มีรายการในปีนี้';
+        listEl.innerHTML = ` <div class="text-center py-16 flex flex-col items-center bg-ivory/30 rounded-2xl border-2 border-dashed border-petal"> <div class="w-16 h-16 bg-white border-2 border-petal rounded-full flex items-center justify-center text-espresso/40 mb-3 text-3xl shadow-sm"> <i class="fa-solid fa-receipt"></i> </div> <p class="text-espresso font-bold text-base">${emptyMsg}</p> <p class="text-xs text-espresso/60 mt-1 font-medium">เพิ่มรายการใหม่ หรือคลิกเลือกวันอื่นด้านบนได้เลยค่ะ</p> </div>`;
     } else {
         const html = filteredTx.map(tx => {
             const isIncome = tx.type === 'income';
