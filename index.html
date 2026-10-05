@@ -1148,7 +1148,7 @@ var supabase = window.supabaseDb;
 
 let netflixAccounts = [];
 let telegramSettings = { token: '', chatId: '' };
-let collapsedAccounts = new Set();
+let expandedAccounts = new Set();
 let accountIdToDelete = null;
 let screenToDelete = { id: null, accountId: null, screenIndex: null };
 let selectedAppFilter = 'all';
@@ -1773,12 +1773,6 @@ function renderDashboard() {
         if (!grouped[appName]) grouped[appName] = [];
         grouped[appName].push(account);
     });
-    
-    filteredAccounts.forEach(account => {
-        if (!collapsedAccounts.has(account.id) && !account.userToggled) {
-            collapsedAccounts.add(account.id);
-        }
-    });
 
     const htmlParts = [];
     for (const [appName, accounts] of Object.entries(grouped)) {
@@ -1794,9 +1788,9 @@ function renderDashboard() {
         });
         htmlParts.push(`<div class="pt-2 mb-4"> <div class="flex items-center justify-between pb-2 border-b-2 border-petal"> <div class="flex items-center gap-2.5"> <span class="px-3 py-1.5 rounded-xl text-xs font-bold ${appConf.badge} flex items-center gap-1.5 shadow-sm border border-transparent"> <i class="${appConf.icon}"></i> ${escapeHTML(appName)} </span> <span class="text-xs font-bold text-espresso/80">${accounts.length} บัญชี</span> </div> <div class="flex items-center gap-2.5 text-[11px] text-espresso font-bold bg-white px-3 py-1.5 rounded-xl shadow-sm border border-petal"> <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow-sm"></span> ว่าง ${appAvailCount}</span> <span class="text-espresso/30">|</span> <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-petal-deep inline-block shadow-sm"></span> ใช้งาน ${appSoldCount}</span> </div> </div> </div> <div class="space-y-4 sm:space-y-5 mb-8">`);
         accounts.forEach(account => {
-            const isCollapsed = collapsedAccounts.has(account.id);
-            const containerClass = isCollapsed ? 'space-y-2.5 sm:space-y-3 hidden' : 'space-y-2.5 sm:space-y-3';
-            const iconClass = isCollapsed ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-up';
+            const isExpanded = expandedAccounts.has(account.id);
+            const containerClass = isExpanded ? 'space-y-2.5 sm:space-y-3' : 'space-y-2.5 sm:space-y-3 hidden';
+            const iconClass = isExpanded ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down';
             const accStatus = getAccountExpireStatus(account.accountExpireDate);
             const isCutoff = accStatus === 'due_today';
             const isOverdue = accStatus === 'overdue';
@@ -1885,17 +1879,15 @@ function getStatusConfig(status) {
 function toggleScreens(accountId) {
     const container = document.getElementById(`screens-container-${accountId}`);
     const icon = document.getElementById(`icon-toggle-${accountId}`);
-    const account = netflixAccounts.find(a => a.id === accountId);
-    if (account) account.userToggled = true;
 
-    if (collapsedAccounts.has(accountId)) {
-        collapsedAccounts.delete(accountId);
-        container.classList.remove('hidden');
-        icon.className = 'fa-solid fa-chevron-up text-sm';
+    if (expandedAccounts.has(accountId)) {
+        expandedAccounts.delete(accountId);
+        if (container) container.classList.add('hidden');
+        if (icon) icon.className = 'fa-solid fa-chevron-down text-sm';
     } else {
-        collapsedAccounts.add(accountId);
-        container.classList.add('hidden');
-        icon.className = 'fa-solid fa-chevron-down text-sm';
+        expandedAccounts.add(accountId);
+        if (container) container.classList.remove('hidden');
+        if (icon) icon.className = 'fa-solid fa-chevron-up text-sm';
     }
 }
 
@@ -2251,11 +2243,16 @@ function openEditScreenModal(accountId, screenIndex) {
     if (!requireAdminAuth()) return;
     const account = netflixAccounts.find(a => a.id === accountId);
     if (!account || !account.screens[screenIndex]) return;
+
+    // บัญชีที่กำลังจัดการให้คงสถานะกางจอไว้
+    expandedAccounts.add(accountId);
+
     const screen = account.screens[screenIndex];
     document.getElementById('editAccountId').value = accountId;
     document.getElementById('editScreenId').value = screen.id;
     document.getElementById('editScreenIndex').value = screenIndex;
     document.getElementById('editScreenTitle').textContent = `จอ ${screenIndex + 1} (${account.name})`;
+
     const savedStatus = screen.status === 'kick' ? 'sold' : screen.status;
     const radios = document.getElementsByName('screenStatus');
     for (let i = 0; i < radios.length; i++) {
@@ -2306,6 +2303,9 @@ async function handleEditScreen(e) {
             });
         }
 
+        // คงสถานะกางจอของบัญชีนี้ไว้ ไม่ปิดเอง
+        expandedAccounts.add(accountId);
+
         await loadData();
         closeEditScreenModal();
         showToast('บันทึกข้อมูลหน้าจอเรียบร้อยแล้วค่ะ 💖');
@@ -2327,6 +2327,8 @@ function addNewScreen(accountId) {
                 status: 'available'
             });
             if (error) throw error;
+            // มั่นใจว่ากางจอของบัญชีนี้ไว้
+            expandedAccounts.add(accountId);
             await loadData();
             showToast(`เพิ่มจอให้บัญชี ${account.name} แล้ว ✨`);
         } catch(err) {
@@ -2376,7 +2378,7 @@ function executeDeleteAccount(btn) {
         if (!accountIdToDelete) return;
         const { error } = await supabase.from('accounts').delete().eq('id', accountIdToDelete);
         if (error) throw error;
-        collapsedAccounts.delete(accountIdToDelete);
+        expandedAccounts.delete(accountIdToDelete);
         await loadData();
         closeDeleteModal();
         showToast('ลบข้อมูลเรียบร้อยแล้วค่ะ 🗑');
