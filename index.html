@@ -96,123 +96,6 @@ content: ''; position: absolute; background: #ffffff; border-radius: 50%;
 .c3 { top: 60%; width: 300px; height: 90px; --scale: 1.8; animation-duration: 50s; animation-delay: -5s; }
 .c4 { top: 78%; width: 220px; height: 70px; --scale: 1.4; animation-duration: 70s; animation-delay: -45s; opacity: 0.7; }
 .c5 { top: 25%; width: 280px; height: 85px; --scale: 1.6; animation-duration: 55s; animation-delay: -25s; }
-#loading-screen {
-position: fixed;
-inset: 0;
-background: radial-gradient(circle at center, #FAF0F4 0%, #FCEBF0 100%);
-z-index: 99999;
-display: flex;
-align-items: center;
-justify-content: center;
-transition: opacity 0.6s ease, visibility 0.6s ease;
-overflow: hidden;
-}
-@keyframes panBg {
-0% { transform: translate(0, 0); }
-100% { transform: translate(50px, 50px); }
-}
-.hidden-loader {
-opacity: 0 !important;
-visibility: hidden !important;
-pointer-events: none !important;
-}
-.progress-container {
-width: 100%;
-height: 24px;
-background-color: #FCEBF0;
-border-radius: 999px;
-overflow: hidden;
-border: 3px solid #ffffff;
-box-shadow: 0 0 15px rgba(244, 201, 214, 0.5), inset 0 2px 5px rgba(212, 131, 157, 0.2);
-margin-top: 1.5rem;
-position: relative;
-}
-.progress-bar-fill {
-height: 100%;
-width: 0%;
-border-radius: 999px;
-background: repeating-linear-gradient(
--45deg,
-#F8B1C8,
-#F8B1C8 12px,
-#F4C9D6 12px,
-#F4C9D6 24px
-);
-background-size: 34px 34px;
-animation: stripeMove 1s linear infinite;
-transition: width 0.1s linear;
-position: relative;
-}
-.progress-bar-fill::after {
-content: '';
-position: absolute;
-top: 2px; left: 2px; right: 2px; height: 35%;
-background: linear-gradient(to bottom, rgba(255,255,255,0.7), rgba(255,255,255,0));
-border-radius: 999px;
-pointer-events: none;
-}
-@keyframes stripeMove {
-0% { background-position: 0 0; }
-100% { background-position: 34px 0; }
-}
-.enter-btn {
-opacity: 0;
-transform: translateY(20px);
-visibility: hidden;
-transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.enter-btn.show {
-opacity: 1;
-transform: translateY(0);
-visibility: visible;
-}
-@keyframes floatUpDown {
-0%, 100% { transform: translateY(0); }
-50% { transform: translateY(-15px); }
-}
-.animate-float {
-animation: floatUpDown 4s ease-in-out infinite;
-}
-@keyframes popInContent {
-0% { transform: scale(0.85); opacity: 0; }
-70% { transform: scale(1.05); opacity: 1; }
-100% { transform: scale(1); opacity: 1; }
-}
-.loading-content-wrap {
-animation: popInContent 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-.loader-fluffy-cloud {
-position: absolute;
-background: #ffffff;
-border-radius: 100px;
-opacity: 0.6;
-animation: floatClouds linear infinite;
-}
-.loader-fluffy-cloud::before, .loader-fluffy-cloud::after {
-content: '';
-position: absolute;
-background: #ffffff;
-border-radius: 50%;
-}
-.loader-fluffy-cloud::before { width: 50%; height: 160%; top: -80%; left: 15%; }
-.loader-fluffy-cloud::after { width: 40%; height: 130%; top: -50%; left: 45%; }
-.lfc-1 { top: 5%; width: 280px; height: 90px; left: -50px; --scale: 1; animation-duration: 35s; }
-.lfc-2 { top: 25%; width: 350px; height: 110px; right: -100px; --scale: 1.2; animation-duration: 45s; animation-direction: reverse; }
-.lfc-3 { bottom: 15%; width: 220px; height: 70px; left: -20px; --scale: 0.9; animation-duration: 40s; }
-.lfc-4 { bottom: -5%; width: 400px; height: 120px; right: 5%; --scale: 1.1; animation-duration: 50s; }
-.lfc-5 { top: -5%; width: 200px; height: 60px; right: 25%; --scale: 0.8; animation-duration: 30s; }
-.lfc-6 { bottom: 35%; width: 280px; height: 85px; left: 15%; --scale: 1.3; animation-duration: 38s; animation-direction: reverse; }
-.sparkle-magical {
-position: absolute;
-background-color: #fff;
-border-radius: 50%;
-box-shadow: 0 0 10px 2px rgba(244, 201, 214, 0.8);
-animation: twinkle var(--animation-duration) infinite alternate ease-in-out;
-}
-@keyframes twinkle {
-0% { transform: scale(0.8); opacity: 0.3; }
-100% { transform: scale(1.2); opacity: 1; }
-}
 .cloud-stat {
 border-radius: 999px;
 background-color: #ffffff;
@@ -281,55 +164,6 @@ text-align: left;
 </style>
 </head>
 <body class="font-sans text-espresso min-h-screen pb-16">
-<div id="loading-screen">
-<div class="absolute inset-[-50%] z-0 pointer-events-none" style="background-image: radial-gradient(#F8B1C8 3.5px, transparent 3.5px); background-size: 50px 50px; opacity: 0.15; animation: panBg 40s linear infinite;"></div>
-<i class="fa-solid fa-heart absolute text-white/70 text-[18rem] sm:text-[25rem] -top-10 -left-10 sm:-top-20 sm:-left-20 z-0 animate-pulse" style="animation-duration: 4s;"></i>
-<i class="fa-solid fa-heart absolute text-white/50 text-[20rem] sm:text-[30rem] -bottom-20 -right-10 sm:-bottom-40 sm:-right-20 z-0 animate-pulse" style="animation-duration: 6s; animation-delay: 1s;"></i>
-<div class="loader-fluffy-cloud lfc-1"></div>
-<div class="loader-fluffy-cloud lfc-2"></div>
-<div class="loader-fluffy-cloud lfc-3"></div>
-<div class="loader-fluffy-cloud lfc-4"></div>
-<div class="loader-fluffy-cloud lfc-5"></div>
-<div class="loader-fluffy-cloud lfc-6"></div>
-<div class="relative z-10 flex flex-col items-center w-full max-w-md px-6 loading-content-wrap">
-<div class="floating-logo-container flex flex-col items-center animate-float">
-<div class="relative mb-8 mt-4 group">
-<div class="absolute inset-[-20px] bg-gradient-to-tr from-petal-rich to-petal-light rounded-full opacity-40 blur-lg animate-pulse" style="animation-duration: 3s;"></div>
-<div class="absolute inset-[-14px] border-[3px] border-dashed border-petal-deep rounded-full opacity-40" style="animation: spin 15s linear infinite;"></div>
-<div class="absolute inset-[-6px] border-2 border-petal-light rounded-full opacity-80" style="animation: spin 10s linear infinite reverse;"></div>
-<div class="w-32 h-32 bg-white rounded-full shadow-glow flex items-center justify-center relative z-10 border-4 border-white p-1 transition-transform duration-500 group-hover:scale-105">
-<img id="loadingScreenLogo" src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20width%3D%22300%22%20height%3D%22300%22%20fill%3D%22%23F4C9D6%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2250%22%20font-weight%3D%22bold%22%20fill%3D%22%233E2723%22%3ELogo%3C%2Ftext%3E%3C%2Fsvg%3E" alt="Loading Logo" class="w-full h-full object-cover rounded-full shadow-inner relative z-10">
-</div>
-<div class="absolute -top-3 -right-3 bg-white w-8 h-8 rounded-full shadow-sm border-2 border-petal-light flex items-center justify-center z-20 animate-bounce" style="animation-duration: 2s;">
-<i class="fa-solid fa-star text-yellow-400 text-xs"></i>
-</div>
-<div class="absolute -bottom-2 -left-3 bg-white w-7 h-7 rounded-full shadow-sm border-2 border-petal flex items-center justify-center z-20 animate-bounce" style="animation-duration: 2.5s; animation-delay: 0.5s;">
-<i class="fa-solid fa-heart text-petal-deep text-[10px]"></i>
-</div>
-<i class="fa-solid fa-sparkles absolute top-10 -left-7 text-petal-rich text-lg z-20 animate-pulse"></i>
-<i class="fa-solid fa-star absolute bottom-6 -right-7 text-petal-light text-sm z-20" style="animation: spin 6s linear infinite;"></i>
-</div>
-<h1 class="text-5xl font-kanit italic font-black uppercase text-espresso tracking-widest mb-2 drop-shadow-md">MONALI</h1>
-<p class="text-sm text-petal-deep font-bold tracking-widest uppercase bg-white/80 px-4 py-1.5 rounded-full shadow-sm border border-petal-light backdrop-blur-sm">Backoffice System</p>
-</div>
-<p id="loading-status-text" class="loading-text text-espresso font-medium transition-opacity duration-300">กำลังเตรียมความฟุ้งฟิ้ง...</p>
-<div class="progress-container w-[90%] sm:w-full">
-<div id="loading-progress-bar" class="progress-bar-fill"></div>
-</div>
-<div class="h-10 mt-4 flex items-center justify-center">
-<div class="relative group">
-<span id="loading-percentage" class="text-lg font-black text-petal-deep bg-white px-5 py-2 rounded-full shadow-cute border-2 border-petal-light inline-block transform transition-transform hover:scale-110">0%</span>
-<i class="fa-solid fa-star absolute -top-2 -right-3 text-yellow-400 text-sm animate-pulse z-20"></i>
-<i class="fa-solid fa-heart absolute -bottom-1 -left-2 text-petal-rich text-xs animate-bounce z-20"></i>
-</div>
-</div>
-<button id="enter-system-btn" onclick="hideLoadingScreen()" class="enter-btn mt-6 bg-gradient-to-r from-petal to-petal-rich text-espresso px-12 py-4 rounded-full text-lg font-black border-4 border-white flex items-center gap-2 relative overflow-hidden group">
-<div class="absolute inset-0 bg-white/30 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
-<span class="relative z-10">เข้าสู่ระบบหลังบ้าน</span>
-<i class="fa-solid fa-heart relative z-10 group-hover:scale-125 transition-transform text-white drop-shadow-sm"></i>
-</button>
-</div>
-</div>
 <div class="cloud-wrapper">
 <div class="cloud c1"></div>
 <div class="cloud c2"></div>
@@ -535,8 +369,6 @@ text-align: left;
 <button onclick="setAccFilter('all')" id="btnFilterAll" class="px-4 sm:px-5 py-2.5 rounded-[1.25rem] text-xs sm:text-sm font-extrabold transition-all whitespace-nowrap bg-white text-espresso/70 border-2 border-petal hover:bg-petal-light">ทั้งหมด</button>
 </div>
 </div>
-
-<!-- แถบปฏิทินเลือกวันดูรายรับ-รายจ่าย (Daily Calendar Navigator) -->
 <div id="accDayNavContainer" class="bg-white border-2 border-petal rounded-3xl p-3.5 sm:p-4 mb-6 shadow-soft flex flex-col sm:flex-row items-center justify-between gap-3 transition-all">
 <div class="flex items-center justify-between w-full sm:w-auto gap-2">
 <button type="button" onclick="changeAccDay(-1)" class="w-10 h-10 rounded-2xl bg-petal-light hover:bg-petal text-espresso font-bold flex items-center justify-center transition-colors border-2 border-petal shadow-sm shrink-0" title="วันก่อนหน้า">
@@ -559,7 +391,6 @@ text-align: left;
 </button>
 </div>
 </div>
-
 <div class="grid grid-cols-3 gap-3 sm:gap-4 mb-6">
 <div class="bg-white border-2 border-emerald-200 rounded-3xl p-4 flex flex-col justify-center shadow-soft relative overflow-hidden group hover:shadow-cute transition-all">
 <div class="absolute -right-4 -top-4 w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center -z-0 transition-transform duration-500 group-hover:scale-110"></div>
@@ -1225,23 +1056,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     setupAuthListener();
     checkAutoLoginSession();
 
-    const progressBar = document.getElementById('loading-progress-bar');
-    const percentageText = document.getElementById('loading-percentage');
-    const enterBtn = document.getElementById('enter-system-btn');
-    if (progressBar && percentageText) {
-        let p = 0;
-        let intv = setInterval(() => {
-            p += 2;
-            if (p >= 100) {
-                p = 100;
-                clearInterval(intv);
-                if (enterBtn) enterBtn.classList.add('show');
-            }
-            progressBar.style.width = p + '%';
-            percentageText.textContent = p + '%';
-        }, 30);
-    }
-
     setInterval(() => {
         cachedTodayTime = new Date().setHours(0,0,0,0);
         cachedTomorrowTime = new Date(cachedTodayTime).setDate(new Date(cachedTodayTime).getDate() + 1);
@@ -1294,15 +1108,7 @@ function setupAuthListener() {
     });
 }
 
-function hideLoadingScreen() {
-    const loader = document.getElementById('loading-screen');
-    if (loader) loader.classList.add('hidden-loader');
-}
-
 async function loadData() {
-    const statusText = document.getElementById('loading-status-text');
-    if (statusText) statusText.textContent = 'กำลังโหลดข้อมูลจากฐานข้อมูล...';
-
     try {
         const { data: appsData } = await supabase.from('apps').select('*');
         customApps = appsData || [];
@@ -1353,18 +1159,14 @@ async function loadData() {
 
         if (stMap['logo_base64']) {
             document.getElementById('storeLogo').src = stMap['logo_base64'];
-            const loadingLogoEl = document.getElementById('loadingScreenLogo');
-            if (loadingLogoEl) loadingLogoEl.src = stMap['logo_base64'];
         }
         if (stMap['banner_base64']) {
             document.getElementById('storeBanner').src = stMap['banner_base64'];
         }
 
-        if (statusText) statusText.textContent = 'หลังบ้านพร้อมแล้วค่ะ 💖';
         scheduleRender();
     } catch (error) {
         console.error("Load Data Error:", error);
-        if (statusText) statusText.textContent = 'เกิดข้อผิดพลาดในการโหลดข้อมูล';
         showToast('โหลดข้อมูลไม่สำเร็จ: ' + error.message);
     }
 }
@@ -2292,7 +2094,6 @@ function openEditScreenModal(accountId, screenIndex) {
     const account = netflixAccounts.find(a => a.id === accountId);
     if (!account || !account.screens[screenIndex]) return;
 
-    // บัญชีที่กำลังจัดการให้คงสถานะกางจอไว้
     expandedAccounts.add(accountId);
 
     const screen = account.screens[screenIndex];
@@ -2351,7 +2152,6 @@ async function handleEditScreen(e) {
             });
         }
 
-        // คงสถานะกางจอของบัญชีนี้ไว้ ไม่ปิดเอง
         expandedAccounts.add(accountId);
 
         await loadData();
@@ -2375,7 +2175,6 @@ function addNewScreen(accountId) {
                 status: 'available'
             });
             if (error) throw error;
-            // มั่นใจว่ากางจอของบัญชีนี้ไว้
             expandedAccounts.add(accountId);
             await loadData();
             showToast(`เพิ่มจอให้บัญชี ${account.name} แล้ว ✨`);
@@ -2813,8 +2612,6 @@ function handleLogoUpload(event) {
             try {
                 await supabase.from('settings').upsert({ key: 'logo_base64', value: compressedBase64 });
                 document.getElementById('storeLogo').src = compressedBase64;
-                const loadingLogoEl = document.getElementById('loadingScreenLogo');
-                if (loadingLogoEl) loadingLogoEl.src = compressedBase64;
                 showToast('อัปเดตโลโก้ร้านแล้ว ✨');
             } catch(err) { showToast('อัปเดตไม่สำเร็จ'); }
         };
@@ -2860,7 +2657,6 @@ function switchView(viewName) {
         dashboardView.classList.add('hidden');
         accountingView.classList.remove('hidden');
         
-        // กำหนดวันที่เริ่มต้นให้ตรงกับวันที่เลือกอยู่
         const dateInput = document.getElementById('accDatePickerInput');
         if (dateInput) dateInput.value = selectedAccDate;
         const transDateInput = document.getElementById('transDate');
@@ -2899,11 +2695,9 @@ function handleAddTransaction(e) {
         if (error) throw error;
         document.getElementById('addTransactionForm').reset();
         
-        // ตั้งค่าวันที่ของฟอร์มให้ตรงกับวันที่บันทึกล่าสุด
         const transDateInput = document.getElementById('transDate');
         if (transDateInput) transDateInput.value = transDateVal;
         
-        // ถ้ากำลังดูวันที่นั้นอยู่ หรือต้องการดูผลทันที
         selectedAccDate = transDateVal;
         accFilterMode = 'day';
         
@@ -2999,17 +2793,14 @@ function renderTransactions() {
     let totalIncome = 0;
     let totalExpense = 0;
 
-    // คำนวณช่วงเวลาเริ่มต้นและสิ้นสุดของวันที่เลือก
     const [selY, selM, selD] = selectedAccDate.split('-').map(Number);
     const startOfSelDay = new Date(selY, selM - 1, selD, 0, 0, 0, 0).getTime();
     const endOfSelDay = new Date(selY, selM - 1, selD, 23, 59, 59, 999).getTime();
 
-    // คำนวณช่วงเวลาเดือนนี้และปีนี้
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0).getTime();
     const startOfYear = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0).getTime();
 
-    // อัปเดตป้ายกำกับวันที่แสดงผล
     const displayLabel = document.getElementById('accDisplayDateLabel');
     const dateInput = document.getElementById('accDatePickerInput');
     const badgeLabel = document.getElementById('accHistoryPeriodBadge');
@@ -3191,7 +2982,7 @@ function clearAllTransactions(e) {
             if (error) throw error;
             await loadData();
             renderTransactions();
-            showToast('ล้างประวัติทั้งหมดแล้ว 🗑️️');
+            showToast('ล้างประวัติทั้งหมดแล้ว 🗑');
             btn.innerHTML = '<i class="fa-solid fa-trash-can mr-1"></i> ล้างประวัติ';
             btn.classList.replace('bg-red-500', 'bg-white');
             btn.classList.replace('text-white', 'text-red-500');
