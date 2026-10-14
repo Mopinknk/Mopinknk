@@ -61,6 +61,7 @@ body {
 .modal-active { overflow: hidden; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
 @keyframes slideInRight {
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
@@ -73,7 +74,6 @@ body {
 .toast-exit { animation: fadeOut 0.3s ease forwards; }
 main { position: relative; z-index: 10; }
 
-/* Main background floating clouds */
 .cloud-wrapper {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;
   overflow: hidden; pointer-events: none; z-index: 0;
@@ -98,7 +98,6 @@ main { position: relative; z-index: 10; }
 .c4 { top: 78%; width: 220px; height: 70px; --scale: 1.4; animation-duration: 70s; animation-delay: -45s; opacity: 0.7; }
 .c5 { top: 25%; width: 280px; height: 85px; --scale: 1.6; animation-duration: 55s; animation-delay: -25s; }
 
-/* Cloud Stat Badges */
 .cloud-stat {
   border-radius: 999px;
   background-color: #ffffff;
@@ -168,6 +167,7 @@ input[type="date"]::-webkit-date-and-time-value {
 </style>
 </head>
 <body class="font-sans text-espresso min-h-screen pb-16">
+
 <div class="cloud-wrapper">
   <div class="cloud c1"></div>
   <div class="cloud c2"></div>
@@ -210,7 +210,6 @@ input[type="date"]::-webkit-date-and-time-value {
     <input type="file" id="bannerInput" accept="image/*" class="hidden" onchange="handleBannerUpload(event)">
   </div>
 
-  <!-- Stat Badges Cloud Section -->
   <div class="grid grid-cols-3 sm:grid-cols-6 gap-y-6 sm:gap-y-10 gap-x-2 sm:gap-x-4 mb-8 pt-4 sm:pt-6 px-1">
     <div class="relative group cursor-pointer transition-transform duration-300 hover:-translate-y-1.5 pt-6 sm:pt-8">
       <div class="w-[85%] max-w-[110px] h-[30px] sm:h-[38px] mx-auto cloud-stat"></div>
@@ -302,7 +301,6 @@ input[type="date"]::-webkit-date-and-time-value {
       </button>
     </div>
 
-    <!-- Quick action buttons -->
     <div class="grid grid-cols-4 gap-2 sm:gap-3 mt-2">
       <button onclick="openAutoFormModal()" class="relative overflow-hidden group py-3 rounded-[1.25rem] bg-white border-2 border-petal text-espresso hover:bg-petal-light/60 transition-all flex flex-col items-center justify-center shadow-sm hover:shadow-md hover:-translate-y-0.5" title="สร้างฟอร์มข้อความ">
         <div class="absolute inset-0 opacity-[0.04]" style="background-image: repeating-linear-gradient(-45deg, currentColor 0, currentColor 2px, transparent 2px, transparent 8px);"></div>
@@ -326,7 +324,6 @@ input[type="date"]::-webkit-date-and-time-value {
       </button>
     </div>
 
-    <!-- App Filter Container -->
     <div class="pt-2">
       <div class="flex items-center justify-between mb-2 px-1">
         <span class="text-xs font-bold text-espresso/70 flex items-center gap-1.5">
@@ -343,7 +340,6 @@ input[type="date"]::-webkit-date-and-time-value {
     </div>
   </div>
 
-  <!-- Accounts list rendering area -->
   <div id="accountsList" class="space-y-6"></div>
   <div id="emptyState" class="hidden text-center py-16">
     <div class="w-24 h-24 bg-petal-light border-2 border-petal rounded-full flex items-center justify-center mx-auto mb-4 text-espresso/50 text-4xl shadow-inner">
@@ -356,7 +352,6 @@ input[type="date"]::-webkit-date-and-time-value {
     </button>
   </div>
 
-  <!-- Read-only notice banner -->
   <div id="adminLockedBanner" class="hidden mt-8 p-4 bg-petal-light border-2 border-petal rounded-2xl flex items-center justify-between shadow-soft">
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 rounded-xl bg-white text-espresso flex items-center justify-center shadow-sm border border-petal">
@@ -480,7 +475,6 @@ input[type="date"]::-webkit-date-and-time-value {
   </div>
 </main>
 
-<!-- Modal: Add Account -->
 <div id="addAccountModal" class="fixed inset-0 bg-espresso/60 z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
   <div class="bg-white rounded-[2rem] w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-petal">
     <div class="px-6 py-5 border-b border-petal flex justify-between items-center bg-petal-light/50 shrink-0">
@@ -527,7 +521,6 @@ input[type="date"]::-webkit-date-and-time-value {
   </div>
 </div>
 
-<!-- Modal: Edit Account -->
 <div id="editAccountModal" class="fixed inset-0 bg-espresso/60 z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
   <div class="bg-white rounded-[2rem] w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-petal">
     <div class="px-6 py-5 border-b border-petal flex justify-between items-center bg-petal-light/50 shrink-0">
@@ -574,7 +567,6 @@ input[type="date"]::-webkit-date-and-time-value {
   </div>
 </div>
 
-<!-- Modal: Edit Screen -->
 <div id="editScreenModal" class="fixed inset-0 bg-espresso/60 z-50 hidden flex items-end sm:items-center justify-center sm:p-4 opacity-0 transition-opacity duration-300">
   <div class="bg-white rounded-t-[2rem] sm:rounded-[2rem] w-full max-w-md shadow-2xl transform translate-y-full sm:translate-y-0 sm:scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-petal">
     <div class="px-5 sm:px-6 py-5 border-b border-petal flex justify-between items-center shrink-0 w-full bg-petal-light/50">
@@ -643,7 +635,6 @@ input[type="date"]::-webkit-date-and-time-value {
   </div>
 </div>
 
-<!-- Available Screens Modal -->
 <div id="availableListModal" class="fixed inset-0 bg-espresso/60 z-[55] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
   <div class="bg-white rounded-[2rem] w-full max-w-lg shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-petal">
     <div class="px-6 py-5 border-b border-petal flex justify-between items-center bg-petal-light/50 shrink-0">
@@ -669,7 +660,6 @@ input[type="date"]::-webkit-date-and-time-value {
   </div>
 </div>
 
-<!-- Kick List Modal -->
 <div id="kickListModal" class="fixed inset-0 bg-espresso/60 z-[55] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
   <div class="bg-white rounded-[2rem] w-full max-w-lg shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-orange-200">
     <div class="px-6 py-5 border-b border-orange-200 flex justify-between items-center bg-orange-50/80 shrink-0">
@@ -695,7 +685,6 @@ input[type="date"]::-webkit-date-and-time-value {
   </div>
 </div>
 
-<!-- Wait Cut List Modal -->
 <div id="waitCutListModal" class="fixed inset-0 bg-espresso/60 z-[55] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
   <div class="bg-white rounded-[2rem] w-full max-w-lg shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-red-200">
     <div class="px-6 py-5 border-b border-red-200 flex justify-between items-center bg-red-50/80 shrink-0">
@@ -721,7 +710,6 @@ input[type="date"]::-webkit-date-and-time-value {
   </div>
 </div>
 
-<!-- Cutoff List Modal -->
 <div id="cutoffListModal" class="fixed inset-0 bg-espresso/60 z-[55] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
   <div class="bg-white rounded-[2rem] w-full max-w-lg shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-purple-200">
     <div class="px-6 py-5 border-b border-purple-200 flex justify-between items-center bg-purple-50/80 shrink-0">
@@ -747,7 +735,6 @@ input[type="date"]::-webkit-date-and-time-value {
   </div>
 </div>
 
-<!-- Passcode Modal -->
 <div id="passcodeModal" class="fixed inset-0 bg-espresso/60 z-[75] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
   <div class="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden p-6 text-center border-2 border-petal">
     <div class="w-16 h-16 bg-petal-light border-2 border-petal rounded-full flex items-center justify-center mx-auto mb-4 text-espresso text-2xl shadow-inner">
@@ -767,7 +754,6 @@ input[type="date"]::-webkit-date-and-time-value {
   </div>
 </div>
 
-<!-- Telegram Settings Modal -->
 <div id="settingsModal" class="fixed inset-0 bg-espresso/60 z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
   <div class="bg-white rounded-[2rem] w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden border-2 border-petal">
     <div class="px-6 py-5 border-b border-petal flex justify-between items-center bg-petal-light/50">
@@ -803,7 +789,6 @@ input[type="date"]::-webkit-date-and-time-value {
   </div>
 </div>
 
-<!-- Admin Login / Profile Modal -->
 <div id="adminModal" class="fixed inset-0 bg-espresso/60 z-[70] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
   <div class="bg-white rounded-[2rem] w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-petal">
     <div class="px-6 py-5 border-b border-petal flex justify-between items-center bg-petal-light/50 shrink-0">
@@ -862,7 +847,6 @@ input[type="date"]::-webkit-date-and-time-value {
   </div>
 </div>
 
-<!-- Modal: Auto Form -->
 <div id="autoFormModal" class="fixed inset-0 bg-espresso/60 z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
   <div class="bg-white rounded-[2rem] w-full max-w-2xl shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-petal">
     <div class="px-6 py-5 border-b border-petal flex justify-between items-center bg-petal-light/50 shrink-0">
@@ -921,7 +905,6 @@ input[type="date"]::-webkit-date-and-time-value {
   </div>
 </div>
 
-<!-- Modal: Edit Template -->
 <div id="editTemplateModal" class="fixed inset-0 bg-espresso/60 z-[60] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
   <div class="bg-white rounded-[2rem] w-full max-w-lg shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden p-6 flex flex-col max-h-[90vh] border-2 border-petal">
     <div class="flex justify-between items-center mb-5 shrink-0">
@@ -963,7 +946,6 @@ input[type="date"]::-webkit-date-and-time-value {
   </div>
 </div>
 
-<!-- Modal: Manage Apps -->
 <div id="manageAppsModal" class="fixed inset-0 bg-espresso/60 z-[65] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
   <div class="bg-white rounded-[2rem] w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-petal">
     <div class="px-6 py-5 border-b border-petal flex justify-between items-center bg-petal-light/50 shrink-0">
@@ -989,7 +971,6 @@ input[type="date"]::-webkit-date-and-time-value {
   </div>
 </div>
 
-<!-- Modal: Add Custom App -->
 <div id="addCustomAppModal" class="fixed inset-0 bg-espresso/60 z-[80] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
   <div class="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden p-6 border-2 border-petal">
     <div class="flex justify-between items-center mb-5">
@@ -1020,7 +1001,6 @@ input[type="date"]::-webkit-date-and-time-value {
   </div>
 </div>
 
-<!-- Modal: Confirm Delete Screen -->
 <div id="deleteScreenModal" class="fixed inset-0 bg-espresso/60 z-[60] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
   <div class="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden p-6 text-center border-2 border-petal">
     <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-2xl border-2 border-red-100 shadow-inner">
@@ -1035,7 +1015,6 @@ input[type="date"]::-webkit-date-and-time-value {
   </div>
 </div>
 
-<!-- Modal: Confirm Delete Account -->
 <div id="deleteConfirmModal" class="fixed inset-0 bg-espresso/60 z-[60] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
   <div class="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden p-6 text-center border-2 border-petal">
     <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-2xl border-2 border-red-100 shadow-inner">
@@ -1050,7 +1029,6 @@ input[type="date"]::-webkit-date-and-time-value {
   </div>
 </div>
 
-<!-- Toast Notification Container -->
 <div id="toastContainer" class="fixed top-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
 <script>
@@ -1217,6 +1195,21 @@ async function loadData() {
     const { data: settingsData } = await supabase.from('settings').select('*');
     const stMap = {};
     (settingsData || []).forEach(s => stMap[s.key] = s.value);
+
+    if (stMap['app_order']) {
+      try {
+        const orderIds = JSON.parse(stMap['app_order']);
+        customApps.sort((a, b) => {
+          let idxA = orderIds.indexOf(a.id);
+          let idxB = orderIds.indexOf(b.id);
+          if (idxA === -1) idxA = 999999;
+          if (idxB === -1) idxB = 999999;
+          return idxA - idxB;
+        });
+      } catch (e) {
+        console.error("Error parsing app order", e);
+      }
+    }
 
     telegramSettings.token = stMap['tg_token'] || '';
     telegramSettings.chatId = stMap['tg_chat_id'] || '';
@@ -1452,11 +1445,19 @@ function renderAppFilterTabs() {
     const appName = getAccountApp(acc);
     appCounts[appName] = (appCounts[appName] || 0) + 1;
   });
-  const allAppNames = new Set(customApps.map(a => a.name));
-  Object.keys(appCounts).forEach(name => allAppNames.add(name));
+  
+  const orderedAppNames = [];
+  customApps.forEach(a => {
+    if (!orderedAppNames.includes(a.name)) orderedAppNames.push(a.name);
+  });
+  Object.keys(appCounts).forEach(name => {
+    if (!orderedAppNames.includes(name)) orderedAppNames.push(name);
+  });
+
   const htmlParts = [];
   htmlParts.push(`<button onclick="setAppFilter('all')" class="px-4 py-2.5 rounded-2xl text-xs font-bold shrink-0 transition-colors flex items-center gap-1.5 shadow-sm border ${selectedAppFilter === 'all' ? 'bg-espresso text-ivory shadow-cute border-transparent' : 'bg-white text-espresso/70 hover:bg-petal-light border-petal'}"> <i class="fa-solid fa-layer-group"></i> ทั้งหมด <span class="text-[10px] px-1.5 py-0.2 rounded-full ${selectedAppFilter === 'all' ? 'bg-white/20' : 'bg-petal-light text-espresso'}">${netflixAccounts.length}</span> </button>`);
-  allAppNames.forEach(appName => {
+  
+  orderedAppNames.forEach(appName => {
     const conf = getAppConfig(appName);
     const count = appCounts[appName] || 0;
     const isSelected = selectedAppFilter.toLowerCase() === appName.toLowerCase();
@@ -1561,6 +1562,7 @@ function handleSaveCustomApp(e) {
       customApps.push(data);
       appConfigCache = {};
       showToast(`เพิ่มแอป "${name}" เรียบร้อยแล้วค่ะ ✨`);
+      saveAppOrder();
     }
     closeAddCustomAppModal();
     renderPresetAppChips('addAppPresetChips', 'accountApp', name);
@@ -1580,6 +1582,7 @@ function deleteCustomApp(appId, event) {
       if (error) throw error;
       customApps = customApps.filter(a => a.id !== appId);
       appConfigCache = {};
+      saveAppOrder();
       renderPresetAppChips('addAppPresetChips', 'accountApp', document.getElementById('accountApp')?.value);
       renderPresetAppChips('editAppPresetChips', 'editAccApp', document.getElementById('editAccApp')?.value);
       scheduleRender();
@@ -1606,11 +1609,42 @@ function renderManageAppsList() {
     return;
   }
   const htmlParts = [];
-  customApps.forEach(app => {
+  customApps.forEach((app, index) => {
     const conf = getAppConfig(app.name);
-    htmlParts.push(`<div class="flex items-center justify-between p-3.5 rounded-2xl bg-white border-2 border-petal shadow-sm hover:border-petal-deep transition-colors"> <div class="flex items-center gap-3 min-w-0"> <span class="w-10 h-10 rounded-xl ${conf.badge} flex items-center justify-center text-sm shadow-sm shrink-0 border border-transparent"> <i class="${conf.icon}"></i> </span> <span class="font-bold text-sm text-espresso truncate">${escapeHTML(app.name)}</span> </div> <button onclick="deleteCustomApp('${app.id}')" class="w-10 h-10 rounded-xl bg-white border border-petal text-espresso/40 hover:text-red-500 hover:border-red-200 flex items-center justify-center text-sm shadow-sm transition-colors" title="ลบแอป"> <i class="fa-solid fa-trash-can"></i> </button> </div>`);
+    const isFirst = index === 0;
+    const isLast = index === customApps.length - 1;
+    htmlParts.push(`<div class="flex items-center justify-between p-3.5 rounded-2xl bg-white border-2 border-petal shadow-sm hover:border-petal-deep transition-colors"> <div class="flex items-center gap-3 min-w-0"> <span class="w-10 h-10 rounded-xl ${conf.badge} flex items-center justify-center text-sm shadow-sm shrink-0 border border-transparent"> <i class="${conf.icon}"></i> </span> <span class="font-bold text-sm text-espresso truncate">${escapeHTML(app.name)}</span> </div> <div class="flex items-center gap-1.5 shrink-0"> <div class="flex flex-col gap-0.5"> <button onclick="moveAppUp(${index})" class="w-8 h-5 flex items-center justify-center bg-petal-light/50 hover:bg-petal rounded-t-lg text-espresso/60 hover:text-espresso transition-colors ${isFirst ? 'opacity-30 cursor-not-allowed' : ''}" ${isFirst ? 'disabled' : ''} title="เลื่อนขึ้น"> <i class="fa-solid fa-chevron-up text-[10px]"></i> </button> <button onclick="moveAppDown(${index})" class="w-8 h-5 flex items-center justify-center bg-petal-light/50 hover:bg-petal rounded-b-lg text-espresso/60 hover:text-espresso transition-colors ${isLast ? 'opacity-30 cursor-not-allowed' : ''}" ${isLast ? 'disabled' : ''} title="เลื่อนลง"> <i class="fa-solid fa-chevron-down text-[10px]"></i> </button> </div> <button onclick="deleteCustomApp('${app.id}')" class="w-10 h-10 ml-1 rounded-xl bg-white border border-petal text-espresso/40 hover:text-red-500 hover:border-red-200 flex items-center justify-center text-sm shadow-sm transition-colors" title="ลบแอป"> <i class="fa-solid fa-trash-can"></i> </button> </div> </div>`);
   });
   container.innerHTML = htmlParts.join('');
+}
+
+async function saveAppOrder() {
+  const orderIds = customApps.map(a => a.id);
+  try {
+    await supabase.from('settings').upsert({ key: 'app_order', value: JSON.stringify(orderIds) });
+  } catch (err) {
+    console.error("Failed to save app order", err);
+  }
+}
+
+function moveAppUp(index) {
+  if (!requireAdminAuth() || index <= 0) return;
+  const temp = customApps[index - 1];
+  customApps[index - 1] = customApps[index];
+  customApps[index] = temp;
+  renderManageAppsList();
+  scheduleRender();
+  saveAppOrder();
+}
+
+function moveAppDown(index) {
+  if (!requireAdminAuth() || index >= customApps.length - 1) return;
+  const temp = customApps[index + 1];
+  customApps[index + 1] = customApps[index];
+  customApps[index] = temp;
+  renderManageAppsList();
+  scheduleRender();
+  saveAppOrder();
 }
 
 function renderDashboard() {
