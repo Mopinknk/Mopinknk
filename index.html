@@ -332,9 +332,9 @@ input[type="date"]::-webkit-date-and-time-value {
 
     <div class="pt-2">
       <div class="flex items-center justify-between mb-2 px-1">
-        <span class="text-xs font-bold text-espresso/70 flex items-center gap-1.5">
-          <i class="fa-solid fa-shapes text-petal-deep"></i> หมวดหมู่แอปพลิเคชัน
-        </span>
+        <button onclick="openCategorySelectModal()" class="text-xs font-bold text-espresso bg-white px-3 py-1.5 rounded-xl border border-petal shadow-sm hover:bg-petal-light hover:border-petal-deep transition-colors flex items-center gap-1.5 cursor-pointer">
+          <i class="fa-solid fa-shapes text-petal-deep"></i> เลือกหมวดหมู่ <i class="fa-solid fa-chevron-down text-[10px] ml-1 opacity-60"></i>
+        </button>
         <div class="flex items-center gap-2">
           <button onclick="openManageAppsModal()" class="text-[11px] text-espresso font-bold bg-petal hover:bg-petal-deep px-3 py-1.5 rounded-xl transition-colors flex items-center gap-1 shadow-sm border border-petal-deep/20">
             <i class="fa-solid fa-gear"></i> จัดการแอพ
@@ -738,6 +738,22 @@ input[type="date"]::-webkit-date-and-time-value {
       </select>
     </div>
     <div class="p-6 overflow-y-auto bg-ivory/50" id="cutoffListContent"></div>
+  </div>
+</div>
+
+<div id="categorySelectModal" class="fixed inset-0 bg-espresso/60 z-[65] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+  <div class="bg-white rounded-[2rem] w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-petal">
+    <div class="px-6 py-5 border-b border-petal flex justify-between items-center bg-petal-light/50 shrink-0">
+      <h3 class="text-xl font-bold text-espresso flex items-center gap-2">
+        <i class="fa-solid fa-shapes text-petal-deep"></i> เลือกหมวดหมู่แอปพลิเคชัน
+      </h3>
+      <button onclick="closeCategorySelectModal()" class="text-espresso/50 hover:text-espresso w-8 h-8 flex items-center justify-center rounded-full hover:bg-white transition-colors">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+    <div class="p-6 overflow-y-auto bg-ivory/30">
+      <div id="categoryGrid" class="grid grid-cols-2 gap-3 sm:gap-4"></div>
+    </div>
   </div>
 </div>
 
@@ -1499,13 +1515,13 @@ function renderAppFilterTabs() {
   });
 
   const htmlParts = [];
-  htmlParts.push(`<button onclick="setAppFilter('all')" class="px-4 py-2.5 rounded-2xl text-xs font-bold shrink-0 transition-colors flex items-center gap-1.5 shadow-sm border ${selectedAppFilter === 'all' ? 'bg-espresso text-ivory shadow-cute border-transparent' : 'bg-white text-espresso/70 hover:bg-petal-light border-petal'}"> <i class="fa-solid fa-layer-group"></i> ทั้งหมด <span class="text-[10px] px-1.5 py-0.2 rounded-full ${selectedAppFilter === 'all' ? 'bg-white/20' : 'bg-petal-light text-espresso'}">${netflixAccounts.length}</span> </button>`);
+  htmlParts.push(`<button onclick="setAppFilterAndScroll('all')" class="px-4 py-2.5 rounded-2xl text-xs font-bold shrink-0 transition-colors flex items-center gap-1.5 shadow-sm border ${selectedAppFilter === 'all' ? 'bg-espresso text-ivory shadow-cute border-transparent' : 'bg-white text-espresso/70 hover:bg-petal-light border-petal'}"> <i class="fa-solid fa-layer-group"></i> ทั้งหมด <span class="text-[10px] px-1.5 py-0.2 rounded-full ${selectedAppFilter === 'all' ? 'bg-white/20' : 'bg-petal-light text-espresso'}">${netflixAccounts.length}</span> </button>`);
   
   orderedAppNames.forEach(appName => {
     const conf = getAppConfig(appName);
     const count = appCounts[appName] || 0;
     const isSelected = selectedAppFilter.toLowerCase() === appName.toLowerCase();
-    htmlParts.push(`<button onclick="setAppFilter('${escapeJS(appName)}')" class="px-3.5 py-2.5 rounded-2xl text-xs font-bold shrink-0 transition-colors flex items-center gap-1.5 shadow-sm border ${isSelected ? `${conf.badge} shadow-md border-transparent` : 'bg-white text-espresso/70 hover:bg-petal-light border-petal'}"> <i class="${conf.icon}"></i> ${escapeHTML(appName)} <span class="text-[10px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-white/20' : 'bg-petal-light text-espresso'}">${count}</span> </button>`);
+    htmlParts.push(`<button onclick="setAppFilterAndScroll('${escapeJS(appName)}')" class="px-3.5 py-2.5 rounded-2xl text-xs font-bold shrink-0 transition-colors flex items-center gap-1.5 shadow-sm border ${isSelected ? `${conf.badge} shadow-md border-transparent` : 'bg-white text-espresso/70 hover:bg-petal-light border-petal'}"> <i class="${conf.icon}"></i> ${escapeHTML(appName)} <span class="text-[10px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-white/20' : 'bg-petal-light text-espresso'}">${count}</span> </button>`);
   });
   container.innerHTML = htmlParts.join('');
   const countLabel = document.getElementById('filterCountLabel');
@@ -1517,6 +1533,79 @@ function renderAppFilterTabs() {
 function setAppFilter(appName) {
   selectedAppFilter = appName;
   scheduleRender();
+}
+
+function setAppFilterAndScroll(appName) {
+  setAppFilter(appName);
+  closeCategorySelectModal();
+  
+  // เลื่อนหน้าจอไปที่ส่วนของบัญชี
+  setTimeout(() => {
+    const accountsListEl = document.getElementById('accountsList');
+    if (accountsListEl) {
+      const y = accountsListEl.getBoundingClientRect().top + window.scrollY - 100;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  }, 100);
+}
+
+function openCategorySelectModal() {
+  const container = document.getElementById('categoryGrid');
+  if (!container) return;
+  
+  const appCounts = {};
+  netflixAccounts.forEach(acc => {
+    const appName = getAccountApp(acc);
+    appCounts[appName] = (appCounts[appName] || 0) + 1;
+  });
+
+  const orderedAppNames = [];
+  customApps.forEach(a => {
+    if (!orderedAppNames.includes(a.name)) orderedAppNames.push(a.name);
+  });
+  Object.keys(appCounts).forEach(name => {
+    if (!orderedAppNames.includes(name)) orderedAppNames.push(name);
+  });
+
+  const htmlParts = [];
+  const allIsSelected = selectedAppFilter === 'all';
+  
+  htmlParts.push(`
+    <button onclick="setAppFilterAndScroll('all')" class="p-4 rounded-3xl border-2 flex flex-col items-center justify-center gap-2.5 transition-all shadow-sm hover:shadow-cute hover:-translate-y-1 ${allIsSelected ? 'bg-espresso text-ivory border-transparent' : 'bg-white text-espresso border-petal hover:border-petal-deep'}">
+      <div class="w-12 h-12 rounded-full ${allIsSelected ? 'bg-white/20' : 'bg-petal-light'} flex items-center justify-center text-xl shadow-inner border border-transparent">
+        <i class="fa-solid fa-layer-group"></i>
+      </div>
+      <div class="text-center w-full">
+        <span class="font-bold text-sm block truncate w-full">ทั้งหมด</span>
+        <span class="text-[10px] mt-1 inline-block ${allIsSelected ? 'bg-white/30 text-white' : 'bg-petal/50 text-espresso'} px-2 py-0.5 rounded-lg font-bold shadow-sm">${netflixAccounts.length} บัญชี</span>
+      </div>
+    </button>
+  `);
+
+  orderedAppNames.forEach(appName => {
+    const conf = getAppConfig(appName);
+    const count = appCounts[appName] || 0;
+    const isSelected = selectedAppFilter.toLowerCase() === appName.toLowerCase();
+    
+    htmlParts.push(`
+      <button onclick="setAppFilterAndScroll('${escapeJS(appName)}')" class="p-4 rounded-3xl border-2 flex flex-col items-center justify-center gap-2.5 transition-all shadow-sm hover:shadow-cute hover:-translate-y-1 ${isSelected ? conf.badge + ' border-transparent' : 'bg-white text-espresso border-petal hover:border-petal-deep'}">
+        <div class="w-12 h-12 rounded-full ${isSelected ? 'bg-white/20' : conf.lightBg.split(' ')[0]} flex items-center justify-center text-xl shadow-inner border border-transparent">
+          <i class="${conf.icon}"></i>
+        </div>
+        <div class="text-center w-full">
+          <span class="font-bold text-sm block truncate w-full">${escapeHTML(appName)}</span>
+          <span class="text-[10px] mt-1 inline-block ${isSelected ? 'bg-white/30 text-white' : 'bg-petal/50 text-espresso'} px-2 py-0.5 rounded-lg font-bold shadow-sm">${count} บัญชี</span>
+        </div>
+      </button>
+    `);
+  });
+
+  container.innerHTML = htmlParts.join('');
+  animateModalOpen('categorySelectModal');
+}
+
+function closeCategorySelectModal() {
+  animateModalClose('categorySelectModal');
 }
 
 function handleSearch(event) {
