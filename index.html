@@ -1211,15 +1211,35 @@ function setupAuthListener() {
 
 async function loadData() {
   try {
-    const { data: appsData } = await supabase.from('apps').select('*');
+    const [
+      { data: appsData },
+      { data: accData },
+      { data: screenData },
+      { data: txData },
+      { data: tplData },
+      { data: settingsData }
+    ] = await Promise.all([
+      supabase.from('apps').select('*'),
+      supabase.from('accounts').select('*, apps(name)'),
+      supabase.from('screens').select('*'),
+      supabase.from('transactions').select('*').order('transaction_date', { ascending: false }),
+      supabase.from('templates').select('*').order('created_at', {ascending: true}),
+      supabase.from('settings').select('*')
+    ]);
+
     customApps = appsData || [];
     appConfigCache = {};
 
-    const { data: accData } = await supabase.from('accounts').select('*, apps(name)');
-    const { data: screenData } = await supabase.from('screens').select('*');
+    const screensByAccount = {};
+    if (screenData) {
+      screenData.forEach(s => {
+        if (!screensByAccount[s.account_id]) screensByAccount[s.account_id] = [];
+        screensByAccount[s.account_id].push(s);
+      });
+    }
 
     netflixAccounts = (accData || []).map(acc => {
-      const screens = (screenData || []).filter(s => s.account_id === acc.id).sort((a,b) => a.screen_index - b.screen_index);
+      const screens = (screensByAccount[acc.id] || []).sort((a,b) => a.screen_index - b.screen_index);
       return {
         id: acc.id,
         app: acc.apps?.name || 'แอปทั่วไป',
@@ -1239,7 +1259,6 @@ async function loadData() {
       };
     }).sort((a,b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
-    const { data: txData } = await supabase.from('transactions').select('*').order('transaction_date', { ascending: false });
     monaliTransactions = (txData || []).map(tx => ({
       id: tx.id,
       type: tx.type,
@@ -1248,10 +1267,8 @@ async function loadData() {
       date: tx.transaction_date
     }));
 
-    const { data: tplData } = await supabase.from('templates').select('*').order('created_at', {ascending: true});
     formTemplates = (tplData && tplData.length > 0) ? tplData : [defaultTemplate];
 
-    const { data: settingsData } = await supabase.from('settings').select('*');
     const stMap = {};
     (settingsData || []).forEach(s => stMap[s.key] = s.value);
 
