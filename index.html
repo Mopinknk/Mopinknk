@@ -7,16 +7,25 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="MONALI">
+
+<!-- ป้องกันแอปแชทดึงข้อความในเว็บไปแสดงเป็นพรีวิวอัตโนมัติ -->
+<meta name="description" content="&#8203;">
+<meta property="og:title" content="&#8203;">
+<meta property="og:description" content="&#8203;">
+<meta property="og:image" content="">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="&#8203;">
+<meta name="twitter:description" content="&#8203;">
+
 <link id="dynamic-favicon" rel="icon" type="image/png" href="">
 <link id="dynamic-apple-icon" rel="apple-touch-icon" href="">
 <link id="dynamic-manifest" rel="manifest" href="">
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Itim&family=Kanit:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,700;1,800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script defer data-auto-replace-svg="nest" data-mutate-approach="sync" src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Itim&family=Kanit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Mali:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!-- Chart.js สำหรับทำกราฟระบบบัญชี -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Supabase SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 tailwind.config = {
   theme: {
@@ -27,43 +36,49 @@ tailwind.config = {
       },
       colors: {
         espresso: {
-          DEFAULT: '#3E2723',
-          light: '#5D4037',
-          dark: '#271815'
+          DEFAULT: 'var(--c-espresso)',
+          light: 'var(--c-espresso-light)',
+          dark: 'var(--c-espresso-dark)'
         },
         petal: {
-          DEFAULT: '#F4C9D6',
-          light: '#FCEBF0',
-          dark: '#E29EB3',
-          deep: '#D4839D',
-          rich: '#F8B1C8'
+          DEFAULT: 'var(--c-petal)',
+          light: 'var(--c-petal-light)',
+          dark: 'var(--c-petal-dark)',
+          deep: 'var(--c-petal-deep)',
+          rich: 'var(--c-petal-rich)'
         },
         ivory: {
-          DEFAULT: '#F5F0E6',
-          card: '#FAF6ED',
-          border: '#EADFD3'
+          DEFAULT: 'var(--c-ivory)',
+          card: 'var(--c-ivory-card)',
+          border: 'var(--c-ivory-border)'
         }
       },
       boxShadow: {
-        'cute': '0 4px 14px 0 rgba(212, 131, 157, 0.4)',
-        'soft': '0 2px 10px 0 rgba(62, 39, 35, 0.08)',
-        'glass': '0 8px 32px 0 rgba(62, 39, 35, 0.08)',
-        'glow': '0 0 20px 5px rgba(248, 177, 200, 0.5)'
+        'cute': '0 4px 14px 0 rgba(0, 0, 0, 0.12)',
+        'soft': '0 2px 10px 0 rgba(0, 0, 0, 0.08)',
+        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.08)',
+        'glow': '0 0 20px 5px rgba(0, 0, 0, 0.1)'
       }
     }
   }
 }
 </script>
 <style>
+:root {
+  --c-espresso: #3E2723; --c-espresso-light: #5D4037; --c-espresso-dark: #271815;
+  --c-petal: #F4C9D6; --c-petal-light: #FCEBF0; --c-petal-dark: #E29EB3; --c-petal-deep: #D4839D; --c-petal-rich: #F8B1C8;
+  --c-ivory: #F5F0E6; --c-ivory-card: #FAF6ED; --c-ivory-border: #EADFD3;
+  --c-bg: #FAF0F4; --c-title: #FF8EA6; --c-text-stroke: #FFFFFF; --c-text-shadow: #FFB3C6;
+}
 body {
-  background-color: #FAF0F4;
-  color: #3E2723;
+  background-color: var(--c-bg);
+  color: var(--c-espresso);
   -webkit-tap-highlight-color: transparent;
 }
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #FCEBF0; }
-::-webkit-scrollbar-thumb { background: #F4C9D6; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #E8A2B8; }
+::-webkit-scrollbar-track { background: var(--c-petal-light); }
+::-webkit-scrollbar-thumb { background: var(--c-petal); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--c-petal-dark); }
 .modal-active { overflow: hidden; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -109,7 +124,7 @@ main { position: relative; z-index: 10; }
   background-color: #ffffff;
   background-image: repeating-linear-gradient(-45deg, rgba(62, 39, 35, 0.04) 0, rgba(62, 39, 35, 0.04) 2px, transparent 2px, transparent 8px);
   position: relative;
-  filter: drop-shadow(0 4px 6px rgba(212, 131, 157, 0.12));
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.08));
   height: 30px;
   width: 90px;
   margin: 0 auto;
@@ -146,7 +161,7 @@ main { position: relative; z-index: 10; }
   pointer-events: none;
   z-index: 99999;
   will-change: transform, opacity;
-  text-shadow: 0 0 4px rgba(248, 177, 200, 0.8);
+  text-shadow: 0 0 4px var(--c-petal-deep);
   opacity: 0;
 }
 .animate-pop {
@@ -182,37 +197,145 @@ input[type="date"]::-webkit-date-and-time-value {
   <div class="cloud c5"></div>
 </div>
 
+<!-- Sidebar Backdrop -->
+<div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-espresso/60 z-[90] hidden opacity-0 transition-opacity duration-300"></div>
+
+<!-- Sidebar Menu -->
+<div id="sidebarMenu" class="fixed top-0 left-0 bottom-0 w-72 max-w-[80vw] bg-white z-[100] transform -translate-x-full transition-transform duration-300 border-r-2 border-petal shadow-2xl flex flex-col">
+  <div class="px-6 py-6 border-b border-petal flex justify-between items-center bg-petal-light/50 shrink-0">
+    <h3 class="text-xl font-bold text-espresso flex items-center gap-3">
+      <div class="w-10 h-10 rounded-2xl bg-white border-2 border-petal shadow-sm flex items-center justify-center">
+        <i class="fa-solid fa-toolbox text-petal-deep"></i>
+      </div>
+      Settings
+    </h3>
+    <button onclick="toggleSidebar()" class="text-espresso/50 hover:text-espresso w-8 h-8 flex items-center justify-center rounded-full hover:bg-white transition-colors">
+      <i class="fa-solid fa-xmark text-xl"></i>
+    </button>
+  </div>
+  <div class="p-5 overflow-y-auto flex-1 flex flex-col gap-3">
+    <button onclick="openAutoFormModal(); toggleSidebar();" class="relative overflow-hidden group p-4 rounded-[1.25rem] bg-white border-2 border-petal text-espresso hover:bg-petal-light/60 transition-all flex items-center shadow-sm hover:shadow-md text-left hover:-translate-y-0.5">
+      <div class="absolute inset-0 opacity-[0.04]" style="background-image: repeating-linear-gradient(-45deg, currentColor 0, currentColor 2px, transparent 2px, transparent 8px);"></div>
+      <div class="w-12 h-12 rounded-full bg-petal flex items-center justify-center text-espresso mr-4 shrink-0 relative z-10 group-hover:scale-110 transition-transform shadow-inner">
+         <i class="fa-solid fa-file-signature text-lg"></i>
+      </div>
+      <div class="relative z-10 flex flex-col">
+        <span class="text-sm font-bold text-espresso w-full">ฟอร์มสินค้า</span>
+        <span class="text-[10px] text-espresso/60 font-medium">สร้างข้อความส่งลูกค้า</span>
+      </div>
+    </button>
+    <button onclick="verifyPasscodeForAccounting(); toggleSidebar();" class="relative overflow-hidden group p-4 rounded-[1.25rem] bg-white border-2 border-petal text-espresso hover:bg-petal-light/60 transition-all flex items-center shadow-sm hover:shadow-md text-left hover:-translate-y-0.5">
+      <div class="absolute inset-0 opacity-[0.04]" style="background-image: repeating-linear-gradient(-45deg, currentColor 0, currentColor 2px, transparent 2px, transparent 8px);"></div>
+      <div class="w-12 h-12 rounded-full bg-petal flex items-center justify-center text-espresso mr-4 shrink-0 relative z-10 group-hover:scale-110 transition-transform shadow-inner">
+         <i class="fa-solid fa-wallet text-lg"></i>
+      </div>
+      <div class="relative z-10 flex flex-col">
+        <span class="text-sm font-bold text-espresso w-full">รายการเดินบัญชี</span>
+        <span class="text-[10px] text-espresso/60 font-medium">คำนวนยอด บันทึกบัญชี</span>
+      </div>
+    </button>
+    <button onclick="openSettingsModal(); toggleSidebar();" class="relative overflow-hidden group p-4 rounded-[1.25rem] bg-white border-2 border-petal text-espresso hover:bg-petal-light/60 transition-all flex items-center shadow-sm hover:shadow-md text-left hover:-translate-y-0.5">
+      <div class="absolute inset-0 opacity-[0.04]" style="background-image: repeating-linear-gradient(-45deg, currentColor 0, currentColor 2px, transparent 2px, transparent 8px);"></div>
+      <div class="w-12 h-12 rounded-full bg-petal flex items-center justify-center text-espresso mr-4 shrink-0 relative z-10 group-hover:scale-110 transition-transform shadow-inner">
+         <i class="fa-solid fa-bell text-lg"></i>
+      </div>
+      <div class="relative z-10 flex flex-col">
+        <span class="text-sm font-bold text-espresso w-full">Notification</span>
+        <span class="text-[10px] text-espresso/60 font-medium">เชื่อมต่อกับ Telegram Bot</span>
+      </div>
+    </button>
+    <button id="addAccountBtn" onclick="openAddAccountModal(); toggleSidebar();" class="relative overflow-hidden group p-4 rounded-[1.25rem] bg-white border-2 border-petal text-espresso hover:bg-petal-light/60 transition-all flex items-center shadow-sm hover:shadow-md text-left hover:-translate-y-0.5">
+      <div class="absolute inset-0 opacity-[0.04]" style="background-image: repeating-linear-gradient(-45deg, currentColor 0, currentColor 2px, transparent 2px, transparent 8px);"></div>
+      <div class="w-12 h-12 rounded-full bg-petal flex items-center justify-center text-espresso mr-4 shrink-0 relative z-10 group-hover:scale-110 transition-transform shadow-inner">
+         <i class="fa-solid fa-plus text-lg"></i>
+      </div>
+      <div class="relative z-10 flex flex-col">
+        <span class="text-sm font-bold text-espresso w-full">เพิ่มบัญชีใหม่</span>
+        <span class="text-[10px] text-espresso/60 font-medium">บันทึกข้อมูลบัญชีลงระบบ</span>
+      </div>
+    </button>
+    <button onclick="openStoreSettingsModal(); toggleSidebar();" class="relative overflow-hidden group p-4 rounded-[1.25rem] bg-white border-2 border-petal text-espresso hover:bg-petal-light/60 transition-all flex items-center shadow-sm hover:shadow-md text-left hover:-translate-y-0.5">
+      <div class="absolute inset-0 opacity-[0.04]" style="background-image: repeating-linear-gradient(-45deg, currentColor 0, currentColor 2px, transparent 2px, transparent 8px);"></div>
+      <div class="w-12 h-12 rounded-full bg-petal flex items-center justify-center text-espresso mr-4 shrink-0 relative z-10 group-hover:scale-110 transition-transform shadow-inner">
+         <i class="fa-solid fa-store text-lg"></i>
+      </div>
+      <div class="relative z-10 flex flex-col">
+        <span class="text-sm font-bold text-espresso w-full">ตั้งค่าร้านค้า</span>
+        <span class="text-[10px] text-espresso/60 font-medium">ชื่อ โทนสี รูปโปรไฟล์ หน้าปก</span>
+      </div>
+    </button>
+    <button onclick="openSystemSettingsModal(); toggleSidebar();" class="relative overflow-hidden group p-4 rounded-[1.25rem] bg-white border-2 border-petal text-espresso hover:bg-petal-light/60 transition-all flex items-center shadow-sm hover:shadow-md text-left hover:-translate-y-0.5">
+      <div class="absolute inset-0 opacity-[0.04]" style="background-image: repeating-linear-gradient(-45deg, currentColor 0, currentColor 2px, transparent 2px, transparent 8px);"></div>
+      <div class="w-12 h-12 rounded-full bg-petal flex items-center justify-center text-espresso mr-4 shrink-0 relative z-10 group-hover:scale-110 transition-transform shadow-inner">
+         <i class="fa-solid fa-sliders text-lg"></i>
+      </div>
+      <div class="relative z-10 flex flex-col">
+        <span class="text-sm font-bold text-espresso w-full">ตั้งค่าเว็บไซต์</span>
+        <span class="text-[10px] text-espresso/60 font-medium">ระบบจัดการตั้งค่าเว็บไซต์ทั่วไป</span>
+      </div>
+    </button>
+    <button onclick="openAdminModal(); toggleSidebar();" class="relative overflow-hidden group p-4 rounded-[1.25rem] bg-white border-2 border-petal text-espresso hover:bg-petal-light/60 transition-all flex items-center shadow-sm hover:shadow-md text-left hover:-translate-y-0.5">
+      <div class="absolute inset-0 opacity-[0.04]" style="background-image: repeating-linear-gradient(-45deg, currentColor 0, currentColor 2px, transparent 2px, transparent 8px);"></div>
+      <div class="w-12 h-12 rounded-full bg-petal flex items-center justify-center text-espresso mr-4 shrink-0 relative z-10 group-hover:scale-110 transition-transform shadow-inner">
+         <i class="fa-solid fa-right-to-bracket text-lg"></i>
+      </div>
+      <div class="relative z-10 flex flex-col">
+        <span class="text-sm font-bold text-espresso w-full">เข้าสู่ระบบ</span>
+        <span class="text-[10px] text-espresso/60 font-medium">เข้าสู่ระบบจัดการข้อมูล</span>
+      </div>
+    </button>
+  </div>
+</div>
+
 <nav class="sticky top-4 z-40 mx-4 mt-4 transition-all duration-300">
   <div class="max-w-4xl mx-auto">
-    <div class="bg-white/70 backdrop-blur-md border-2 border-white/50 shadow-glass rounded-3xl h-20 sm:h-24 flex items-center justify-between px-6 sm:px-8">
-      <div class="flex items-center gap-4 sm:gap-5">
-        <div class="relative group cursor-pointer shrink-0" onclick="document.getElementById('logoInput').click()" title="เปลี่ยนโลโก้ร้าน">
-          <img id="storeLogo" src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20width%3D%22300%22%20height%3D%22300%22%20fill%3D%22%23F4C9D6%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2250%22%20font-weight%3D%22bold%22%20fill%3D%22%233E2723%22%3ELogo%3C%2Ftext%3E%3C%2Fsvg%3E" alt="Logo" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl sm:rounded-3xl object-cover shadow-cute border-2 border-white">
-          <div class="absolute inset-0 bg-black/40 rounded-2xl sm:rounded-3xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+    <div class="bg-white/70 backdrop-blur-md border-2 border-white/50 shadow-glass rounded-3xl h-20 sm:h-24 flex items-center justify-between px-4 sm:px-6">
+      <div class="flex items-center gap-3 sm:gap-4">
+        <button onclick="toggleSidebar()" class="relative bg-white/80 hover:bg-white border-2 border-petal-light hover:border-petal-deep w-10 h-10 sm:w-11 sm:h-11 rounded-[1rem] transition-all shadow-sm hover:shadow-cute flex items-center justify-center text-espresso group shrink-0" title="เมนูเครื่องมือ">
+          <i class="fa-solid fa-bars text-lg sm:text-xl group-hover:scale-110 transition-transform"></i>
+        </button>
+        <div class="flex flex-col justify-center mt-1">
+          <span id="storeNameMain" class="font-kanit italic font-black uppercase text-3xl sm:text-[2.5rem] tracking-[0.2em] leading-none mb-1" style="color: var(--c-title); -webkit-text-stroke: 1.5px var(--c-text-stroke); text-shadow: 3px 3px 0px var(--c-text-shadow), 4px 4px 12px rgba(0,0,0, 0.1);">MONALI</span>
+          <span id="storeNameSub" class="font-extrabold text-[13px] sm:text-[15px] opacity-80 leading-tight tracking-wider">- ระบบจัดการหลังร้าน -</span>
+        </div>
+      </div>
+      <div class="flex items-center shrink-0">
+        <div class="relative group cursor-pointer w-14 h-14 sm:w-16 sm:h-16 rounded-2xl sm:rounded-3xl shadow-cute border-2 border-white overflow-hidden bg-white/50 flex items-center justify-center backdrop-blur-sm" onclick="document.getElementById('logoInput').click()" title="เปลี่ยนโลโก้ร้าน">
+          <img id="storeLogo" src="" alt="Logo" class="hidden w-full h-full object-cover relative z-10">
+          <div id="logoPlaceholder" class="text-petal-deep">
+            <i class="fa-solid fa-store text-xl sm:text-2xl"></i>
+          </div>
+          <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20">
             <i class="fa-solid fa-camera text-white text-xs"></i>
           </div>
         </div>
         <input type="file" id="logoInput" accept="image/*" class="hidden" onchange="handleLogoUpload(event)">
-        <div class="flex flex-col justify-center mt-1">
-          <span class="font-kanit italic font-black uppercase text-3xl sm:text-[2.5rem] tracking-[0.2em] leading-none mb-1" style="color: #FF8EA6; -webkit-text-stroke: 1.5px #FFFFFF; text-shadow: 3px 3px 0px #FFB3C6, 4px 4px 12px rgba(255, 142, 166, 0.6);">MONALI</span>
-          <span class="font-extrabold text-[13px] sm:text-[15px] text-espresso/80 leading-tight tracking-wider">- ระบบจัดการหลังร้าน -</span>
-        </div>
       </div>
-      <button onclick="openAdminModal()" class="relative bg-white/80 hover:bg-white border-2 border-petal-light hover:border-petal-deep w-10 h-10 sm:w-11 sm:h-11 rounded-[1rem] transition-all shadow-sm hover:shadow-cute flex items-center justify-center group shrink-0" title="ตั้งค่า/ผู้ดูแลระบบ">
-        <i class="fa-solid fa-gear text-petal-deep text-lg sm:text-xl group-hover:scale-110 transition-transform"></i>
-        <span id="adminBadgeDot" class="hidden" style="display: none !important;"></span>
-      </button>
     </div>
   </div>
 </nav>
 
 <main id="dashboardView" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 transition-opacity duration-300 mt-2">
-  <div class="mb-6 relative group rounded-3xl overflow-hidden shadow-soft border-2 border-white cursor-pointer" onclick="document.getElementById('bannerInput').click()" title="เปลี่ยนแบนเนอร์">
-    <img id="storeBanner" src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201200%20300%22%3E%3Crect%20width%3D%221200%22%20height%3D%22300%22%20fill%3D%22%23F4C9D6%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2280%22%20font-weight%3D%22bold%22%20fill%3D%22%233E2723%22%3EBanner%3C%2Ftext%3E%3C%2Fsvg%3E" alt="Banner" class="w-full h-32 sm:h-48 object-cover transition-transform duration-700 group-hover:scale-105">
-    <div class="absolute inset-0 bg-espresso/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+  <div id="bannerContainer" class="mb-6 relative group rounded-3xl overflow-hidden cursor-pointer transition-all duration-300" onclick="document.getElementById('bannerInput').click()" title="เปลี่ยนแบนเนอร์">
+    <!-- กล่องสำหรับตอนที่ยังไม่มีรูป -->
+    <div id="bannerPlaceholder" class="w-full h-16 sm:h-20 border-2 border-dashed border-petal bg-white/50 flex items-center justify-center text-espresso/50 hover:text-petal-deep hover:border-petal-deep hover:bg-white transition-all shadow-sm rounded-3xl backdrop-blur-sm">
+      <i class="fa-solid fa-image text-lg mr-2"></i>
+      <span class="text-sm font-bold">เพิ่มแบนเนอร์</span>
+    </div>
+    
+    <!-- รูปแบนเนอร์ของจริง (ซ่อนไว้ก่อน) -->
+    <img id="storeBanner" src="" alt="Banner" class="hidden w-full h-32 sm:h-48 object-cover transition-transform duration-700 group-hover:scale-105 shadow-soft border-2 border-white rounded-3xl relative z-10">
+    
+    <div id="bannerOverlay" class="hidden absolute inset-0 bg-espresso/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-3xl z-20">
       <i class="fa-solid fa-camera text-ivory text-3xl mb-2"></i>
       <span class="text-ivory font-medium shadow-sm">คลิกเพื่อเปลี่ยนแบนเนอร์</span>
     </div>
+
+    <!-- ปุ่มซ่อนแบนเนอร์ -->
+    <button onclick="hideBannerContainer(event)" class="absolute top-2 right-2 sm:top-3 sm:right-3 px-3 py-1 rounded-xl bg-white/90 hover:bg-red-50 text-espresso/60 hover:text-red-500 border border-transparent hover:border-red-200 flex items-center justify-center z-30 transition-all shadow-sm text-xs font-bold" title="ซ่อนแบนเนอร์">
+      ซ่อน
+    </button>
+
     <input type="file" id="bannerInput" accept="image/*" class="hidden" onchange="handleBannerUpload(event)">
   </div>
 
@@ -307,30 +430,7 @@ input[type="date"]::-webkit-date-and-time-value {
       </button>
     </div>
 
-    <div class="grid grid-cols-4 gap-2 sm:gap-3 mt-2">
-      <button onclick="openAutoFormModal()" class="relative overflow-hidden group py-3 rounded-[1.25rem] bg-white border-2 border-petal text-espresso hover:bg-petal-light/60 transition-all flex flex-col items-center justify-center shadow-sm hover:shadow-md hover:-translate-y-0.5" title="สร้างฟอร์มข้อความ">
-        <div class="absolute inset-0 opacity-[0.04]" style="background-image: repeating-linear-gradient(-45deg, currentColor 0, currentColor 2px, transparent 2px, transparent 8px);"></div>
-        <i class="fa-solid fa-file-signature text-xl relative z-10 group-hover:scale-110 transition-transform mb-1"></i>
-        <span class="text-[10px] sm:text-[11px] font-bold relative z-10 text-espresso/80 truncate w-full text-center px-1">ฟอร์มสินค้า</span>
-      </button>
-      <button onclick="verifyPasscodeForAccounting()" class="relative overflow-hidden group py-3 rounded-[1.25rem] bg-white border-2 border-petal text-espresso hover:bg-petal-light/60 transition-all flex flex-col items-center justify-center shadow-sm hover:shadow-md hover:-translate-y-0.5" title="ระบบรายรับ-รายจ่าย">
-        <div class="absolute inset-0 opacity-[0.04]" style="background-image: repeating-linear-gradient(-45deg, currentColor 0, currentColor 2px, transparent 2px, transparent 8px);"></div>
-        <i class="fa-solid fa-wallet text-xl relative z-10 group-hover:scale-110 transition-transform mb-1"></i>
-        <span class="text-[10px] sm:text-[11px] font-bold relative z-10 text-espresso/80 truncate w-full text-center px-1">คำนวนค่าใช้จ่าย</span>
-      </button>
-      <button onclick="verifyPasscodeForSettings()" class="relative overflow-hidden group py-3 rounded-[1.25rem] bg-white border-2 border-petal text-espresso hover:bg-petal-light/60 transition-all flex flex-col items-center justify-center shadow-sm hover:shadow-md hover:-translate-y-0.5" title="ตั้งค่าการแจ้งเตือน">
-        <div class="absolute inset-0 opacity-[0.04]" style="background-image: repeating-linear-gradient(-45deg, currentColor 0, currentColor 2px, transparent 2px, transparent 8px);"></div>
-        <i class="fa-solid fa-bell text-xl relative z-10 group-hover:scale-110 transition-transform mb-1"></i>
-        <span class="text-[10px] sm:text-[11px] font-bold relative z-10 text-espresso/80 truncate w-full text-center px-1">ตั้งค่าแจ้งเตือน</span>
-      </button>
-      <button id="addAccountBtn" onclick="openAddAccountModal()" class="relative overflow-hidden group py-3 rounded-[1.25rem] bg-white border-2 border-petal text-espresso hover:bg-petal-light/60 transition-all flex flex-col items-center justify-center shadow-sm hover:shadow-md hover:-translate-y-0.5" title="เพิ่มบัญชี">
-        <div class="absolute inset-0 opacity-[0.04]" style="background-image: repeating-linear-gradient(-45deg, currentColor 0, currentColor 2px, transparent 2px, transparent 8px);"></div>
-        <i class="fa-solid fa-plus text-xl relative z-10 group-hover:scale-110 transition-transform mb-1"></i>
-        <span class="text-[10px] sm:text-[11px] font-bold relative z-10 text-espresso/80 truncate w-full text-center px-1">เพิ่มบัญชี</span>
-      </button>
-    </div>
-
-    <div class="pt-2">
+    <div class="pt-3 sm:pt-4">
       <div class="flex items-center justify-between mb-2 px-1">
         <button onclick="openCategorySelectModal()" class="text-xs font-bold text-espresso bg-white px-3 py-1.5 rounded-xl border border-petal shadow-sm hover:bg-petal-light hover:border-petal-deep transition-colors flex items-center gap-1.5 cursor-pointer">
           <i class="fa-solid fa-shapes text-petal-deep"></i> เลือกหมวดหมู่ <i class="fa-solid fa-chevron-down text-[10px] ml-1 opacity-60"></i>
@@ -339,7 +439,6 @@ input[type="date"]::-webkit-date-and-time-value {
           <button onclick="openManageAppsModal()" class="text-[11px] text-espresso font-bold bg-petal hover:bg-petal-deep px-3 py-1.5 rounded-xl transition-colors flex items-center gap-1 shadow-sm border border-petal-deep/20">
             <i class="fa-solid fa-gear"></i> จัดการแอพ
           </button>
-          <span class="text-[11px] text-espresso font-bold px-2 py-1 bg-white rounded-xl border border-petal" id="filterCountLabel">ทั้งหมด</span>
         </div>
       </div>
       <div class="flex items-center gap-2 overflow-x-auto pb-1.5 no-scrollbar" id="appFilterContainer"></div>
@@ -538,6 +637,10 @@ input[type="date"]::-webkit-date-and-time-value {
           <input type="date" id="accountExpireDate" class="w-full h-[52px] rounded-2xl border-petal bg-white px-5 text-espresso focus:bg-white border-2 focus:border-petal-deep focus:ring-0 transition-colors">
           <p class="text-[11px] text-purple-600 font-medium mt-1.5 bg-purple-50 p-2 rounded-xl border border-purple-100">*ระบบจะแจ้งเตือนเมื่อถึงกำหนดวันตัดบัญชีนี้</p>
         </div>
+        <div>
+          <label class="block text-sm font-bold text-espresso mb-1.5">ต้นทุนบัญชี (บาท)</label>
+          <input type="number" min="0" step="any" id="accountCost" class="w-full h-[52px] rounded-2xl border-petal bg-white px-5 text-espresso focus:bg-white border-2 focus:border-petal-deep focus:ring-0 transition-colors" placeholder="เช่น 100 (ไม่ใส่ก็ได้)">
+        </div>
       </form>
     </div>
     <div class="px-6 py-5 bg-petal-light/50 border-t border-petal flex justify-end gap-3 shrink-0">
@@ -583,6 +686,10 @@ input[type="date"]::-webkit-date-and-time-value {
         <div>
           <label class="block text-sm font-bold text-espresso mb-1.5">วันหมดอายุบัญชีหลัก</label>
           <input type="date" id="editAccExpireDate" class="w-full h-[52px] rounded-2xl border-petal bg-white px-5 text-espresso focus:bg-white border-2 focus:border-petal-deep focus:ring-0 transition-colors">
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-espresso mb-1.5">ต้นทุนบัญชี (บาท)</label>
+          <input type="number" min="0" step="any" id="editAccCost" class="w-full h-[52px] rounded-2xl border-petal bg-white px-5 text-espresso focus:bg-white border-2 focus:border-petal-deep focus:ring-0 transition-colors" placeholder="เช่น 100 (ไม่ใส่ก็ได้)">
         </div>
       </form>
     </div>
@@ -687,10 +794,10 @@ input[type="date"]::-webkit-date-and-time-value {
 </div>
 
 <div id="kickListModal" class="fixed inset-0 bg-espresso/60 z-[55] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-  <div class="bg-white rounded-[2rem] w-full max-w-lg shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-orange-200">
-    <div class="px-6 py-5 border-b border-orange-200 flex justify-between items-center bg-orange-50/80 shrink-0">
+  <div class="bg-white rounded-[2rem] w-full max-w-lg shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-petal">
+    <div class="px-6 py-5 border-b border-petal flex justify-between items-center bg-petal-light/50 shrink-0">
       <h3 class="text-xl font-bold text-espresso flex items-center gap-3">
-        <div class="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-orange-500 text-lg border-2 border-orange-200">
+        <div class="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-petal-deep text-lg border-2 border-petal">
           <i class="fa-solid fa-star"></i>
         </div>
         <span>รายการครบกำหนดวันนี้</span>
@@ -699,11 +806,11 @@ input[type="date"]::-webkit-date-and-time-value {
         <i class="fa-solid fa-xmark text-lg"></i>
       </button>
     </div>
-    <div class="px-6 py-3 bg-white border-b border-orange-200 flex items-center justify-between shrink-0">
+    <div class="px-6 py-3 bg-white border-b border-petal flex items-center justify-between shrink-0">
       <label for="filterKickApp" class="text-sm font-bold text-espresso flex items-center gap-2 cursor-pointer">
-        <i class="fa-solid fa-filter text-orange-500"></i> คัดกรองแอป
+        <i class="fa-solid fa-filter text-petal-deep"></i> คัดกรองแอป
       </label>
-      <select id="filterKickApp" onchange="renderKickList()" class="rounded-xl border-orange-200 bg-orange-50/50 px-4 py-2 text-xs text-espresso font-bold border-2 focus:border-orange-400 focus:ring-0 outline-none cursor-pointer">
+      <select id="filterKickApp" onchange="renderKickList()" class="rounded-xl border-petal bg-petal-light/30 px-4 py-2 text-xs text-espresso font-bold border-2 focus:border-petal-deep focus:ring-0 outline-none cursor-pointer">
         <option value="all">แสดงทั้งหมด</option>
       </select>
     </div>
@@ -712,10 +819,10 @@ input[type="date"]::-webkit-date-and-time-value {
 </div>
 
 <div id="waitCutListModal" class="fixed inset-0 bg-espresso/60 z-[55] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-  <div class="bg-white rounded-[2rem] w-full max-w-lg shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-red-200">
-    <div class="px-6 py-5 border-b border-red-200 flex justify-between items-center bg-red-50/80 shrink-0">
+  <div class="bg-white rounded-[2rem] w-full max-w-lg shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-petal">
+    <div class="px-6 py-5 border-b border-petal flex justify-between items-center bg-petal-light/50 shrink-0">
       <h3 class="text-xl font-bold text-espresso flex items-center gap-3">
-        <div class="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-red-500 text-lg border-2 border-red-200">
+        <div class="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-petal-deep text-lg border-2 border-petal">
           <i class="fa-solid fa-triangle-exclamation"></i>
         </div>
         <span>บัญชีหลักที่เกินกำหนด</span>
@@ -724,11 +831,11 @@ input[type="date"]::-webkit-date-and-time-value {
         <i class="fa-solid fa-xmark text-lg"></i>
       </button>
     </div>
-    <div class="px-6 py-3 bg-white border-b border-red-200 flex items-center justify-between shrink-0">
+    <div class="px-6 py-3 bg-white border-b border-petal flex items-center justify-between shrink-0">
       <label for="filterWaitCutApp" class="text-sm font-bold text-espresso flex items-center gap-2 cursor-pointer">
-        <i class="fa-solid fa-filter text-red-500"></i> คัดกรองแอป
+        <i class="fa-solid fa-filter text-petal-deep"></i> คัดกรองแอป
       </label>
-      <select id="filterWaitCutApp" onchange="renderWaitCutList()" class="rounded-xl border-red-200 bg-red-50/50 px-4 py-2 text-xs text-espresso font-bold border-2 focus:border-red-400 focus:ring-0 outline-none cursor-pointer">
+      <select id="filterWaitCutApp" onchange="renderWaitCutList()" class="rounded-xl border-petal bg-petal-light/30 px-4 py-2 text-xs text-espresso font-bold border-2 focus:border-petal-deep focus:ring-0 outline-none cursor-pointer">
         <option value="all">แสดงทั้งหมด</option>
       </select>
     </div>
@@ -737,10 +844,10 @@ input[type="date"]::-webkit-date-and-time-value {
 </div>
 
 <div id="cutoffListModal" class="fixed inset-0 bg-espresso/60 z-[55] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-  <div class="bg-white rounded-[2rem] w-full max-w-lg shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-purple-200">
-    <div class="px-6 py-5 border-b border-purple-200 flex justify-between items-center bg-purple-50/80 shrink-0">
+  <div class="bg-white rounded-[2rem] w-full max-w-lg shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden flex flex-col max-h-[90vh] border-2 border-petal">
+    <div class="px-6 py-5 border-b border-petal flex justify-between items-center bg-petal-light/50 shrink-0">
       <h3 class="text-xl font-bold text-espresso flex items-center gap-3">
-        <div class="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-purple-600 text-lg border-2 border-purple-200">
+        <div class="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-petal-deep text-lg border-2 border-petal">
           <i class="fa-solid fa-calendar-xmark"></i>
         </div>
         <span>บัญชีหลักครบกำหนด (ตัดแอค)</span>
@@ -749,11 +856,11 @@ input[type="date"]::-webkit-date-and-time-value {
         <i class="fa-solid fa-xmark text-lg"></i>
       </button>
     </div>
-    <div class="px-6 py-3 bg-white border-b border-purple-200 flex items-center justify-between shrink-0">
+    <div class="px-6 py-3 bg-white border-b border-petal flex items-center justify-between shrink-0">
       <label for="filterCutoffApp" class="text-sm font-bold text-espresso flex items-center gap-2 cursor-pointer">
-        <i class="fa-solid fa-filter text-purple-600"></i> คัดกรองแอป
+        <i class="fa-solid fa-filter text-petal-deep"></i> คัดกรองแอป
       </label>
-      <select id="filterCutoffApp" onchange="renderCutoffList()" class="rounded-xl border-purple-200 bg-purple-50/50 px-4 py-2 text-xs text-espresso font-bold border-2 focus:border-purple-400 focus:ring-0 outline-none cursor-pointer">
+      <select id="filterCutoffApp" onchange="renderCutoffList()" class="rounded-xl border-petal bg-petal-light/30 px-4 py-2 text-xs text-espresso font-bold border-2 focus:border-petal-deep focus:ring-0 outline-none cursor-pointer">
         <option value="all">แสดงทั้งหมด</option>
       </select>
     </div>
@@ -796,34 +903,131 @@ input[type="date"]::-webkit-date-and-time-value {
   </div>
 </div>
 
-<div id="settingsModal" class="fixed inset-0 bg-espresso/60 z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-  <div class="bg-white rounded-[2rem] w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden border-2 border-petal">
-    <div class="px-6 py-5 border-b border-petal flex justify-between items-center bg-petal-light/50">
-      <h3 class="text-xl font-bold text-espresso flex items-center"><i class="fa-brands fa-telegram text-blue-500 mr-2 text-2xl"></i> ตั้งค่าแจ้งเตือน</h3>
-      <button onclick="closeSettingsModal()" class="text-espresso/50 hover:text-espresso w-8 h-8 flex items-center justify-center rounded-full hover:bg-white transition-colors">
+<div id="changePinModal" class="fixed inset-0 bg-espresso/60 z-[75] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+  <div class="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden p-6 border-2 border-petal">
+    <div class="flex justify-between items-center mb-5">
+      <h3 class="text-xl font-bold text-espresso flex items-center gap-2"><i class="fa-solid fa-key text-petal-deep"></i> เปลี่ยนรหัส PIN บัญชี</h3>
+      <button onclick="closeChangePinModal()" class="text-espresso/50 hover:text-espresso w-8 h-8 flex items-center justify-center rounded-full hover:bg-white transition-colors">
         <i class="fa-solid fa-xmark text-lg"></i>
       </button>
     </div>
-    <div class="p-6">
-      <form id="settingsForm" onsubmit="saveTelegramSettings(event)" class="space-y-5">
+    <form onsubmit="handleSaveCustomPin(event)" class="space-y-4">
+      <div>
+        <label class="block text-xs font-bold text-espresso mb-1.5">รหัส PIN ปัจจุบัน</label>
+        <input type="password" id="currentPinInput" required class="w-full rounded-2xl border-petal bg-white px-4 py-3.5 text-center tracking-[0.5em] font-bold text-espresso border-2 focus:border-petal-deep focus:ring-0 transition-colors" placeholder="••••">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-espresso mb-1.5">รหัส PIN ใหม่</label>
+        <input type="password" id="newPinInput" required class="w-full rounded-2xl border-petal bg-white px-4 py-3.5 text-center tracking-[0.5em] font-bold text-espresso border-2 focus:border-petal-deep focus:ring-0 transition-colors" placeholder="••••">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-espresso mb-1.5">ยืนยันรหัส PIN ใหม่</label>
+        <input type="password" id="confirmNewPinInput" required class="w-full rounded-2xl border-petal bg-white px-4 py-3.5 text-center tracking-[0.5em] font-bold text-espresso border-2 focus:border-petal-deep focus:ring-0 transition-colors" placeholder="••••">
+      </div>
+      <div class="pt-2 flex gap-2">
+        <button type="button" onclick="closeChangePinModal()" class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-espresso bg-white border border-petal hover:bg-petal-light transition-colors">ยกเลิก</button>
+        <button type="submit" id="btnSavePin" class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-espresso bg-petal border-2 border-transparent hover:bg-petal-deep transition-colors shadow-cute">บันทึกรหัส</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="settingsModal" class="fixed inset-0 bg-espresso/60 z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+  <div class="bg-white rounded-[2rem] w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden border-2 border-petal flex flex-col max-h-[90vh]">
+    <div class="px-6 py-5 border-b border-petal flex justify-between items-center bg-petal-light/50 shrink-0">
+      <h3 class="text-xl font-bold text-espresso flex items-center"><i class="fa-solid fa-bell text-petal-deep mr-2 text-2xl"></i> ตั้งค่าแจ้งเตือน</h3>
+      <button onclick="closeSettingsModal()" class="text-espresso/50 hover:text-espresso w-8 h-8 flex items-center justify-center rounded-full hover:bg-white transition-colors shrink-0">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+    <div class="p-6 overflow-y-auto">
+      <form id="settingsForm" onsubmit="saveNotificationSettings(event)" class="space-y-5">
         <div>
-          <label class="block text-sm font-bold text-espresso mb-1.5">Telegram Bot Token</label>
+          <label class="block text-sm font-bold text-espresso mb-1.5 flex items-center gap-1.5"><i class="fa-brands fa-telegram text-blue-500"></i> Telegram Bot Token</label>
           <input type="text" id="tgToken" class="w-full rounded-2xl border-petal bg-white px-5 py-3.5 text-sm text-espresso focus:bg-white border-2 focus:border-petal-deep focus:ring-0 transition-colors" placeholder="123456789:ABCdefGHIjklMNOpqrSTUvwxYZ">
         </div>
         <div>
-          <label class="block text-sm font-bold text-espresso mb-1.5">Telegram Chat ID</label>
+          <label class="block text-sm font-bold text-espresso mb-1.5 flex items-center gap-1.5"><i class="fa-brands fa-telegram text-blue-500"></i> Telegram Chat ID</label>
           <input type="text" id="tgChatId" class="w-full rounded-2xl border-petal bg-white px-5 py-3.5 text-sm text-espresso focus:bg-white border-2 focus:border-petal-deep focus:ring-0 transition-colors" placeholder="-100123456789">
         </div>
+        <div class="pt-2 border-t border-petal">
+          <label class="block text-sm font-bold text-espresso mb-1.5 mt-2 flex items-center gap-1.5"><i class="fa-brands fa-discord text-indigo-500"></i> Discord Webhook URL</label>
+          <input type="text" id="discordWebhook" class="w-full rounded-2xl border-petal bg-white px-5 py-3.5 text-sm text-espresso focus:bg-white border-2 focus:border-petal-deep focus:ring-0 transition-colors" placeholder="https://discord.com/api/webhooks/...">
+        </div>
+        
         <div id="testResult" class="hidden text-sm text-center py-2 px-3 rounded-xl mt-3"></div>
-        <div class="flex flex-col gap-3 pt-2">
-          <button type="button" onclick="testTelegramSettings(this)" class="w-full py-3.5 rounded-2xl text-sm font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors border-2 border-blue-100">
-            <i class="fa-solid fa-paper-plane mr-1.5"></i> ทดสอบส่งข้อความทั่วไป
-          </button>
-          <button type="button" onclick="manualSendDailySummary(this)" class="w-full py-3.5 rounded-2xl text-sm font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 transition-colors border-2 border-purple-100">
+        <div class="flex flex-col gap-3 pt-2 border-t border-petal">
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="testTelegramSettings(this)" class="w-full py-2.5 rounded-2xl text-[11px] sm:text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors border border-blue-200 shadow-sm">
+              <i class="fa-brands fa-telegram text-sm mb-1 block"></i> ทดสอบ Telegram
+            </button>
+            <button type="button" onclick="testDiscordSettings(this)" class="w-full py-2.5 rounded-2xl text-[11px] sm:text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-colors border border-indigo-200 shadow-sm">
+              <i class="fa-brands fa-discord text-sm mb-1 block"></i> ทดสอบ Discord
+            </button>
+          </div>
+          <button type="button" onclick="manualSendDailySummary(this)" class="w-full py-3.5 rounded-2xl text-sm font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 transition-colors border-2 border-purple-200 shadow-sm">
             <i class="fa-solid fa-calendar-check mr-1.5"></i> ทดสอบส่งแจ้งเตือนรายวัน
           </button>
-          <button type="submit" id="btnSaveSettings" class="w-full py-3.5 rounded-2xl text-sm font-bold text-ivory bg-espresso hover:bg-espresso-light transition-colors shadow-soft">
+          <button type="submit" id="btnSaveSettings" class="w-full py-3.5 rounded-2xl text-sm font-bold text-ivory bg-espresso hover:bg-espresso-light transition-colors shadow-soft mt-2">
             บันทึกการตั้งค่า
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div id="storeSettingsModal" class="fixed inset-0 bg-espresso/60 z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+  <div class="bg-white rounded-[2rem] w-full max-w-md shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden border-2 border-petal flex flex-col max-h-[90vh]">
+    <div class="px-6 py-5 border-b border-petal flex justify-between items-center bg-petal-light/50 shrink-0">
+      <h3 class="text-xl font-bold text-espresso flex items-center gap-2"><i class="fa-solid fa-store text-petal-deep"></i> ตั้งค่าร้านค้า</h3>
+      <button onclick="closeStoreSettingsModal()" class="text-espresso/50 hover:text-espresso w-8 h-8 flex items-center justify-center rounded-full hover:bg-white transition-colors shrink-0">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+    <div class="p-6 overflow-y-auto">
+      <form id="storeSettingsForm" onsubmit="saveStoreSettings(event)" class="space-y-6">
+        <div>
+          <label class="block text-sm font-bold text-espresso mb-1.5">ชื่อร้านค้า (หลัก)</label>
+          <input type="text" id="settingStoreNameMain" required class="w-full rounded-2xl border-petal bg-white px-4 py-3 text-sm text-espresso focus:bg-white border-2 focus:border-petal-deep focus:ring-0 transition-colors" placeholder="เช่น MONALI">
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-espresso mb-1.5">สโลแกน / คำอธิบาย (รอง)</label>
+          <input type="text" id="settingStoreNameSub" required class="w-full rounded-2xl border-petal bg-white px-4 py-3 text-sm text-espresso focus:bg-white border-2 focus:border-petal-deep focus:ring-0 transition-colors" placeholder="เช่น - ระบบจัดการหลังร้าน -">
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-espresso mb-1.5">รูปแบบตัวอักษร (ฟอนต์)</label>
+          <select id="settingStoreFont" class="w-full rounded-2xl border-petal bg-white px-4 py-3 text-sm text-espresso focus:bg-white border-2 focus:border-petal-deep focus:ring-0 transition-colors cursor-pointer font-bold outline-none">
+            <option value="itim" style="font-family: 'Itim', sans-serif;">Itim (น่ารัก ขี้เล่น)</option>
+            <option value="kanit" style="font-family: 'Kanit', sans-serif;">Kanit (ทันสมัย อ่านง่าย)</option>
+            <option value="prompt" style="font-family: 'Prompt', sans-serif;">Prompt (เรียบหรู ทางการ)</option>
+            <option value="mali" style="font-family: 'Mali', cursive;">Mali (ลายมือชิลๆ)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-espresso mb-2">เลือกโทนสีเว็บไซต์</label>
+          <div class="grid grid-cols-2 gap-3" id="themePickerContainer">
+            <!-- Themes will be generated here -->
+          </div>
+        </div>
+        <div class="border-t border-petal pt-4">
+          <label class="block text-sm font-bold text-espresso mb-3">รูปภาพร้านค้า</label>
+          <div class="flex gap-3 mb-4">
+            <button type="button" onclick="document.getElementById('logoInput').click()" class="flex-1 py-2.5 rounded-xl text-xs font-bold text-espresso bg-petal-light border-2 border-petal hover:bg-petal transition-colors flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-image"></i> โปรไฟล์
+            </button>
+            <button type="button" onclick="document.getElementById('bannerInput').click()" class="flex-1 py-2.5 rounded-xl text-xs font-bold text-espresso bg-petal-light border-2 border-petal hover:bg-petal transition-colors flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-panorama"></i> เปลี่ยนปก
+            </button>
+          </div>
+          <label class="flex items-center gap-2 cursor-pointer w-fit">
+            <input type="checkbox" id="settingShowBanner" class="w-4 h-4 rounded text-petal-deep focus:ring-petal-deep border-petal accent-[#D4839D] cursor-pointer" checked>
+            <span class="text-sm font-bold text-espresso">แสดงหน้าปก (แบนเนอร์)</span>
+          </label>
+        </div>
+        <div class="pt-2">
+          <button type="submit" class="w-full py-3.5 rounded-2xl text-sm font-bold text-espresso bg-petal hover:bg-petal-deep transition-colors shadow-cute border-2 border-transparent">
+            บันทึกการตั้งค่าร้านค้า
           </button>
         </div>
       </form>
@@ -859,7 +1063,7 @@ input[type="date"]::-webkit-date-and-time-value {
       <div id="adminLoginFormContainer" class="space-y-4">
         <div class="text-center pb-2">
           <h4 class="font-bold text-espresso text-base">เข้าสู่ระบบแอดมิน</h4>
-          <p class="text-xs text-espresso/70">กรุณากรอกอีเมลและรหัสผ่านเพื่อดำเนินการต่อ</p>
+          <p class="text-xs text-espresso/70">สำหรับโหมดออฟไลน์: กรอกอีเมลอะไรก็ได้เพื่อเข้าสู่ระบบ</p>
           <p class="text-[11px] text-espresso mt-2 font-bold bg-petal-light py-2 px-3 rounded-xl border border-petal">⚠️ หากต้องการแก้ไขข้อมูล โปรดเข้าสู่ระบบแอดมิน</p>
         </div>
         <form id="adminLoginForm" onsubmit="handleAdminLogin(event)" class="space-y-4">
@@ -1071,25 +1275,309 @@ input[type="date"]::-webkit-date-and-time-value {
   </div>
 </div>
 
+<div id="systemSettingsModal" class="fixed inset-0 bg-espresso/60 z-[70] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+  <div class="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden p-6 border-2 border-petal">
+    <div class="flex justify-between items-center mb-5">
+      <h3 class="text-xl font-bold text-espresso flex items-center gap-2"><i class="fa-solid fa-sliders text-petal-deep"></i> ตั้งค่าเว็บไซต์</h3>
+      <button onclick="closeSystemSettingsModal()" class="text-espresso/50 hover:text-espresso w-8 h-8 flex items-center justify-center rounded-full hover:bg-white transition-colors">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+    <div class="space-y-3">
+      <button onclick="closeSystemSettingsModal(); openViewLicenseModal();" class="w-full relative overflow-hidden group p-4 rounded-[1.25rem] bg-white border-2 border-petal text-espresso hover:bg-petal-light/60 transition-all flex items-center shadow-sm hover:shadow-md text-left hover:-translate-y-0.5">
+        <div class="absolute inset-0 opacity-[0.04]" style="background-image: repeating-linear-gradient(-45deg, currentColor 0, currentColor 2px, transparent 2px, transparent 8px);"></div>
+        <div class="w-12 h-12 rounded-full bg-petal flex items-center justify-center text-espresso mr-4 shrink-0 relative z-10 group-hover:scale-110 transition-transform shadow-inner">
+           <i class="fa-regular fa-calendar-check text-lg"></i>
+        </div>
+        <div class="relative z-10 flex flex-col">
+          <span class="text-sm font-bold text-espresso w-full">ตรวจสอบวันใช้งาน</span>
+          <span class="text-[10px] text-espresso/60 font-medium">ดูวันหมดอายุเว็บไซต์ที่คงเหลือ</span>
+        </div>
+      </button>
+      
+      <button onclick="closeSystemSettingsModal(); verifyPasscodeForLicense();" class="w-full relative overflow-hidden group p-4 rounded-[1.25rem] bg-white border-2 border-petal text-espresso hover:bg-petal-light/60 transition-all flex items-center shadow-sm hover:shadow-md text-left hover:-translate-y-0.5">
+        <div class="absolute inset-0 opacity-[0.04]" style="background-image: repeating-linear-gradient(-45deg, currentColor 0, currentColor 2px, transparent 2px, transparent 8px);"></div>
+        <div class="w-12 h-12 rounded-full bg-petal flex items-center justify-center text-espresso mr-4 shrink-0 relative z-10 group-hover:scale-110 transition-transform shadow-inner">
+           <i class="fa-solid fa-hourglass-half text-lg"></i>
+        </div>
+        <div class="relative z-10 flex flex-col">
+          <span class="text-sm font-bold text-espresso w-full">API Setting</span>
+          <span class="text-[10px] text-espresso/60 font-medium">ตั้งค่าการเชื่อมต่อ API</span>
+        </div>
+      </button>
+      
+      <button onclick="closeSystemSettingsModal(); openChangePinModal();" class="w-full relative overflow-hidden group p-4 rounded-[1.25rem] bg-white border-2 border-petal text-espresso hover:bg-petal-light/60 transition-all flex items-center shadow-sm hover:shadow-md text-left hover:-translate-y-0.5">
+        <div class="absolute inset-0 opacity-[0.04]" style="background-image: repeating-linear-gradient(-45deg, currentColor 0, currentColor 2px, transparent 2px, transparent 8px);"></div>
+        <div class="w-12 h-12 rounded-full bg-petal flex items-center justify-center text-espresso mr-4 shrink-0 relative z-10 group-hover:scale-110 transition-transform shadow-inner">
+           <i class="fa-solid fa-key text-lg"></i>
+        </div>
+        <div class="relative z-10 flex flex-col">
+          <span class="text-sm font-bold text-espresso w-full">เปลี่ยนรหัส PIN บัญชี</span>
+          <span class="text-[10px] text-espresso/60 font-medium">สำหรับรายการเดินบัญชี</span>
+        </div>
+      </button>
+      
+      <button onclick="closeSystemSettingsModal(); openChangeAdminPassModal();" class="w-full relative overflow-hidden group p-4 rounded-[1.25rem] bg-white border-2 border-petal text-espresso hover:bg-petal-light/60 transition-all flex items-center shadow-sm hover:shadow-md text-left hover:-translate-y-0.5">
+        <div class="absolute inset-0 opacity-[0.04]" style="background-image: repeating-linear-gradient(-45deg, currentColor 0, currentColor 2px, transparent 2px, transparent 8px);"></div>
+        <div class="w-12 h-12 rounded-full bg-petal flex items-center justify-center text-espresso mr-4 shrink-0 relative z-10 group-hover:scale-110 transition-transform shadow-inner">
+           <i class="fa-solid fa-lock text-lg"></i>
+        </div>
+        <div class="relative z-10 flex flex-col">
+          <span class="text-sm font-bold text-espresso w-full">เปลี่ยนรหัสผ่านเว็บไซต์</span>
+          <span class="text-[10px] text-espresso/60 font-medium">สำหรับเข้าสู่ระบบแอดมิน</span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div id="changeAdminPassModal" class="fixed inset-0 bg-espresso/60 z-[75] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+  <div class="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden p-6 border-2 border-petal">
+    <div class="flex justify-between items-center mb-5">
+      <h3 class="text-xl font-bold text-espresso flex items-center gap-2"><i class="fa-solid fa-lock text-petal-deep"></i> เปลี่ยนรหัสผ่านเว็บ</h3>
+      <button onclick="closeChangeAdminPassModal()" class="text-espresso/50 hover:text-espresso w-8 h-8 flex items-center justify-center rounded-full hover:bg-white transition-colors">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+    <form onsubmit="handleSaveAdminPass(event)" class="space-y-4">
+      <div>
+        <label class="block text-xs font-bold text-espresso mb-1.5">รหัสผ่านปัจจุบัน</label>
+        <input type="password" id="currentAdminPassInput" required class="w-full rounded-2xl border-petal bg-white px-4 py-3 text-center tracking-widest font-bold text-espresso border-2 focus:border-petal-deep focus:ring-0 transition-colors" placeholder="••••">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-espresso mb-1.5">รหัสผ่านใหม่</label>
+        <input type="password" id="newAdminPassInput" required class="w-full rounded-2xl border-petal bg-white px-4 py-3 text-center tracking-widest font-bold text-espresso border-2 focus:border-petal-deep focus:ring-0 transition-colors" placeholder="••••">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-espresso mb-1.5">ยืนยันรหัสผ่านใหม่</label>
+        <input type="password" id="confirmNewAdminPassInput" required class="w-full rounded-2xl border-petal bg-white px-4 py-3 text-center tracking-widest font-bold text-espresso border-2 focus:border-petal-deep focus:ring-0 transition-colors" placeholder="••••">
+      </div>
+      <div class="pt-2 flex gap-2">
+        <button type="button" onclick="closeChangeAdminPassModal()" class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-espresso bg-white border border-petal hover:bg-petal-light transition-colors">ยกเลิก</button>
+        <button type="submit" id="btnSaveAdminPass" class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-espresso bg-petal border-2 border-transparent hover:bg-petal-deep transition-colors shadow-cute">บันทึกรหัส</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div id="toastContainer" class="fixed top-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
-<script>
-var SUPABASE_URL = 'https://dlepafxydlugwkilbqbo.supabase.co';
-var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRsZXBhZnh5ZGx1Z3draWxicWJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3MzA5NzQsImV4cCI6MjEwNjMwNjk3NH0.wOyXhfs9ZqEOiSUD1HRQSvkq1gZBVbcLWRMMhkClrmU';
+<div id="expiredOverlay" class="fixed inset-0 z-[60] hidden flex-col items-center justify-center p-6 text-center" style="background-color: var(--c-bg);">
+  <div class="w-24 h-24 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-4xl mb-6 shadow-inner border-2 border-red-200">
+    <i class="fa-solid fa-lock"></i>
+  </div>
+  <h2 class="text-2xl font-black text-espresso mb-2 leading-tight">วันใช้งานเว็บไซต์ของคุณ<br>หมดอายุแล้ว</h2>
+  <p class="text-espresso/70 font-medium mb-8">กรุณาติดต่อผู้ดูแลเพื่อต่ออายุการใช้งาน</p>
+  <button onclick="verifyPasscodeForAdmin()" class="px-6 py-3 rounded-2xl bg-white border-2 border-petal text-espresso text-sm font-bold shadow-sm hover:bg-petal-light transition-colors relative z-10">
+    <i class="fa-solid fa-key mr-2"></i> สำหรับผู้ดูแลระบบ
+  </button>
+</div>
 
-if (!window.supabaseDb) {
-  window.supabaseDb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  });
+<div id="viewLicenseModal" class="fixed inset-0 bg-espresso/60 z-[80] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+  <div class="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden p-6 border-2 border-petal">
+    <div class="flex justify-between items-center mb-5">
+      <h3 class="text-xl font-bold text-espresso">⏳ ตรวจสอบวันใช้งาน</h3>
+      <button onclick="closeViewLicenseModal()" class="text-espresso/50 hover:text-espresso w-8 h-8 flex items-center justify-center rounded-full hover:bg-white transition-colors">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+    <div class="space-y-4">
+      <div class="bg-petal-light/50 p-4 rounded-2xl border border-petal text-center">
+        <p class="text-xs text-espresso/70 font-bold mb-1">วันหมดอายุเว็บไซต์</p>
+        <p id="viewLicenseDateDisplay" class="text-lg font-black text-espresso">-</p>
+      </div>
+      <div class="bg-petal-light/50 p-4 rounded-2xl border border-petal text-center">
+        <p class="text-xs text-espresso/70 font-bold mb-1">คงเหลือ</p>
+        <p id="viewLicenseDaysLeft" class="text-2xl font-black text-emerald-500">-</p>
+      </div>
+      <button type="button" onclick="closeViewLicenseModal()" class="w-full py-3.5 rounded-2xl text-sm font-bold text-espresso bg-white border border-petal hover:bg-petal-light transition-colors">ปิดหน้าต่าง</button>
+    </div>
+  </div>
+</div>
+
+<div id="quickRenewModal" class="fixed inset-0 bg-espresso/60 z-[60] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+  <div class="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden p-6 border-2 border-petal">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-xl font-bold text-espresso">🔄 ต่ออายุ +30 วัน</h3>
+      <button onclick="closeQuickRenewModal()" class="text-espresso/50 hover:text-espresso w-8 h-8 flex items-center justify-center rounded-full hover:bg-white transition-colors">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+    <div class="space-y-4">
+      <div class="bg-petal-light/50 p-3 rounded-2xl border border-petal text-center">
+        <p id="quickRenewTitle" class="text-sm font-bold text-espresso truncate">-</p>
+        <p class="text-xs text-espresso/70 font-medium mt-1">หมดอายุใหม่: <span id="quickRenewNewDate" class="font-black text-espresso">-</span></p>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-espresso mb-1.5">จำนวนเงินที่ได้รับ (บาท)</label>
+        <input type="number" min="0" step="any" id="quickRenewPrice" class="w-full rounded-2xl border-petal bg-white px-4 py-3 text-sm font-black text-espresso border-2 focus:border-petal-deep focus:ring-0 transition-colors" placeholder="เช่น 150">
+      </div>
+      <label class="flex items-center gap-2 cursor-pointer bg-emerald-50 px-3 py-3 rounded-2xl border-2 border-emerald-200 hover:bg-emerald-100 transition-colors shadow-sm">
+        <input type="checkbox" id="quickRenewRecord" class="w-4 h-4 rounded text-emerald-500 focus:ring-emerald-500 border-emerald-300" checked>
+        <span class="text-xs font-bold text-emerald-700">บันทึกรายรับลงระบบบัญชี</span>
+      </label>
+      <div class="pt-1 flex gap-2">
+        <button type="button" onclick="closeQuickRenewModal()" class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-espresso bg-white border border-petal hover:bg-petal-light transition-colors">ยกเลิก</button>
+        <button type="button" onclick="confirmQuickRenew(this)" class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-espresso bg-petal border-2 border-transparent hover:bg-petal-deep transition-colors shadow-cute">ยืนยันต่ออายุ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="licenseModal" class="fixed inset-0 bg-espresso/60 z-[80] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+  <div class="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl transform scale-95 transition-transform duration-300 modal-content overflow-hidden p-6 border-2 border-petal">
+    <div class="flex justify-between items-center mb-5">
+      <h3 class="text-xl font-bold text-espresso">⏳ วันใช้งานระบบ</h3>
+      <button onclick="closeLicenseModal()" class="text-espresso/50 hover:text-espresso w-8 h-8 flex items-center justify-center rounded-full hover:bg-white transition-colors">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+    <div class="space-y-4">
+      <div class="bg-petal-light/50 p-4 rounded-2xl border border-petal text-center">
+        <p class="text-xs text-espresso/70 font-bold mb-1">วันหมดอายุปัจจุบัน</p>
+        <p id="currentLicenseDateDisplay" class="text-lg font-black text-espresso">ยังไม่ได้กำหนด</p>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-espresso mb-2">กำหนดวันหมดอายุใหม่</label>
+        <input type="date" id="licenseExpireDateInput" class="w-full rounded-2xl border-petal bg-white px-4 py-3 text-sm text-espresso border-2 focus:border-petal-deep focus:ring-0 transition-colors cursor-pointer">
+      </div>
+      <div class="grid grid-cols-3 gap-2 pt-2">
+        <button type="button" onclick="addLicenseDays(7)" class="py-2 text-xs font-bold text-espresso bg-white border border-petal hover:bg-petal-light rounded-xl transition-colors shadow-sm">+ 7 วัน</button>
+        <button type="button" onclick="addLicenseDays(30)" class="py-2 text-xs font-bold text-espresso bg-white border border-petal hover:bg-petal-light rounded-xl transition-colors shadow-sm">+ 30 วัน</button>
+        <button type="button" onclick="addLicenseDays(365)" class="py-2 text-xs font-bold text-espresso bg-white border border-petal hover:bg-petal-light rounded-xl transition-colors shadow-sm">+ 1 ปี</button>
+      </div>
+      <button type="button" onclick="testLicenseExpiration()" class="w-full mt-2 py-2 text-xs font-bold text-red-500 bg-red-50 border border-red-200 hover:bg-red-100 rounded-xl transition-colors shadow-sm">
+        <i class="fa-solid fa-clock-rotate-left mr-1"></i> ทดสอบหน้าจอหมดอายุ (จำลองเป็นเมื่อวาน)
+      </button>
+      <div class="pt-2 flex gap-2">
+        <button type="button" onclick="closeLicenseModal()" class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-espresso bg-white border border-petal hover:bg-petal-light transition-colors">ยกเลิก</button>
+        <button type="button" onclick="saveLicenseDate()" class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-espresso bg-petal border-2 border-transparent hover:bg-petal-deep transition-colors shadow-cute">บันทึกเวลา</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// --- LOCAL STORAGE UTILS ---
+const STORAGE_KEY = {
+  APPS: 'monali_apps',
+  ACCOUNTS: 'monali_accounts',
+  TX: 'monali_transactions',
+  TPL: 'monali_templates',
+  SET: 'monali_settings'
+};
+
+function generateId() {
+  return 'id_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
 }
-var supabase = window.supabaseDb;
+
+function saveToLocal(key, data) {
+  localStorage.setItem(key, JSON.stringify(data));
+  queueCloudSave(key, data);
+}
+
+function getFromLocal(key, defaultValue = '[]') {
+  try {
+    return JSON.parse(localStorage.getItem(key) || defaultValue);
+  } catch (e) {
+    return JSON.parse(defaultValue);
+  }
+}
+
+function saveSettingsValue(key, value) {
+  const stMap = getFromLocal(STORAGE_KEY.SET, '{}');
+  stMap[key] = value;
+  saveToLocal(STORAGE_KEY.SET, stMap);
+}
+
+// --- SUPABASE SYNC ---
+const SUPABASE_URL = 'https://dlepafxydlugwkilbqbo.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRsZXBhZnh5ZGx1Z3draWxicWJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3MzA5NzQsImV4cCI6MjEwNjMwNjk3NH0.wOyXhfs9ZqEOiSUD1HRQSvkq1gZBVbcLWRMMhkClrmU';
+const SUPABASE_ADMIN_ID = '7882e438-fad7-40c2-9039-3eee3ee5fe82';
+let sb = null;
+const cloudTimers = {};
+let cloudErrorShown = false;
+
+function cloudReady() {
+  return !!(sb && currentAdmin && currentAdmin.cloud);
+}
+
+function queueCloudSave(key, data) {
+  if (!cloudReady()) return;
+  clearTimeout(cloudTimers[key]);
+  cloudTimers[key] = setTimeout(async () => {
+    try {
+      let value = data;
+      if (key === STORAGE_KEY.SET && data && typeof data === 'object') {
+        value = { ...data };
+        delete value.admin_pass;
+      }
+      const { error } = await sb.from('app_data').upsert({ key: key, value: value, updated_at: new Date().toISOString() });
+      if (error) throw error;
+      cloudErrorShown = false;
+    } catch (e) {
+      console.error('Supabase sync error:', e);
+      if (!cloudErrorShown) {
+        cloudErrorShown = true;
+        showToast('ซิงก์ Supabase ไม่สำเร็จ: ' + (e.message || e) + ' ❌');
+      }
+    }
+  }, 800);
+}
+
+async function pullFromCloud() {
+  const { data, error } = await sb.from('app_data').select('key,value');
+  if (error) throw error;
+  const map = {};
+  (data || []).forEach(r => { map[r.key] = r.value; });
+  for (const key of Object.values(STORAGE_KEY)) {
+    if (map[key] !== undefined && map[key] !== null) {
+      let v = map[key];
+      if (key === STORAGE_KEY.SET) {
+        const local = getFromLocal(key, '{}');
+        v = { ...v };
+        if (local.admin_pass) v.admin_pass = local.admin_pass;
+      }
+      localStorage.setItem(key, JSON.stringify(v));
+    } else {
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        try {
+          const lv = JSON.parse(raw);
+          const hasData = Array.isArray(lv) ? lv.length > 0 : (lv && Object.keys(lv).length > 0);
+          if (hasData) queueCloudSave(key, lv);
+        } catch (e) {}
+      }
+    }
+  }
+}
+
+async function initSupabase() {
+  try {
+    if (!window.supabase || !SUPABASE_URL) return;
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const { data } = await sb.auth.getSession();
+    const user = data && data.session && data.session.user;
+    const remembered = localStorage.getItem('monali_remember_device') === 'true';
+    if (user && user.id === SUPABASE_ADMIN_ID && remembered) {
+      currentAdmin = { email: user.email, cloud: true };
+      await pullFromCloud();
+    } else {
+      currentAdmin = null;
+      if (user) await sb.auth.signOut();
+    }
+    updateAdminStateUI();
+    checkAdminPermissionsUI();
+  } catch (e) {
+    console.error('Supabase init error:', e);
+  }
+}
+// ---------------------------
+
+// ---------------------------
 
 let netflixAccounts = [];
 let telegramSettings = { token: '', chatId: '' };
+let discordSettings = { webhookUrl: '' };
 let expandedAccounts = new Set();
 let accountIdToDelete = null;
 let screenToDelete = { id: null, accountId: null, screenIndex: null };
@@ -1118,6 +1606,68 @@ let appConfigCache = {};
 let formTemplates = [];
 let currentPasscodeAction = 'settings';
 
+const STORE_THEMES = [
+  {
+    id: 'pink', name: 'ชมพูมุ้งมิ้ง (ดั้งเดิม)', badge: 'bg-[#FCEBF0] text-[#3E2723]',
+    colors: {
+      '--c-espresso': '#3E2723', '--c-espresso-light': '#5D4037', '--c-espresso-dark': '#271815',
+      '--c-petal': '#F4C9D6', '--c-petal-light': '#FCEBF0', '--c-petal-dark': '#E29EB3', '--c-petal-deep': '#D4839D', '--c-petal-rich': '#F8B1C8',
+      '--c-ivory': '#F5F0E6', '--c-ivory-card': '#FAF6ED', '--c-ivory-border': '#EADFD3',
+      '--c-bg': '#FAF0F4', '--c-title': '#FF8EA6', '--c-text-stroke': '#FFFFFF', '--c-text-shadow': '#FFB3C6'
+    }
+  },
+  {
+    id: 'blue', name: 'ฟ้าครามทะเล', badge: 'bg-[#EFF6FF] text-[#1E3A8A]',
+    colors: {
+      '--c-espresso': '#1E3A8A', '--c-espresso-light': '#2563EB', '--c-espresso-dark': '#1E40AF',
+      '--c-petal': '#BFDBFE', '--c-petal-light': '#EFF6FF', '--c-petal-dark': '#93C5FD', '--c-petal-deep': '#60A5FA', '--c-petal-rich': '#3B82F6',
+      '--c-ivory': '#F8FAFC', '--c-ivory-card': '#F1F5F9', '--c-ivory-border': '#E2E8F0',
+      '--c-bg': '#F0F9FF', '--c-title': '#60A5FA', '--c-text-stroke': '#FFFFFF', '--c-text-shadow': '#93C5FD'
+    }
+  },
+  {
+    id: 'matcha', name: 'ชาเขียวมัทฉะ', badge: 'bg-[#F0FDF4] text-[#14532D]',
+    colors: {
+      '--c-espresso': '#14532D', '--c-espresso-light': '#166534', '--c-espresso-dark': '#064E3B',
+      '--c-petal': '#BBF7D0', '--c-petal-light': '#F0FDF4', '--c-petal-dark': '#86EFAC', '--c-petal-deep': '#4ADE80', '--c-petal-rich': '#22C55E',
+      '--c-ivory': '#FAFAF9', '--c-ivory-card': '#F5F5F4', '--c-ivory-border': '#E7E5E4',
+      '--c-bg': '#F0FDF4', '--c-title': '#4ADE80', '--c-text-stroke': '#FFFFFF', '--c-text-shadow': '#86EFAC'
+    }
+  },
+  {
+    id: 'purple', name: 'ม่วงพาสเทล', badge: 'bg-[#FAF5FF] text-[#4C1D95]',
+    colors: {
+      '--c-espresso': '#4C1D95', '--c-espresso-light': '#6D28D9', '--c-espresso-dark': '#312E81',
+      '--c-petal': '#E9D5FF', '--c-petal-light': '#FAF5FF', '--c-petal-dark': '#D8B4FE', '--c-petal-deep': '#A855F7', '--c-petal-rich': '#9333EA',
+      '--c-ivory': '#FAFAFA', '--c-ivory-card': '#F4F4F5', '--c-ivory-border': '#E4E4E7',
+      '--c-bg': '#FAF5FF', '--c-title': '#A855F7', '--c-text-stroke': '#FFFFFF', '--c-text-shadow': '#D8B4FE'
+    }
+  }
+];
+let currentThemeId = 'pink';
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebarMenu');
+  const backdrop = document.getElementById('sidebarBackdrop');
+  const isClosed = sidebar.classList.contains('-translate-x-full');
+  
+  if (isClosed) {
+    sidebar.classList.remove('-translate-x-full');
+    backdrop.classList.remove('hidden');
+    setTimeout(() => backdrop.classList.remove('opacity-0'), 10);
+    document.body.classList.add('modal-active');
+  } else {
+    sidebar.classList.add('-translate-x-full');
+    backdrop.classList.add('opacity-0');
+    setTimeout(() => {
+      backdrop.classList.add('hidden');
+      if (document.querySelectorAll('[id$="Modal"]:not(.hidden)').length === 0) {
+        document.body.classList.remove('modal-active');
+      }
+    }, 300);
+  }
+}
+
 function updateAppIcons(base64Url) {
   const favicon = document.getElementById('dynamic-favicon');
   const appleIcon = document.getElementById('dynamic-apple-icon');
@@ -1126,7 +1676,6 @@ function updateAppIcons(base64Url) {
   if (favicon) favicon.href = base64Url;
   if (appleIcon) appleIcon.href = base64Url;
 
-  // สร้าง Manifest แบบไดนามิก เพื่อให้โทรศัพท์ (Android/Chrome) ดึงรูปไปเป็นไอคอนได้
   if (manifestLink && base64Url.startsWith('data:image')) {
     const manifest = {
       name: "MONALI Backend",
@@ -1174,123 +1723,52 @@ const APP_COLOR_PALETTES = [
 
 window.addEventListener('DOMContentLoaded', async () => {
   initClickSparkles();
-  setupAuthListener();
   checkAutoLoginSession();
+  checkLicense();
+  await initSupabase();
+  
+  await loadData();
 
   setInterval(() => {
     cachedTodayTime = new Date().setHours(0,0,0,0);
     cachedTomorrowTime = new Date(cachedTodayTime).setDate(new Date(cachedTodayTime).getDate() + 1);
     scheduleRender();
     checkDailyNotifications();
+    checkLicense();
   }, 60000);
 });
 
-async function checkAutoLoginSession() {
-  try {
-    const isRemembered = localStorage.getItem('monali_remember_device') === 'true';
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session && isRemembered) {
-      const { data: isAdmin } = await supabase.rpc('is_admin');
-      if (isAdmin) {
-        currentAdmin = session.user;
-        const nameLabel = document.getElementById('currentAdminNameLabel');
-        if (nameLabel) nameLabel.textContent = session.user.email;
-        updateAdminStateUI();
-        checkAdminPermissionsUI();
-      }
-    }
-  } catch (e) {
-    console.warn("Auto-login check error", e);
+function checkAutoLoginSession() {
+  const isRemembered = localStorage.getItem('monali_remember_device') === 'true';
+  const adminEmail = localStorage.getItem('monali_admin_email');
+  
+  if (isRemembered && adminEmail) {
+    currentAdmin = { email: adminEmail };
+    const nameLabel = document.getElementById('currentAdminNameLabel');
+    if (nameLabel) nameLabel.textContent = adminEmail;
+  } else {
+    currentAdmin = null;
   }
-}
-
-function setupAuthListener() {
-  supabase.auth.onAuthStateChange(async (event, session) => {
-    const isRemembered = localStorage.getItem('monali_remember_device') === 'true';
-    if (session) {
-      const { data: isAdmin } = await supabase.rpc('is_admin');
-      if (isAdmin) {
-        currentAdmin = session.user;
-        const nameLabel = document.getElementById('currentAdminNameLabel');
-        if (nameLabel) nameLabel.textContent = session.user.email;
-      } else {
-        currentAdmin = null;
-        await supabase.auth.signOut();
-      }
-    } else {
-      currentAdmin = null;
-      if (!isRemembered) {
-        localStorage.removeItem('monali_remember_device');
-      }
-    }
-    updateAdminStateUI();
-    checkAdminPermissionsUI();
-    await loadData();
-  });
+  updateAdminStateUI();
+  checkAdminPermissionsUI();
 }
 
 async function loadData() {
   try {
-    const [
-      { data: appsData },
-      { data: accData },
-      { data: screenData },
-      { data: txData },
-      { data: tplData },
-      { data: settingsData }
-    ] = await Promise.all([
-      supabase.from('apps').select('*'),
-      supabase.from('accounts').select('*, apps(name)'),
-      supabase.from('screens').select('*'),
-      supabase.from('transactions').select('*').order('transaction_date', { ascending: false }),
-      supabase.from('templates').select('*').order('created_at', {ascending: true}),
-      supabase.from('settings').select('*')
-    ]);
-
-    customApps = appsData || [];
+    customApps = getFromLocal(STORAGE_KEY.APPS, '[]');
     appConfigCache = {};
 
-    const screensByAccount = {};
-    if (screenData) {
-      screenData.forEach(s => {
-        if (!screensByAccount[s.account_id]) screensByAccount[s.account_id] = [];
-        screensByAccount[s.account_id].push(s);
-      });
+    netflixAccounts = getFromLocal(STORAGE_KEY.ACCOUNTS, '[]').sort((a,b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    monaliTransactions = getFromLocal(STORAGE_KEY.TX, '[]').sort((a,b) => new Date(b.date) - new Date(a.date));
+    
+    let rawTemplates = getFromLocal(STORAGE_KEY.TPL, 'null');
+    if (!rawTemplates || rawTemplates.length === 0) {
+      formTemplates = [defaultTemplate];
+    } else {
+      formTemplates = rawTemplates;
     }
 
-    netflixAccounts = (accData || []).map(acc => {
-      const screens = (screensByAccount[acc.id] || []).sort((a,b) => a.screen_index - b.screen_index);
-      return {
-        id: acc.id,
-        app: acc.apps?.name || 'แอปทั่วไป',
-        app_id: acc.app_id,
-        name: acc.name,
-        email: acc.email,
-        password: acc.password,
-        accountExpireDate: acc.expire_date,
-        screens: screens.map(s => ({
-          id: s.id,
-          status: s.status,
-          expireDate: s.expire_date,
-          pin: s.pin,
-          price: s.price,
-          notes: s.notes
-        }))
-      };
-    }).sort((a,b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-
-    monaliTransactions = (txData || []).map(tx => ({
-      id: tx.id,
-      type: tx.type,
-      amount: tx.amount,
-      note: tx.note,
-      date: tx.transaction_date
-    }));
-
-    formTemplates = (tplData && tplData.length > 0) ? tplData : [defaultTemplate];
-
-    const stMap = {};
-    (settingsData || []).forEach(s => stMap[s.key] = s.value);
+    const stMap = getFromLocal(STORAGE_KEY.SET, '{}');
 
     if (stMap['app_order']) {
       try {
@@ -1309,13 +1787,46 @@ async function loadData() {
 
     telegramSettings.token = stMap['tg_token'] || '';
     telegramSettings.chatId = stMap['tg_chat_id'] || '';
+    discordSettings.webhookUrl = stMap['discord_webhook'] || '';
 
     if (stMap['logo_base64']) {
-      document.getElementById('storeLogo').src = stMap['logo_base64'];
+      const logoImg = document.getElementById('storeLogo');
+      const logoPl = document.getElementById('logoPlaceholder');
+      logoImg.src = stMap['logo_base64'];
+      logoImg.classList.remove('hidden');
+      if(logoPl) logoPl.classList.add('hidden');
       updateAppIcons(stMap['logo_base64']);
     }
     if (stMap['banner_base64']) {
-      document.getElementById('storeBanner').src = stMap['banner_base64'];
+      const bannerImg = document.getElementById('storeBanner');
+      const bannerPl = document.getElementById('bannerPlaceholder');
+      const bannerOverlay = document.getElementById('bannerOverlay');
+      bannerImg.src = stMap['banner_base64'];
+      bannerImg.classList.remove('hidden');
+      if(bannerOverlay) bannerOverlay.classList.remove('hidden');
+      if(bannerPl) bannerPl.classList.add('hidden');
+    }
+
+    const storeNameMain = stMap['store_name_main'] || 'MONALI';
+    const storeNameSub = stMap['store_name_sub'] || '- ระบบจัดการหลังร้าน -';
+    const savedTheme = stMap['store_theme'] || 'pink';
+    
+    document.getElementById('storeNameMain').textContent = storeNameMain;
+    document.title = "ระบบจัดการหลังบ้าน " + storeNameMain;
+    document.getElementById('storeNameSub').textContent = storeNameSub;
+    applyTheme(savedTheme);
+    
+    const savedFont = stMap['store_font'] || 'itim';
+    applyFont(savedFont);
+
+    const showBanner = stMap['show_banner'] !== false;
+    const bannerContainer = document.getElementById('bannerContainer');
+    if (bannerContainer) {
+      if (showBanner) {
+        bannerContainer.classList.remove('hidden');
+      } else {
+        bannerContainer.classList.add('hidden');
+      }
     }
 
     scheduleRender();
@@ -1488,6 +1999,10 @@ function getAppConfig(appName) {
 }
 
 function getAccountApp(account) {
+  if (account.app_id) {
+    const byId = customApps.find(a => a.id === account.app_id);
+    if (byId) return byId.name;
+  }
   if (account.app && account.app.trim()) return account.app.trim();
   const nameLower = (account.name || '').toLowerCase();
   for (const item of customApps) {
@@ -1501,16 +2016,17 @@ async function resolveAppId(appName) {
   if (app) return app.id;
 
   const auto = getAutoIconAndColor(appName);
-  const { data, error } = await supabase.from('apps').insert({
+  const newApp = {
+    id: generateId(),
     name: appName,
     color: 'petal',
     icon: auto.icon || 'fa-solid fa-shapes'
-  }).select().single();
+  };
 
-  if (error) throw error;
-  customApps.push(data);
+  customApps.push(newApp);
   appConfigCache = {};
-  return data.id;
+  saveToLocal(STORAGE_KEY.APPS, customApps);
+  return newApp.id;
 }
 
 function getEffectiveScreenStatus(screen) {
@@ -1576,7 +2092,6 @@ function setAppFilterAndScroll(appName) {
   setAppFilter(appName);
   closeCategorySelectModal();
   
-  // เลื่อนหน้าจอไปที่ส่วนของบัญชี
   setTimeout(() => {
     const accountsListEl = document.getElementById('accountsList');
     if (accountsListEl) {
@@ -1722,15 +2237,17 @@ function handleSaveCustomApp(e) {
       showToast(`มีแอป "${name}" อยู่ในรายการแล้วค่ะ ✨`);
     } else {
       const auto = getAutoIconAndColor(name);
-      const { data, error } = await supabase.from('apps').insert({
+      const newApp = {
+        id: generateId(),
         name: name,
         color: selectedNewAppColor,
         icon: auto.icon
-      }).select().single();
-      if (error) throw error;
+      };
 
-      customApps.push(data);
+      customApps.push(newApp);
+      saveToLocal(STORAGE_KEY.APPS, customApps);
       appConfigCache = {};
+
       showToast(`เพิ่มแอป "${name}" เรียบร้อยแล้วค่ะ ✨`);
       saveAppOrder();
     }
@@ -1746,22 +2263,24 @@ function handleSaveCustomApp(e) {
 function deleteCustomApp(appId, event) {
   if (event) event.stopPropagation();
   if (!requireAdminAuth()) return;
-  (async () => {
-    try {
-      const { error } = await supabase.from('apps').delete().eq('id', appId);
-      if (error) throw error;
-      customApps = customApps.filter(a => a.id !== appId);
-      appConfigCache = {};
-      saveAppOrder();
-      renderPresetAppChips('addAppPresetChips', 'accountApp', document.getElementById('accountApp')?.value);
-      renderPresetAppChips('editAppPresetChips', 'editAccApp', document.getElementById('editAccApp')?.value);
-      scheduleRender();
-      requestAnimationFrame(() => renderManageAppsList());
-      showToast(`ลบแอปออกจากรายการแล้ว 🗑️`);
-    } catch(err) {
-      showToast('ไม่สามารถลบได้ อาจมีบัญชีที่ใช้งานอยู่: ' + err.message);
-    }
-  })();
+  
+  // ตรวจสอบว่าแอปถูกใช้งานอยู่หรือไม่
+  const inUse = netflixAccounts.some(acc => acc.app_id === appId);
+  if (inUse) {
+      showToast('ไม่สามารถลบได้ มีบัญชีที่ใช้งานแอปนี้อยู่ ❌');
+      return;
+  }
+
+  customApps = customApps.filter(a => a.id !== appId);
+  appConfigCache = {};
+  saveToLocal(STORAGE_KEY.APPS, customApps);
+  saveAppOrder();
+  
+  renderPresetAppChips('addAppPresetChips', 'accountApp', document.getElementById('accountApp')?.value);
+  renderPresetAppChips('editAppPresetChips', 'editAccApp', document.getElementById('editAccApp')?.value);
+  scheduleRender();
+  requestAnimationFrame(() => renderManageAppsList());
+  showToast(`ลบแอปออกจากรายการแล้ว 🗑️`);
 }
 
 function openManageAppsModal() {
@@ -1788,13 +2307,9 @@ function renderManageAppsList() {
   container.innerHTML = htmlParts.join('');
 }
 
-async function saveAppOrder() {
+function saveAppOrder() {
   const orderIds = customApps.map(a => a.id);
-  try {
-    await supabase.from('settings').upsert({ key: 'app_order', value: JSON.stringify(orderIds) });
-  } catch (err) {
-    console.error("Failed to save app order", err);
-  }
+  saveSettingsValue('app_order', JSON.stringify(orderIds));
 }
 
 function moveAppUp(index) {
@@ -1896,6 +2411,7 @@ function renderDashboard() {
     const appConf = getAppConfig(appName);
     let appAvailCount = 0;
     let appSoldCount = 0;
+    const appFin = getAppFinance(accounts);
     accounts.forEach(acc => {
       acc.screens.forEach(s => {
         const st = getEffectiveScreenStatus(s);
@@ -1903,7 +2419,7 @@ function renderDashboard() {
         else appSoldCount++;
       });
     });
-    htmlParts.push(`<div class="pt-2 mb-4"> <div class="flex items-center justify-between pb-2 border-b-2 border-petal"> <div class="flex items-center gap-2.5"> <span class="px-3 py-1.5 rounded-xl text-xs font-bold ${appConf.badge} flex items-center gap-1.5 shadow-sm border border-transparent"> <i class="${appConf.icon}"></i> ${escapeHTML(appName)} </span> <span class="text-xs font-bold text-espresso/80">${accounts.length} บัญชี</span> </div> <div class="flex items-center gap-2.5 text-[11px] text-espresso font-bold bg-white px-3 py-1.5 rounded-xl shadow-sm border border-petal"> <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow-sm"></span> ว่าง ${appAvailCount}</span> <span class="text-espresso/30">|</span> <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-petal-deep inline-block shadow-sm"></span> ใช้งาน ${appSoldCount}</span> </div> </div> </div> <div class="space-y-4 sm:space-y-5 mb-8">`);
+    htmlParts.push(`<div class="pt-2 mb-4"> <div class="flex items-center justify-between pb-2 border-b-2 border-petal"> <div class="flex items-center gap-2.5"> <span class="px-3 py-1.5 rounded-xl text-xs font-bold ${appConf.badge} flex items-center gap-1.5 shadow-sm border border-transparent"> <i class="${appConf.icon}"></i> ${escapeHTML(appName)} </span> <span class="text-xs font-bold text-espresso/80">${accounts.length} บัญชี</span>${appFin.cost > 0 || appFin.revenue > 0 ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-lg border ${appFin.profit >= 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-600 border-red-200'}" title="กำไรรวมของแอปนี้ (รายรับที่ผูกกับบัญชี − ต้นทุน)">กำไร ${fmtMoney(appFin.profit, true)}</span>` : ''} </div> <div class="flex items-center gap-2.5 text-[11px] text-espresso font-bold bg-white px-3 py-1.5 rounded-xl shadow-sm border border-petal"> <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow-sm"></span> ว่าง ${appAvailCount}</span> <span class="text-espresso/30">|</span> <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-petal-deep inline-block shadow-sm"></span> ใช้งาน ${appSoldCount}</span> </div> </div> </div> <div class="space-y-4 sm:space-y-5 mb-8">`);
     accounts.forEach(account => {
       const isExpanded = expandedAccounts.has(account.id);
       const containerClass = isExpanded ? 'space-y-2.5 sm:space-y-3' : 'space-y-2.5 sm:space-y-3 hidden';
@@ -1926,6 +2442,7 @@ function renderDashboard() {
         bgOverlay = '<div class="absolute top-0 right-0 w-16 h-16 bg-red-100 rounded-bl-[4rem] -z-0"></div>';
         dateColorClass = 'text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded-lg border border-red-100';
       }
+      const financeHtml = buildFinanceBadge(account);
       const accExpireHtml = account.accountExpireDate ? `<span class="text-espresso/30 hidden sm:inline shrink-0">|</span> <span class="flex items-center gap-1.5 ${dateColorClass} truncate max-w-[120px] sm:max-w-full" title="วันหมดอายุบัญชีหลัก"> <i class="fa-regular fa-calendar shrink-0"></i> <span class="truncate">ตัดแอค: ${formatDate(account.accountExpireDate)}</span> </span>` : '';
       const contactIcon = getContactIcon(account.email);
       htmlParts.push(`
@@ -1947,7 +2464,7 @@ ${bgOverlay}
 <span class="flex items-center gap-1.5 cursor-pointer hover:text-petal-deep font-bold transition-colors truncate max-w-[100px] sm:max-w-full bg-petal-light/50 px-2 py-1 rounded-lg border border-petal" onclick="copyText('${escapeJS(account.password)}')">
 <i class="fa-solid fa-key shrink-0"></i> <span class="truncate">${escapeHTML(account.password)}</span>
 </span>
-${accExpireHtml}
+${accExpireHtml}${financeHtml}
 </div>
 </div>
 <div class="flex items-center gap-1 shrink-0 bg-white rounded-full p-1 border-2 border-petal shadow-sm">
@@ -1957,7 +2474,7 @@ ${accExpireHtml}
 <button onclick="openEditAccountModal('${account.id}')" class="text-espresso/60 hover:text-blue-600 hover:bg-blue-50 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors font-bold" title="แก้ไขบัญชี">
 <i class="fa-solid fa-pen text-sm"></i>
 </button>
-<button onclick="confirmDeleteAccount('${account.id}')" class="text-espresso/60 hover:text-red-500 hover:bg-red-50 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors font-bold" title="ลบบัญชี">
+<button onclick="confirmDeleteAccount('${account.id}')" class="text-espresso/60 hover:text-red-500 hover:bg-red-50 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors font-bold" title="ลบบบัญชี">
 <i class="fa-solid fa-trash-can text-sm"></i>
 </button>
 </div>
@@ -1973,8 +2490,8 @@ ${accExpireHtml}
         if (effStatus !== 'available') {
           detailsHtml = `<div class="flex flex-col sm:flex-row sm:items-center sm:gap-3 text-[10px] sm:text-xs text-espresso mt-1 sm:mt-1.5 truncate"> ${screen.pin ? `<span class="flex items-center gap-1.5 shrink-0 mt-0.5 sm:mt-0 bg-white/60 px-2 py-0.5 rounded-md border ${statusConfig.borderClass}"><i class="fa-solid fa-lock text-espresso/40"></i> <span class="font-bold text-espresso">${escapeHTML(screen.pin)}</span></span>` : ''} ${screen.expireDate ? `<span class="flex items-center gap-1.5 shrink-0 mt-1 sm:mt-0 font-medium"><i class="fa-regular fa-calendar text-espresso/40"></i> หมด: ${formatDate(screen.expireDate)}</span>` : ''} ${screen.notes ? `<span class="truncate max-w-[120px] sm:max-w-[200px] text-espresso/60 font-medium italic mt-1 sm:mt-0">" ${escapeHTML(screen.notes)} "</span>` : ''} </div>`;
         }
-        htmlParts.push(`<div class="group flex items-center justify-between p-3 sm:p-4 rounded-2xl border-2 ${statusConfig.borderClass} ${statusConfig.bgClass} transition-colors shadow-sm"> <div class="flex items-center gap-3 sm:gap-4 flex-1 min-w-0"> <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl ${statusConfig.iconBg} flex items-center justify-center ${statusConfig.textClass} shrink-0 shadow-sm border-2 ${statusConfig.borderClass}"> <i class="${statusConfig.icon} text-base sm:text-lg"></i> </div> <div class="flex-1 min-w-0"> <div class="flex items-center gap-2 sm:gap-2.5"> <h4 class="text-sm sm:text-base font-bold text-espresso">${itemTitle}</h4> <span class="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-lg border border-transparent ${statusConfig.badgeClass}">${statusConfig.label}</span> </div> ${detailsHtml} </div> </div> <div class="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-2"> <button onclick="openAutoFormForScreen('${account.id}', ${index})" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white border-2 border-petal text-espresso/70 hover:text-espresso hover:border-petal-deep hover:bg-petal-light flex items-center justify-center transition-colors shadow-sm" title="สร้างฟอร์มข้อความ"> <i class="fa-solid fa-file-signature text-xs sm:text-sm"></i> </button> <button onclick="openEditScreenModal('${account.id}', ${index})" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white border-2 border-petal text-espresso/70 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 flex items-center justify-center transition-colors shadow-sm" title="แก้ไข"> <i class="fa-solid fa-pen text-xs sm:text-sm"></i> </button> ${account.screens.length > 1 ? `
-<button onclick="confirmDeleteScreen('${account.id}', ${index})" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white border-2 border-petal text-espresso/70 hover:text-red-500 hover:border-red-300 hover:bg-red-50 flex items-center justify-center transition-colors shadow-sm" title="ลบจอนี้">
+        htmlParts.push(`<div class="group flex items-center justify-between p-3 sm:p-4 rounded-2xl border-2 ${statusConfig.borderClass} ${statusConfig.bgClass} transition-colors shadow-sm"> <div class="flex items-center gap-2.5 sm:gap-4 flex-1 min-w-0"> <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl ${statusConfig.iconBg} flex items-center justify-center ${statusConfig.textClass} shrink-0 shadow-sm border-2 ${statusConfig.borderClass}"> <i class="${statusConfig.icon} text-base sm:text-lg"></i> </div> <div class="flex-1 min-w-0"> <div class="flex items-center gap-1.5 sm:gap-2.5 flex-nowrap"> <h4 class="text-sm sm:text-base font-bold text-espresso whitespace-nowrap shrink-0">${itemTitle}</h4> <span class="text-[10px] sm:text-[11px] font-bold px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg border border-transparent whitespace-nowrap shrink-0 leading-tight ${statusConfig.badgeClass}"><span class="sm:hidden">${statusConfig.shortLabel || statusConfig.label}</span><span class="hidden sm:inline">${statusConfig.label}</span></span> </div> ${detailsHtml} </div> </div> <div class="flex items-center gap-1 sm:gap-2 shrink-0 ml-1 sm:ml-2"> ${effStatus !== 'available' ? `<button onclick="quickRenewScreen('${account.id}', ${index})" class="w-7 h-7 sm:w-10 sm:h-10 rounded-xl bg-white border-2 border-petal text-espresso/70 hover:text-emerald-600 hover:border-emerald-300 hover:bg-emerald-50 flex items-center justify-center transition-colors shadow-sm" title="ต่ออายุ +30 วัน"><i class="fa-solid fa-rotate-right text-xs sm:text-sm"></i></button>` : ''} <button onclick="openAutoFormForScreen('${account.id}', ${index})" class="w-7 h-7 sm:w-10 sm:h-10 rounded-xl bg-white border-2 border-petal text-espresso/70 hover:text-espresso hover:border-petal-deep hover:bg-petal-light flex items-center justify-center transition-colors shadow-sm" title="สร้างฟอร์มข้อความ"> <i class="fa-solid fa-file-signature text-xs sm:text-sm"></i> </button> <button onclick="openEditScreenModal('${account.id}', ${index})" class="w-7 h-7 sm:w-10 sm:h-10 rounded-xl bg-white border-2 border-petal text-espresso/70 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 flex items-center justify-center transition-colors shadow-sm" title="แก้ไข"> <i class="fa-solid fa-pen text-xs sm:text-sm"></i> </button> ${account.screens.length > 1 ? `
+<button onclick="confirmDeleteScreen('${account.id}', ${index})" class="w-7 h-7 sm:w-10 sm:h-10 rounded-xl bg-white border-2 border-petal text-espresso/70 hover:text-red-500 hover:border-red-300 hover:bg-red-50 flex items-center justify-center transition-colors shadow-sm" title="ลบจอนี้">
 <i class="fa-solid fa-trash-can text-xs sm:text-sm"></i>
 </button>` : ''} </div> </div>`);
       });
@@ -1985,10 +2502,110 @@ ${accExpireHtml}
   listContainer.innerHTML = htmlParts.join('');
 }
 
+function fmtMoney(n, sign) {
+  const v = Math.round((n || 0) * 100) / 100;
+  return (sign && v > 0 ? '+' : '') + v.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
+
+function getAccountFinance(account) {
+  const cost = Number(account.cost) || 0;
+  let revenue = 0;
+  monaliTransactions.forEach(tx => {
+    if (tx.type === 'income' && tx.accountId === account.id) revenue += Number(tx.amount) || 0;
+  });
+  return { cost, revenue, profit: revenue - cost };
+}
+
+function getAppFinance(accounts) {
+  const t = { cost: 0, revenue: 0, profit: 0 };
+  accounts.forEach(a => {
+    const f = getAccountFinance(a);
+    t.cost += f.cost; t.revenue += f.revenue; t.profit += f.profit;
+  });
+  return t;
+}
+
+function buildFinanceBadge(account) {
+  const f = getAccountFinance(account);
+  if (f.cost <= 0 && f.revenue <= 0) return '';
+  const good = f.profit >= 0;
+  const cls = good ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-red-600 bg-red-50 border-red-200';
+  return `<span class="text-espresso/30 hidden sm:inline shrink-0">|</span> <span class="flex items-center gap-1.5 font-bold ${cls} px-2 py-0.5 rounded-lg border truncate max-w-[220px] sm:max-w-full" title="ต้นทุน / รายรับ / กำไร ของบัญชีนี้"> <i class="fa-solid fa-coins shrink-0"></i> <span class="truncate">ทุน ${fmtMoney(f.cost)} · รับ ${fmtMoney(f.revenue)} · กำไร ${fmtMoney(f.profit, true)}</span> </span>`;
+}
+
+let quickRenewTarget = { accountId: null, screenIndex: null };
+
+function getRenewNewExpire(screen) {
+  const curTime = fastParseDateToTime(screen.expireDate);
+  const base = new Date(curTime > cachedTodayTime ? curTime : cachedTodayTime);
+  base.setDate(base.getDate() + 30);
+  return getLocalDateString(base);
+}
+
+function guessRenewPrice(account, screen) {
+  if (Number(screen.price) > 0) return Number(screen.price);
+  const appName = getAccountApp(account);
+  const sameAcc = monaliTransactions.find(tx => tx.type === 'income' && tx.accountId === account.id);
+  if (sameAcc) return sameAcc.amount;
+  const sameApp = monaliTransactions.find(tx => tx.type === 'income' && tx.appName === appName);
+  return sameApp ? sameApp.amount : '';
+}
+
+function quickRenewScreen(accountId, screenIndex) {
+  if (!requireAdminAuth()) return;
+  const account = netflixAccounts.find(a => a.id === accountId);
+  const screen = account && account.screens[screenIndex];
+  if (!screen) return;
+  quickRenewTarget = { accountId, screenIndex };
+  document.getElementById('quickRenewTitle').textContent = `${account.name} · จอ ${screenIndex + 1}`;
+  document.getElementById('quickRenewNewDate').textContent = formatDate(getRenewNewExpire(screen));
+  document.getElementById('quickRenewPrice').value = guessRenewPrice(account, screen);
+  document.getElementById('quickRenewRecord').checked = true;
+  animateModalOpen('quickRenewModal');
+}
+
+function closeQuickRenewModal() { animateModalClose('quickRenewModal'); }
+
+function confirmQuickRenew(btn) {
+  requireAdminAuthAction(btn, async () => {
+    const { accountId, screenIndex } = quickRenewTarget;
+    const account = netflixAccounts.find(a => a.id === accountId);
+    const screen = account && account.screens[screenIndex];
+    if (!screen) return;
+
+    const price = parseFloat(document.getElementById('quickRenewPrice').value) || 0;
+    const record = document.getElementById('quickRenewRecord').checked;
+    if (record && price <= 0) { showToast('กรุณาใส่จำนวนเงิน หรือเอาติ๊กบันทึกรายรับออก ❌'); return; }
+
+    screen.expireDate = getRenewNewExpire(screen);
+    screen.status = 'sold';
+    if (price > 0) screen.price = price;
+
+    if (record && price > 0) {
+      const appName = getAccountApp(account);
+      monaliTransactions.unshift({
+        id: generateId(),
+        type: 'income',
+        amount: price,
+        note: `ต่ออายุ ${appName} - ${account.name} (จอ ${screenIndex + 1})`,
+        accountId: account.id,
+        appName: appName,
+        date: new Date().toISOString()
+      });
+      saveToLocal(STORAGE_KEY.TX, monaliTransactions);
+    }
+    saveToLocal(STORAGE_KEY.ACCOUNTS, netflixAccounts);
+    expandedAccounts.add(accountId);
+    closeQuickRenewModal();
+    scheduleRender();
+    showToast(record ? `ต่ออายุ +30 วัน และบันทึกรายรับ ${fmtMoney(price)} บาท ✨` : 'ต่ออายุ +30 วันแล้ว ✨');
+  });
+}
+
 function getStatusConfig(status) {
   switch(status) {
-    case 'sold': return { label: 'ใช้งานอยู่', icon: 'fa-solid fa-heart', iconBg: 'bg-white', textClass: 'text-petal-deep', bgClass: 'bg-petal-light/40', borderClass: 'border-petal', badgeClass: 'bg-petal text-espresso border-transparent' };
-    case 'kick': return { label: 'ครบกำหนดวันนี้', icon: 'fa-solid fa-star', iconBg: 'bg-white', textClass: 'text-orange-500', bgClass: 'bg-orange-50/60', borderClass: 'border-orange-200', badgeClass: 'bg-orange-100 text-orange-700 border-orange-200' };
+    case 'sold': return { label: 'ใช้งานอยู่', shortLabel: 'ใช้งาน', icon: 'fa-solid fa-heart', iconBg: 'bg-white', textClass: 'text-petal-deep', bgClass: 'bg-petal-light/40', borderClass: 'border-petal', badgeClass: 'bg-petal text-espresso border-transparent' };
+    case 'kick': return { label: 'ครบกำหนดวันนี้', shortLabel: 'ครบวันนี้', icon: 'fa-solid fa-star', iconBg: 'bg-white', textClass: 'text-orange-500', bgClass: 'bg-orange-50/60', borderClass: 'border-orange-200', badgeClass: 'bg-orange-100 text-orange-700 border-orange-200' };
     case 'wait_cut': return { label: 'รอตัด', icon: 'fa-solid fa-scissors', iconBg: 'bg-white', textClass: 'text-red-500', bgClass: 'bg-red-50/60', borderClass: 'border-red-200', badgeClass: 'bg-red-100 text-red-700 border-red-200' };
     default: return { label: 'ว่าง', icon: 'fa-regular fa-circle', iconBg: 'bg-white', textClass: 'text-espresso/40', bgClass: 'bg-white', borderClass: 'border-ivory-border', badgeClass: 'bg-ivory text-espresso border-ivory-border' };
   }
@@ -2233,16 +2850,22 @@ function renderCutoffList() {
   }
 }
 
-function verifyPasscodeForSettings() {
+function verifyPasscodeForAccounting() {
   if (!requireAdminAuth()) return;
-  currentPasscodeAction = 'settings';
+  currentPasscodeAction = 'accounting';
   document.getElementById('settingsPasscodeInput').value = '';
   animateModalOpen('passcodeModal');
 }
 
-function verifyPasscodeForAccounting() {
+function verifyPasscodeForLicense() {
   if (!requireAdminAuth()) return;
-  currentPasscodeAction = 'accounting';
+  currentPasscodeAction = 'license';
+  document.getElementById('settingsPasscodeInput').value = '';
+  animateModalOpen('passcodeModal');
+}
+
+function verifyPasscodeForAdmin() {
+  currentPasscodeAction = 'admin_unlock';
   document.getElementById('settingsPasscodeInput').value = '';
   animateModalOpen('passcodeModal');
 }
@@ -2251,17 +2874,103 @@ function closePasscodeModal() { animateModalClose('passcodeModal'); }
 
 function verifySettingsPasscode(e) {
   e.preventDefault();
-  if (document.getElementById('settingsPasscodeInput').value.trim() === '0835') {
+  const stMap = getFromLocal(STORAGE_KEY.SET, '{}');
+  
+  // รหัสพื้นฐานคือ 0835 สำหรับเมนูอื่นๆ
+  let correctPin = '0835';
+  
+  // ถ้ารหัสสำหรับการเข้าบัญชี ให้ดึงจากที่เคยเปลี่ยนไว้ (ค่าเริ่มต้นคือ 0835)
+  if (currentPasscodeAction === 'accounting') {
+    correctPin = stMap['acc_pin'] || '0835';
+  }
+  
+  if (document.getElementById('settingsPasscodeInput').value.trim() === correctPin) {
     closePasscodeModal();
     showToast('ยืนยันรหัสผ่านสำเร็จ ✨');
     if (currentPasscodeAction === 'accounting') {
       switchView('accounting');
-    } else {
-      openSettingsModal();
+    } else if (currentPasscodeAction === 'admin_unlock' || currentPasscodeAction === 'license') {
+      if (typeof openLicenseModal === 'function') openLicenseModal();
     }
   } else {
     showToast('รหัสผ่านไม่ถูกต้อง ❌');
   }
+}
+
+function openChangePinModal() {
+  if (!requireAdminAuth()) return;
+  document.getElementById('currentPinInput').value = '';
+  document.getElementById('newPinInput').value = '';
+  document.getElementById('confirmNewPinInput').value = '';
+  animateModalOpen('changePinModal');
+}
+function closeChangePinModal() { animateModalClose('changePinModal'); }
+
+function openChangeAdminPassModal() {
+  if (!requireAdminAuth()) return;
+  document.getElementById('currentAdminPassInput').value = '';
+  document.getElementById('newAdminPassInput').value = '';
+  document.getElementById('confirmNewAdminPassInput').value = '';
+  animateModalOpen('changeAdminPassModal');
+}
+function closeChangeAdminPassModal() { animateModalClose('changeAdminPassModal'); }
+
+function handleSaveCustomPin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btnSavePin');
+  requireAdminAuthAction(btn, async () => {
+    const stMap = getFromLocal(STORAGE_KEY.SET, '{}');
+    const storedPin = stMap['acc_pin'] || '0835';
+    const currentPin = document.getElementById('currentPinInput').value.trim();
+    const newPin = document.getElementById('newPinInput').value.trim();
+    const confirmPin = document.getElementById('confirmNewPinInput').value.trim();
+
+    if (currentPin !== storedPin) {
+      showToast('รหัส PIN ปัจจุบันไม่ถูกต้อง ❌');
+      return;
+    }
+    if (newPin !== confirmPin) {
+      showToast('รหัส PIN ใหม่ไม่ตรงกัน ❌');
+      return;
+    }
+    if (newPin.length < 4) {
+       showToast('รหัส PIN ต้องมีอย่างน้อย 4 ตัว ❌');
+       return;
+    }
+
+    saveSettingsValue('acc_pin', newPin);
+    closeChangePinModal();
+    showToast('เปลี่ยนรหัส PIN ระบบบัญชีเรียบร้อยแล้ว ✨');
+  });
+}
+
+function handleSaveAdminPass(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btnSaveAdminPass');
+  requireAdminAuthAction(btn, async () => {
+    const stMap = getFromLocal(STORAGE_KEY.SET, '{}');
+    const storedPass = stMap['admin_pass'] || '1234';
+    const currentPass = document.getElementById('currentAdminPassInput').value.trim();
+    const newPass = document.getElementById('newAdminPassInput').value.trim();
+    const confirmPass = document.getElementById('confirmNewAdminPassInput').value.trim();
+
+    if (currentPass !== storedPass) {
+      showToast('รหัสผ่านปัจจุบันไม่ถูกต้อง ❌');
+      return;
+    }
+    if (newPass !== confirmPass) {
+      showToast('รหัสผ่านใหม่ไม่ตรงกัน ❌');
+      return;
+    }
+    if (newPass.length < 4) {
+       showToast('รหัสผ่านต้องมีอย่างน้อย 4 ตัว ❌');
+       return;
+    }
+
+    saveSettingsValue('admin_pass', newPass);
+    closeChangeAdminPassModal();
+    showToast('เปลี่ยนรหัสผ่านเข้าสู่ระบบแอดมินเรียบร้อยแล้ว ✨');
+  });
 }
 
 function openAdminModal() { updateAdminStateUI(); animateModalOpen('adminModal'); }
@@ -2310,28 +3019,41 @@ async function handleAddAccount(e) {
     const appValue = document.getElementById('accountApp').value.trim() || (customApps.length > 0 ? customApps[0].name : 'แอปทั่วไป');
     const appId = await resolveAppId(appValue);
 
-    const accData = {
+    const newAcc = {
+      id: generateId(),
       app_id: appId,
       name: document.getElementById('accountName').value.trim(),
       email: document.getElementById('accountEmail').value.trim(),
       password: document.getElementById('accountPassword').value.trim(),
-      expire_date: document.getElementById('accountExpireDate').value || null
+      accountExpireDate: document.getElementById('accountExpireDate').value || null,
+      cost: parseFloat(document.getElementById('accountCost').value) || 0,
+      created_at: new Date().toISOString(),
+      screens: Array(5).fill().map((_, idx) => ({
+        id: generateId(),
+        status: 'available',
+        screenIndex: idx
+      }))
     };
 
-    const { data: newAcc, error: accErr } = await supabase.from('accounts').insert(accData).select().single();
-    if (accErr) throw accErr;
+    netflixAccounts.unshift(newAcc);
+    saveToLocal(STORAGE_KEY.ACCOUNTS, netflixAccounts);
 
-    const screensToInsert = Array(5).fill().map((_, idx) => ({
-      account_id: newAcc.id,
-      screen_index: idx,
-      status: 'available',
-    }));
-    const { error: scrErr } = await supabase.from('screens').insert(screensToInsert);
-    if (scrErr) throw scrErr;
+    if (newAcc.cost > 0) {
+      monaliTransactions.unshift({
+        id: generateId(),
+        type: 'expense',
+        amount: newAcc.cost,
+        note: `ต้นทุนบัญชี ${appValue} - ${newAcc.name}`,
+        accountId: newAcc.id,
+        appName: appValue,
+        date: new Date().toISOString()
+      });
+      saveToLocal(STORAGE_KEY.TX, monaliTransactions);
+    }
 
     await loadData();
     closeAddAccountModal();
-    showToast(`เพิ่มบัญชีเรียบร้อยแล้วค่ะ ✨`);
+    showToast(newAcc.cost > 0 ? `เพิ่มบัญชีและบันทึกรายจ่ายต้นทุน ${fmtMoney(newAcc.cost)} บาทแล้วค่ะ ✨` : `เพิ่มบัญชีเรียบร้อยแล้วค่ะ ✨`);
   });
 }
 
@@ -2346,6 +3068,7 @@ function openEditAccountModal(accountId) {
   document.getElementById('editAccEmail').value = acc.email;
   document.getElementById('editAccPassword').value = acc.password;
   document.getElementById('editAccExpireDate').value = acc.accountExpireDate || '';
+  document.getElementById('editAccCost').value = acc.cost || '';
   renderPresetAppChips('editAppPresetChips', 'editAccApp', currentApp);
   animateModalOpen('editAccountModal');
 }
@@ -2359,15 +3082,18 @@ async function handleEditAccount(e) {
     const appValue = document.getElementById('editAccApp').value.trim() || 'แอปทั่วไป';
     const appId = await resolveAppId(appValue);
 
-    const { error } = await supabase.from('accounts').update({
-      app_id: appId,
-      name: document.getElementById('editAccName').value.trim(),
-      email: document.getElementById('editAccEmail').value.trim(),
-      password: document.getElementById('editAccPassword').value.trim(),
-      expire_date: document.getElementById('editAccExpireDate').value || null
-    }).eq('id', id);
+    const accIndex = netflixAccounts.findIndex(a => a.id === id);
+    if(accIndex !== -1) {
+      netflixAccounts[accIndex].app_id = appId;
+      netflixAccounts[accIndex].name = document.getElementById('editAccName').value.trim();
+      netflixAccounts[accIndex].email = document.getElementById('editAccEmail').value.trim();
+      netflixAccounts[accIndex].password = document.getElementById('editAccPassword').value.trim();
+      netflixAccounts[accIndex].accountExpireDate = document.getElementById('editAccExpireDate').value || null;
+      netflixAccounts[accIndex].cost = parseFloat(document.getElementById('editAccCost').value) || 0;
+      
+      saveToLocal(STORAGE_KEY.ACCOUNTS, netflixAccounts);
+    }
 
-    if (error) throw error;
     await loadData();
     closeEditAccountModal();
     showToast('แก้ไขข้อมูลบัญชีเรียบร้อยแล้วค่ะ ✨');
@@ -2406,10 +3132,12 @@ async function handleEditScreen(e) {
   const btn = document.getElementById('btnSubmitEditScreen');
   requireAdminAuthAction(btn, async () => {
     const accountId = document.getElementById('editAccountId').value;
-    const screenId = document.getElementById('editScreenId').value;
     const screenIndex = parseInt(document.getElementById('editScreenIndex').value);
-    const account = netflixAccounts.find(a => a.id === accountId);
-    if (!account) return;
+    
+    const accIndex = netflixAccounts.findIndex(a => a.id === accountId);
+    if (accIndex === -1) return;
+    
+    const account = netflixAccounts[accIndex];
 
     const selectedRadio = document.querySelector('input[name="screenStatus"]:checked');
     if (!selectedRadio) { showToast('กรุณาเลือกสถานะของจอ ❌'); return; }
@@ -2418,23 +3146,26 @@ async function handleEditScreen(e) {
     const autoRecord = document.getElementById('autoRecordIncome').checked;
     const statusVal = selectedRadio.value;
 
-    const { error } = await supabase.from('screens').update({
-      status: statusVal,
-      expire_date: document.getElementById('expireDate').value || null,
-      pin: document.getElementById('screenPin').value,
-      notes: document.getElementById('screenNotes').value,
-      price: price
-    }).eq('id', screenId);
-    if (error) throw error;
+    account.screens[screenIndex].status = statusVal;
+    account.screens[screenIndex].expireDate = document.getElementById('expireDate').value || null;
+    account.screens[screenIndex].pin = document.getElementById('screenPin').value;
+    account.screens[screenIndex].notes = document.getElementById('screenNotes').value;
+    account.screens[screenIndex].price = price;
+    
+    saveToLocal(STORAGE_KEY.ACCOUNTS, netflixAccounts);
 
     if (autoRecord && price > 0 && statusVal === 'sold') {
       const appName = getAccountApp(account);
-      await supabase.from('transactions').insert({
+      monaliTransactions.unshift({
+        id: generateId(),
         type: 'income',
         amount: price,
         note: `ขายจอ ${appName} - ${account.name} (จอ ${screenIndex + 1})`,
-        transaction_date: new Date().toISOString()
+        accountId: account.id,
+        appName: appName,
+        date: new Date().toISOString()
       });
+      saveToLocal(STORAGE_KEY.TX, monaliTransactions);
     }
 
     expandedAccounts.add(accountId);
@@ -2451,16 +3182,21 @@ function addNewScreen(accountId) {
   if (btn) btn.disabled = true;
   (async () => {
     try {
-      const account = netflixAccounts.find(a => a.id === accountId);
-      if (!account) return;
-      const nextIdx = account.screens.length > 0 ? Math.max(...account.screens.map(s => s.screen_index || 0)) + 1 : 0;
-      const { error } = await supabase.from('screens').insert({
-        account_id: accountId,
-        screen_index: nextIdx,
+      const accIndex = netflixAccounts.findIndex(a => a.id === accountId);
+      if (accIndex === -1) return;
+      
+      const account = netflixAccounts[accIndex];
+      const nextIdx = account.screens.length > 0 ? Math.max(...account.screens.map(s => s.screenIndex || 0)) + 1 : 0;
+      
+      account.screens.push({
+        id: generateId(),
+        screenIndex: nextIdx,
         status: 'available'
       });
-      if (error) throw error;
+      
+      saveToLocal(STORAGE_KEY.ACCOUNTS, netflixAccounts);
       expandedAccounts.add(accountId);
+      
       await loadData();
       showToast(`เพิ่มจอให้บัญชี ${account.name} แล้ว ✨`);
     } catch(err) {
@@ -2487,9 +3223,13 @@ function closeDeleteScreenModal() {
 }
 function executeDeleteScreen(btn) {
   requireAdminAuthAction(btn, async () => {
-    if (!screenToDelete.id) return;
-    const { error } = await supabase.from('screens').delete().eq('id', screenToDelete.id);
-    if (error) throw error;
+    if (!screenToDelete.accountId) return;
+    const accIndex = netflixAccounts.findIndex(a => a.id === screenToDelete.accountId);
+    if (accIndex !== -1) {
+      netflixAccounts[accIndex].screens.splice(screenToDelete.screenIndex, 1);
+      saveToLocal(STORAGE_KEY.ACCOUNTS, netflixAccounts);
+    }
+    
     await loadData();
     closeDeleteScreenModal();
     showToast('ลบจอดังกล่าวเรียบร้อยแล้วค่ะ 🗑️');
@@ -2508,8 +3248,9 @@ function closeDeleteModal() {
 function executeDeleteAccount(btn) {
   requireAdminAuthAction(btn, async () => {
     if (!accountIdToDelete) return;
-    const { error } = await supabase.from('accounts').delete().eq('id', accountIdToDelete);
-    if (error) throw error;
+    netflixAccounts = netflixAccounts.filter(a => a.id !== accountIdToDelete);
+    saveToLocal(STORAGE_KEY.ACCOUNTS, netflixAccounts);
+    
     expandedAccounts.delete(accountIdToDelete);
     await loadData();
     closeDeleteModal();
@@ -2518,28 +3259,33 @@ function executeDeleteAccount(btn) {
 }
 
 function openSettingsModal() {
+  if (!requireAdminAuth()) return;
   document.getElementById('tgToken').value = telegramSettings.token || '';
   document.getElementById('tgChatId').value = telegramSettings.chatId || '';
+  document.getElementById('discordWebhook').value = discordSettings.webhookUrl || '';
   document.getElementById('testResult').className = 'hidden text-sm text-center py-2 px-3 rounded-xl mt-3';
   animateModalOpen('settingsModal');
 }
 function closeSettingsModal() { animateModalClose('settingsModal'); }
 
-async function saveTelegramSettings(e) {
+async function saveNotificationSettings(e) {
   e.preventDefault();
   const btn = document.getElementById('btnSaveSettings');
   requireAdminAuthAction(btn, async () => {
     const token = document.getElementById('tgToken').value.trim();
     const chatId = document.getElementById('tgChatId').value.trim();
+    const discordUrl = document.getElementById('discordWebhook').value.trim();
     
-    await supabase.from('settings').upsert({ key: 'tg_token', value: token });
-    await supabase.from('settings').upsert({ key: 'tg_chat_id', value: chatId });
+    saveSettingsValue('tg_token', token);
+    saveSettingsValue('tg_chat_id', chatId);
+    saveSettingsValue('discord_webhook', discordUrl);
     
     telegramSettings.token = token;
     telegramSettings.chatId = chatId;
+    discordSettings.webhookUrl = discordUrl;
     
     closeSettingsModal();
-    showToast('บันทึกการตั้งค่า Telegram แล้ว 🔔');
+    showToast('บันทึกการตั้งค่าการแจ้งเตือนแล้ว 🔔');
   });
 }
 
@@ -2587,6 +3333,84 @@ async function testTelegramSettings(btn) {
   btn.innerHTML = originalText; btn.disabled = false;
 }
 
+async function sendDiscordMessage(text) {
+  if (!discordSettings.webhookUrl) return { success: false, error: 'ยังไม่ได้ตั้งค่า Webhook URL' };
+  try {
+    let mdText = text.replace(/<b>/g, '**').replace(/<\/b>/g, '**')
+                     .replace(/<i>/g, '*').replace(/<\/i>/g, '*')
+                     .replace(/<br>/g, '\n');
+    const response = await fetch(discordSettings.webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: mdText })
+    });
+    if (response.ok) return { success: true };
+    const err = await response.text();
+    return { success: false, error: err };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
+async function testDiscordSettings(btn) {
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+  btn.disabled = true;
+  const tempUrl = document.getElementById('discordWebhook').value.trim();
+  const resultDiv = document.getElementById('testResult');
+  resultDiv.classList.remove('hidden');
+  if (!tempUrl) {
+    resultDiv.textContent = 'กรุณากรอก Webhook URL ก่อนทดสอบ';
+    resultDiv.className = 'text-sm font-bold text-center py-2.5 px-3 rounded-xl mt-3 text-red-600 bg-red-50 border border-red-200 block';
+    btn.innerHTML = originalText; btn.disabled = false; return;
+  }
+  const oldUrl = discordSettings.webhookUrl;
+  discordSettings.webhookUrl = tempUrl;
+  const result = await sendDiscordMessage('👋 **ทดสอบระบบแจ้งเตือน MONALI**\nเชื่อมต่อ Discord สำเร็จ! ✨');
+  if (result.success) {
+    resultDiv.innerHTML = '<i class="fa-solid fa-check-circle mr-1"></i> ส่งสำเร็จ ตรวจสอบใน Discord ได้เลย';
+    resultDiv.className = 'text-sm font-bold text-center py-2.5 px-3 rounded-xl mt-3 text-emerald-600 bg-emerald-50 border border-emerald-200 block';
+  } else {
+    resultDiv.innerHTML = '<i class="fa-solid fa-circle-exclamation mr-1"></i> ส่งไม่สำเร็จ: ' + escapeHTML(result.error);
+    resultDiv.className = 'text-sm font-bold text-center py-2.5 px-3 rounded-xl mt-3 text-red-600 bg-red-50 border border-red-200 block';
+    discordSettings.webhookUrl = oldUrl;
+  }
+  btn.innerHTML = originalText; btn.disabled = false;
+}
+
+async function sendAccountingSummary(btn) {
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> กำลังส่ง...';
+  btn.disabled = true;
+  
+  const incomeStr = document.getElementById('accTotalIncome').textContent;
+  const expenseStr = document.getElementById('accTotalExpense').textContent;
+  const profitStr = document.getElementById('accProfitAmount').textContent;
+  const dateLabel = document.getElementById('accHistoryPeriodBadge').textContent;
+  
+  const message = `📊 <b>สรุปยอดระบบบัญชี MONALI</b>\n📅 <i>${dateLabel}</i>\n\n🟢 <b>รายรับทั้งหมด:</b> ${incomeStr} บาท\n🔴 <b>รายจ่ายทั้งหมด:</b> ${expenseStr} บาท\n🔵 <b>กำไรสุทธิ:</b> ${profitStr} บาท`;
+  
+  let successCount = 0;
+  if (telegramSettings.token && telegramSettings.chatId) {
+    const resTg = await sendTelegramMessage(message);
+    if (resTg.success) successCount++;
+  }
+  if (discordSettings.webhookUrl) {
+    const resDc = await sendDiscordMessage(message);
+    if (resDc.success) successCount++;
+  }
+  
+  if (successCount > 0) {
+    showToast('ส่งสรุปยอดบัญชีเรียบร้อยแล้ว ✨');
+  } else {
+    showToast('ยังไม่ได้ตั้งค่าการแจ้งเตือน หรือส่งไม่สำเร็จ ❌');
+    openSettingsModal();
+  }
+  
+  btn.innerHTML = originalText;
+  btn.disabled = false;
+}
+
 async function checkDailyNotifications() {
   if (!telegramSettings.token || !telegramSettings.chatId) return;
 
@@ -2595,11 +3419,11 @@ async function checkDailyNotifications() {
   if (localLastRun === todayStr) return;
 
   try {
-    const { data } = await supabase.from('settings').select('value').eq('key', 'last_daily_summary_date').maybeSingle();
-    const globalLastRun = data ? data.value : null;
+    const stMap = getFromLocal(STORAGE_KEY.SET, '{}');
+    const globalLastRun = stMap['last_daily_summary_date'];
 
     if (globalLastRun !== todayStr) {
-      await supabase.from('settings').upsert({ key: 'last_daily_summary_date', value: todayStr });
+      saveSettingsValue('last_daily_summary_date', todayStr);
       await sendDailySummary();
     }
 
@@ -2660,7 +3484,13 @@ async function sendDailySummary() {
     if (appSection) { message += `📱 <b>[ ${appName} ]</b>\n${appSection}\n`; hasContent = true; }
   }
   if (!hasContent) message += `✅ <i>ไม่มีบัญชีหรือจอที่ครบกำหนดในวันนี้และพรุ่งนี้ค่ะ พักผ่อนได้เลย</i> 🎉`;
-  await sendTelegramMessage(message);
+  
+  if (telegramSettings.token && telegramSettings.chatId) {
+    await sendTelegramMessage(message);
+  }
+  if (discordSettings.webhookUrl) {
+    await sendDiscordMessage(message);
+  }
 }
 
 function exportAccountingCSV() {
@@ -2688,7 +3518,6 @@ function exportAccountingCSV() {
     return;
   }
 
-  // ใช้ \uFEFF (BOM) เพื่อให้ Excel เปิดไฟล์ภาษาไทยด้วย UTF-8 ได้อย่างถูกต้อง
   let csvContent = "\uFEFF"; 
   csvContent += "วันที่และเวลา,ประเภท,รายการ,จำนวนเงิน\n";
 
@@ -2696,7 +3525,7 @@ function exportAccountingCSV() {
     const dateObj = new Date(tx.date);
     const dateStr = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
     const typeStr = tx.type === 'income' ? 'รายรับ' : 'รายจ่าย';
-    const noteStr = `"${tx.note.replace(/"/g, '""')}"`; // ป้องกันเครื่องหมาย " ภายในข้อความ
+    const noteStr = `"${tx.note.replace(/"/g, '""')}"`;
     const amountStr = tx.amount.toFixed(2);
     
     if (tx.type === 'income') totalIncome += tx.amount;
@@ -2710,11 +3539,13 @@ function exportAccountingCSV() {
   csvContent += `รายจ่ายทั้งหมด,,,${totalExpense.toFixed(2)}\n`;
   csvContent += `กำไรสุทธิ,,,${(totalIncome - totalExpense).toFixed(2)}\n`;
 
+  const storeName = document.getElementById('storeNameMain') ? document.getElementById('storeNameMain').textContent.trim() : 'MONALI';
+
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.setAttribute("href", url);
-  link.setAttribute("download", `monali_accounting_${accFilterMode}_${getLocalDateString()}.csv`);
+  link.setAttribute("download", `${storeName}_accounting_${accFilterMode}_${getLocalDateString()}.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -2735,32 +3566,47 @@ async function handleAdminLogin(e) {
   btn.disabled = true;
 
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: pass
-    });
+    // จำลองการโหลด
+    await new Promise(r => setTimeout(r, 600));
 
-    if (error) throw new Error('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+    if (!email || !pass) throw new Error('กรุณากรอกข้อมูลให้ครบถ้วน');
 
-    const { data: isAdmin } = await supabase.rpc('is_admin');
-    if (!isAdmin) {
-      await supabase.auth.signOut();
-      throw new Error('บัญชีนี้ไม่มีสิทธิ์แอดมิน');
+    if (sb) {
+      const { data, error } = await sb.auth.signInWithPassword({ email: email, password: pass });
+      if (error) throw new Error(error.message === 'Invalid login credentials' ? 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' : error.message);
+      if (!data.user || data.user.id !== SUPABASE_ADMIN_ID) {
+        await sb.auth.signOut();
+        throw new Error('บัญชีนี้ไม่มีสิทธิ์แอดมิน');
+      }
+      currentAdmin = { email: data.user.email, cloud: true };
+      await pullFromCloud();
+    } else {
+      const stMap = getFromLocal(STORAGE_KEY.SET, '{}');
+      const correctPass = stMap['admin_pass'] || '1234';
+      if (pass !== correctPass) throw new Error('รหัสผ่านไม่ถูกต้อง');
+      currentAdmin = { email: email };
     }
-
-    currentAdmin = data.user;
+    
     if (isRemember) {
       localStorage.setItem('monali_remember_device', 'true');
+      localStorage.setItem('monali_admin_email', email);
     } else {
       localStorage.removeItem('monali_remember_device');
+      localStorage.removeItem('monali_admin_email');
     }
 
     document.getElementById('loginAdminEmail').value = '';
     document.getElementById('loginAdminPassword').value = '';
     updateAdminStateUI();
     checkAdminPermissionsUI();
-    showToast(isRemember ? 'เข้าสู่ระบบและจดจำอุปกรณ์นี้แล้ว ✨' : 'ยินดีต้อนรับเข้าสู่ระบบ ✨');
+    showToast(sb ? 'เข้าสู่ระบบและเชื่อมต่อ Supabase แล้ว ☁️' : (isRemember ? 'เข้าสู่ระบบออฟไลน์แล้ว ✨' : 'ยินดีต้อนรับเข้าสู่ระบบ ✨'));
     closeAdminModal();
+
+    // เช็คหากทำการปลดล็อกจากหน้าหมดอายุ ให้เปิดหน้าต่างต่ออายุอัตโนมัติ
+    const overlay = document.getElementById('expiredOverlay');
+    if (overlay && !overlay.classList.contains('hidden')) {
+        setTimeout(() => { openLicenseModal(); }, 400);
+    }
 
     await loadData();
   } catch (error) {
@@ -2772,8 +3618,9 @@ async function handleAdminLogin(e) {
 }
 
 async function logoutAdmin() {
+  if (sb) { try { await sb.auth.signOut(); } catch (e) {} }
   localStorage.removeItem('monali_remember_device');
-  await supabase.auth.signOut();
+  localStorage.removeItem('monali_admin_email');
   currentAdmin = null;
   updateAdminStateUI();
   checkAdminPermissionsUI();
@@ -2876,10 +3723,16 @@ function saveTemplate(btn) {
     if (!name || !content) { showToast('กรุณากรอกข้อมูลให้ครบถ้วน ❌'); return; }
 
     if (id && id !== 'tpl_default') {
-      await supabase.from('templates').update({ name, content }).eq('id', id);
+      const idx = formTemplates.findIndex(t => t.id === id);
+      if(idx !== -1) {
+        formTemplates[idx].name = name;
+        formTemplates[idx].content = content;
+      }
     } else {
-      await supabase.from('templates').insert({ name, content });
+      formTemplates.push({ id: generateId(), name, content });
     }
+    
+    saveToLocal(STORAGE_KEY.TPL, formTemplates);
 
     await loadData();
     updateTemplateDropdown();
@@ -2894,7 +3747,9 @@ function deleteCurrentTemplate(btn) {
     const id = document.getElementById('editTemplateId').value;
     if (!id || id === 'tpl_default') return;
 
-    await supabase.from('templates').delete().eq('id', id);
+    formTemplates = formTemplates.filter(t => t.id !== id);
+    saveToLocal(STORAGE_KEY.TPL, formTemplates);
+    
     await loadData();
     updateTemplateDropdown();
     generateFormText();
@@ -2923,6 +3778,133 @@ function copyText(text) {
   document.execCommand('copy');
   document.body.removeChild(el);
   showToast('คัดลอกข้อความแล้ว ✨');
+}
+
+function checkLicense() {
+  const expireStr = localStorage.getItem('monali_license_expire');
+  const overlay = document.getElementById('expiredOverlay');
+  if (!overlay) return true;
+  
+  if (expireStr) {
+    const expireTime = new Date(expireStr + 'T23:59:59').getTime();
+    const now = new Date().getTime();
+    if (now > expireTime) {
+      overlay.classList.remove('hidden');
+      overlay.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+      return false;
+    }
+  }
+  
+  overlay.classList.add('hidden');
+  overlay.classList.remove('flex');
+  document.body.style.overflow = '';
+  return true;
+}
+
+function openViewLicenseModal() {
+  const currentExp = localStorage.getItem('monali_license_expire');
+  const display = document.getElementById('viewLicenseDateDisplay');
+  const daysLeftDisplay = document.getElementById('viewLicenseDaysLeft');
+  
+  if (currentExp) {
+    display.textContent = formatDate(currentExp);
+    display.classList.remove('text-espresso/60');
+    
+    const expireTime = new Date(currentExp + 'T23:59:59').getTime();
+    const now = new Date().getTime();
+    const diffTime = expireTime - now;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays > 0) {
+      daysLeftDisplay.textContent = diffDays + ' วัน';
+      daysLeftDisplay.className = 'text-2xl font-black text-emerald-500';
+    } else {
+      daysLeftDisplay.textContent = 'หมดอายุแล้ว';
+      daysLeftDisplay.className = 'text-2xl font-black text-red-500';
+    }
+  } else {
+    display.textContent = 'ไม่มีกำหนดวันหมดอายุ';
+    display.classList.add('text-espresso/60');
+    daysLeftDisplay.textContent = 'ใช้งานได้ตลอดชีพ';
+    daysLeftDisplay.className = 'text-lg font-black text-emerald-500 mt-1';
+  }
+  
+  animateModalOpen('viewLicenseModal');
+}
+
+function closeViewLicenseModal() { 
+  animateModalClose('viewLicenseModal'); 
+}
+
+function openLicenseModal() {
+  if (!requireAdminAuth()) return;
+  const currentExp = localStorage.getItem('monali_license_expire');
+  const display = document.getElementById('currentLicenseDateDisplay');
+  const input = document.getElementById('licenseExpireDateInput');
+  
+  if (currentExp) {
+    display.textContent = formatDate(currentExp);
+    display.classList.remove('text-espresso/60', 'text-sm');
+    input.value = currentExp;
+  } else {
+    display.textContent = 'ยังไม่ได้กำหนด (ไม่มีวันหมดอายุ)';
+    display.classList.add('text-espresso/60', 'text-sm');
+    input.value = '';
+  }
+  animateModalOpen('licenseModal');
+}
+
+function closeLicenseModal() { 
+  animateModalClose('licenseModal'); 
+}
+
+function addLicenseDays(days) {
+  const input = document.getElementById('licenseExpireDateInput');
+  let baseDate = new Date();
+  
+  if (input.value) {
+    const currentSelected = new Date(input.value);
+    if (!isNaN(currentSelected.getTime()) && currentSelected > baseDate) {
+      baseDate = currentSelected;
+    }
+  }
+  
+  baseDate.setDate(baseDate.getDate() + days);
+  const y = baseDate.getFullYear();
+  const m = String(baseDate.getMonth() + 1).padStart(2, '0');
+  const d = String(baseDate.getDate()).padStart(2, '0');
+  input.value = `${y}-${m}-${d}`;
+}
+
+function testLicenseExpiration() {
+  if (!requireAdminAuth()) return;
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const y = yesterday.getFullYear();
+  const m = String(yesterday.getMonth() + 1).padStart(2, '0');
+  const d = String(yesterday.getDate()).padStart(2, '0');
+  const pastDate = `${y}-${m}-${d}`;
+  
+  document.getElementById('licenseExpireDateInput').value = pastDate;
+  saveLicenseDate();
+  showToast('จำลองสถานะหมดอายุเรียบร้อย ⏳');
+}
+
+function saveLicenseDate() {
+  if (!requireAdminAuth()) return;
+  const input = document.getElementById('licenseExpireDateInput').value;
+  
+  if (input) {
+    localStorage.setItem('monali_license_expire', input);
+    showToast('บันทึกวันหมดอายุเว็บไซต์แล้ว ✨');
+  } else {
+    localStorage.removeItem('monali_license_expire');
+    showToast('ยกเลิกวันหมดอายุ (ไม่มีวันหมดอายุ) ✨');
+  }
+  
+  closeLicenseModal();
+  checkLicense();
 }
 
 function showToast(message) {
@@ -2954,11 +3936,15 @@ function handleLogoUpload(event) {
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       const compressedBase64 = canvas.toDataURL('image/png', 1.0);
       try {
-        await supabase.from('settings').upsert({ key: 'logo_base64', value: compressedBase64 });
-        document.getElementById('storeLogo').src = compressedBase64;
+        saveSettingsValue('logo_base64', compressedBase64);
+        const logoImg = document.getElementById('storeLogo');
+        const logoPl = document.getElementById('logoPlaceholder');
+        logoImg.src = compressedBase64;
+        logoImg.classList.remove('hidden');
+        if(logoPl) logoPl.classList.add('hidden');
         updateAppIcons(compressedBase64);
         showToast('อัปเดตโลโก้ร้านแล้ว ✨');
-      } catch(err) { showToast('อัปเดตไม่สำเร็จ'); }
+      } catch(err) { showToast('อัปเดตไม่สำเร็จ (ข้อมูลอาจใหญ่เกินไป)'); }
     };
     img.src = e.target.result;
   };
@@ -2983,15 +3969,104 @@ function handleBannerUpload(event) {
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       const compressedBase64 = canvas.toDataURL('image/png', 0.8);
       try {
-        await supabase.from('settings').upsert({ key: 'banner_base64', value: compressedBase64 });
-        document.getElementById('storeBanner').src = compressedBase64;
+        saveSettingsValue('banner_base64', compressedBase64);
+        const bannerImg = document.getElementById('storeBanner');
+        const bannerPl = document.getElementById('bannerPlaceholder');
+        const bannerOverlay = document.getElementById('bannerOverlay');
+        bannerImg.src = compressedBase64;
+        bannerImg.classList.remove('hidden');
+        if(bannerOverlay) bannerOverlay.classList.remove('hidden');
+        if(bannerPl) bannerPl.classList.add('hidden');
         showToast('อัปเดตแบนเนอร์แล้ว ✨');
-      } catch(err) { showToast('อัปเดตไม่สำเร็จ'); }
+      } catch(err) { showToast('อัปเดตไม่สำเร็จ (ข้อมูลอาจใหญ่เกินไป)'); }
     };
     img.src = e.target.result;
   };
   reader.readAsDataURL(file);
   event.target.value = '';
+}
+
+function openStoreSettingsModal() {
+  if (!requireAdminAuth()) return;
+  const stMap = getFromLocal(STORAGE_KEY.SET, '{}');
+  document.getElementById('settingStoreNameMain').value = stMap['store_name_main'] || 'MONALI';
+  document.getElementById('settingStoreNameSub').value = stMap['store_name_sub'] || '- ระบบจัดการหลังร้าน -';
+  document.getElementById('settingStoreFont').value = stMap['store_font'] || 'itim';
+  document.getElementById('settingShowBanner').checked = stMap['show_banner'] !== false;
+  currentThemeId = stMap['store_theme'] || 'pink';
+  renderThemePickers();
+  animateModalOpen('storeSettingsModal');
+}
+
+function closeStoreSettingsModal() { animateModalClose('storeSettingsModal'); }
+
+function openSystemSettingsModal() { animateModalOpen('systemSettingsModal'); }
+function closeSystemSettingsModal() { animateModalClose('systemSettingsModal'); }
+
+function renderThemePickers() {
+  const container = document.getElementById('themePickerContainer');
+  if (!container) return;
+  const htmlParts = [];
+  STORE_THEMES.forEach(theme => {
+    const isSelected = currentThemeId === theme.id;
+    htmlParts.push(`
+      <button type="button" onclick="currentThemeId='${theme.id}'; renderThemePickers();" class="p-3 rounded-2xl border-2 text-sm font-bold flex items-center justify-center transition-all ${isSelected ? `border-espresso shadow-md ring-2 ring-espresso/20 scale-[1.02] ${theme.badge}` : `border-petal/50 opacity-70 hover:opacity-100 bg-white text-espresso`}">
+        ${theme.name}
+      </button>
+    `);
+  });
+  container.innerHTML = htmlParts.join('');
+}
+
+function saveStoreSettings(e) {
+  e.preventDefault();
+  const mainName = document.getElementById('settingStoreNameMain').value.trim();
+  const subName = document.getElementById('settingStoreNameSub').value.trim();
+  const fontId = document.getElementById('settingStoreFont').value;
+  const showBanner = document.getElementById('settingShowBanner').checked;
+  
+  saveSettingsValue('store_name_main', mainName);
+  saveSettingsValue('store_name_sub', subName);
+  saveSettingsValue('store_theme', currentThemeId);
+  saveSettingsValue('store_font', fontId);
+  saveSettingsValue('show_banner', showBanner);
+  
+  document.getElementById('storeNameMain').textContent = mainName || 'MONALI';
+  document.title = "ระบบจัดการหลังบ้าน " + (mainName || 'MONALI');
+  document.getElementById('storeNameSub').textContent = subName || '- ระบบจัดการหลังร้าน -';
+  
+  const bannerContainer = document.getElementById('bannerContainer');
+  if (bannerContainer) {
+    if (showBanner) {
+      bannerContainer.classList.remove('hidden');
+    } else {
+      bannerContainer.classList.add('hidden');
+    }
+  }
+
+  applyTheme(currentThemeId);
+  applyFont(fontId);
+  
+  closeStoreSettingsModal();
+  showToast('บันทึกการตั้งค่าร้านค้าเรียบร้อย ✨');
+}
+
+function applyFont(fontId) {
+  const fontFamilies = {
+    'itim': "'Itim', sans-serif",
+    'kanit': "'Kanit', sans-serif",
+    'prompt': "'Prompt', sans-serif",
+    'mali': "'Mali', cursive"
+  };
+  document.body.style.fontFamily = fontFamilies[fontId] || fontFamilies['itim'];
+}
+
+function applyTheme(themeId) {
+  const theme = STORE_THEMES.find(t => t.id === themeId) || STORE_THEMES[0];
+  const root = document.documentElement;
+  for (const [key, value] of Object.entries(theme.colors)) {
+    root.style.setProperty(key, value);
+  }
 }
 
 function switchView(viewName) {
@@ -3031,13 +4106,17 @@ function handleAddTransaction(e) {
 
   const btn = document.querySelector('#addTransactionForm button[type="submit"]');
   requireAdminAuthAction(btn, async () => {
-    const { error } = await supabase.from('transactions').insert({
+    
+    monaliTransactions.unshift({
+      id: generateId(),
       type: type,
       amount: amount,
       note: note,
-      transaction_date: txDateIso
+      date: txDateIso
     });
-    if (error) throw error;
+    
+    saveToLocal(STORAGE_KEY.TX, monaliTransactions);
+
     document.getElementById('addTransactionForm').reset();
     
     const transDateInput = document.getElementById('transDate');
@@ -3300,8 +4379,9 @@ function updateAccountingChart(income, expense) {
 
 function deleteTransaction(id, btn) {
   requireAdminAuthAction(btn, async () => {
-    const { error } = await supabase.from('transactions').delete().eq('id', id);
-    if (error) throw error;
+    monaliTransactions = monaliTransactions.filter(tx => tx.id !== id);
+    saveToLocal(STORAGE_KEY.TX, monaliTransactions);
+
     await loadData();
     renderTransactions();
     showToast('ลบรายการแล้ว 🗑️');
@@ -3323,8 +4403,9 @@ function clearAllTransactions(e) {
     }, 3000);
   } else {
     requireAdminAuthAction(btn, async () => {
-      const { error } = await supabase.from('transactions').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-      if (error) throw error;
+      monaliTransactions = [];
+      saveToLocal(STORAGE_KEY.TX, monaliTransactions);
+
       await loadData();
       renderTransactions();
       showToast('ล้างประวัติทั้งหมดแล้ว 🗑');
@@ -3333,6 +4414,15 @@ function clearAllTransactions(e) {
       btn.classList.replace('text-white', 'text-red-500');
     });
   }
+}
+
+function hideBannerContainer(event) {
+  event.stopPropagation();
+  if (!requireAdminAuth()) return;
+  
+  document.getElementById('bannerContainer').classList.add('hidden');
+  saveSettingsValue('show_banner', false);
+  showToast('ซ่อนแบนเนอร์แล้ว (เปิดใหม่ได้ที่ตั้งค่าร้านค้า) ✨');
 }
 
 const SPARKLE_POOL_SIZE = 30;
@@ -3381,3 +4471,5 @@ function spawnSparkles(x, y) {
 </script>
 </body>
 </html>
+
+
