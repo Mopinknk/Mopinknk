@@ -2419,7 +2419,7 @@ function renderDashboard() {
         else appSoldCount++;
       });
     });
-    htmlParts.push(`<div class="pt-2 mb-4"> <div class="flex items-center justify-between pb-2 border-b-2 border-petal"> <div class="flex items-center gap-2.5"> <span class="px-3 py-1.5 rounded-xl text-xs font-bold ${appConf.badge} flex items-center gap-1.5 shadow-sm border border-transparent"> <i class="${appConf.icon}"></i> ${escapeHTML(appName)} </span> <span class="text-xs font-bold text-espresso/80">${accounts.length} บัญชี</span>${appFin.cost > 0 || appFin.revenue > 0 ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-lg border ${appFin.profit >= 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-600 border-red-200'}" title="กำไรรวมของแอปนี้ (รายรับที่ผูกกับบัญชี − ต้นทุน)">กำไร ${fmtMoney(appFin.profit, true)}</span>` : ''} </div> <div class="flex items-center gap-2.5 text-[11px] text-espresso font-bold bg-white px-3 py-1.5 rounded-xl shadow-sm border border-petal"> <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow-sm"></span> ว่าง ${appAvailCount}</span> <span class="text-espresso/30">|</span> <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-petal-deep inline-block shadow-sm"></span> ใช้งาน ${appSoldCount}</span> </div> </div> </div> <div class="space-y-4 sm:space-y-5 mb-8">`);
+    htmlParts.push(`<div class="pt-2 mb-4"> <div class="flex items-center justify-between pb-2 border-b-2 border-petal"> <div class="flex items-center gap-2.5"> <span class="px-3 py-1.5 rounded-xl text-xs font-bold ${appConf.badge} flex items-center gap-1.5 shadow-sm border border-transparent"> <i class="${appConf.icon}"></i> ${escapeHTML(appName)} </span> <span class="text-xs font-bold text-espresso/80 whitespace-nowrap">${accounts.length} บัญชี</span> </div> <div class="flex items-center gap-2.5 text-[11px] text-espresso font-bold bg-white px-3 py-1.5 rounded-xl shadow-sm border border-petal whitespace-nowrap shrink-0"> <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow-sm"></span> ว่าง ${appAvailCount}</span> <span class="text-espresso/30">|</span> <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-petal-deep inline-block shadow-sm"></span> ใช้งาน ${appSoldCount}</span> </div> </div> </div> <div class="space-y-4 sm:space-y-5 mb-8">`);
     accounts.forEach(account => {
       const isExpanded = expandedAccounts.has(account.id);
       const containerClass = isExpanded ? 'space-y-2.5 sm:space-y-3' : 'space-y-2.5 sm:space-y-3 hidden';
@@ -2464,7 +2464,7 @@ ${bgOverlay}
 <span class="flex items-center gap-1.5 cursor-pointer hover:text-petal-deep font-bold transition-colors truncate max-w-[100px] sm:max-w-full bg-petal-light/50 px-2 py-1 rounded-lg border border-petal" onclick="copyText('${escapeJS(account.password)}')">
 <i class="fa-solid fa-key shrink-0"></i> <span class="truncate">${escapeHTML(account.password)}</span>
 </span>
-${accExpireHtml}${financeHtml}
+${accExpireHtml}
 </div>
 </div>
 <div class="flex items-center gap-1 shrink-0 bg-white rounded-full p-1 border-2 border-petal shadow-sm">
