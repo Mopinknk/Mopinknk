@@ -954,6 +954,14 @@ input[type="date"]::-webkit-date-and-time-value {
           <label class="block text-sm font-bold text-espresso mb-1.5 mt-2 flex items-center gap-1.5"><i class="fa-brands fa-discord text-indigo-500"></i> Discord Webhook URL</label>
           <input type="text" id="discordWebhook" class="w-full rounded-2xl border-petal bg-white px-5 py-3.5 text-sm text-espresso focus:bg-white border-2 focus:border-petal-deep focus:ring-0 transition-colors" placeholder="https://discord.com/api/webhooks/...">
         </div>
+        <div class="pt-2 border-t border-petal">
+          <label class="block text-sm font-bold text-espresso mb-1.5 mt-2 flex items-center gap-1.5"><i class="fa-solid fa-link text-emerald-500"></i> Webhook URL ทั่วไป (ส่งเป็น JSON)</label>
+          <input type="text" id="genericWebhook" class="w-full rounded-2xl border-petal bg-white px-5 py-3.5 text-sm text-espresso focus:bg-white border-2 focus:border-petal-deep focus:ring-0 transition-colors" placeholder="https://example.com/webhook">
+        </div>
+        <label class="flex items-start gap-2 cursor-pointer bg-purple-50 px-3 py-3 rounded-2xl border-2 border-purple-200 hover:bg-purple-100 transition-colors shadow-sm">
+          <input type="checkbox" id="serverDailyCheckbox" class="w-4 h-4 mt-0.5 rounded text-purple-500 focus:ring-purple-500 border-purple-300">
+          <span class="text-[11px] sm:text-xs font-bold text-purple-700 leading-snug">ให้เซิร์ฟเวอร์ (Supabase) ส่งสรุปรายวันอัตโนมัติทุกเช้า แม้ไม่ได้เปิดเว็บ <span class="font-medium block text-purple-600/80">ต้องตั้งค่า Edge Function ก่อน ถ้าเปิดข้อนี้ เว็บจะไม่ส่งสรุปรายวันซ้ำตอนเปิดหน้า</span></span>
+        </label>
         
         <div id="testResult" class="hidden text-sm text-center py-2 px-3 rounded-xl mt-3"></div>
         <div class="flex flex-col gap-3 pt-2 border-t border-petal">
@@ -965,6 +973,9 @@ input[type="date"]::-webkit-date-and-time-value {
               <i class="fa-brands fa-discord text-sm mb-1 block"></i> ทดสอบ Discord
             </button>
           </div>
+          <button type="button" onclick="testWebhookSettings(this)" class="w-full py-2.5 rounded-2xl text-[11px] sm:text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition-colors border border-emerald-200 shadow-sm">
+            <i class="fa-solid fa-link text-sm mb-1 block"></i> ทดสอบ Webhook
+          </button>
           <button type="button" onclick="manualSendDailySummary(this)" class="w-full py-3.5 rounded-2xl text-sm font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 transition-colors border-2 border-purple-200 shadow-sm">
             <i class="fa-solid fa-calendar-check mr-1.5"></i> ทดสอบส่งแจ้งเตือนรายวัน
           </button>
@@ -1267,7 +1278,8 @@ input[type="date"]::-webkit-date-and-time-value {
       <i class="fa-solid fa-triangle-exclamation"></i>
     </div>
     <h3 class="text-xl font-bold text-espresso mb-2">ลบบัญชีนี้ใช่หรือไม่?</h3>
-    <p class="text-sm font-medium text-espresso/70 mb-6">ข้อมูลทั้งหมดในบัญชีนี้จะถูกลบและไม่สามารถกู้คืนได้</p>
+    <p class="text-sm font-medium text-espresso/70 mb-4">ข้อมูลทั้งหมดในบัญชีนี้จะถูกลบออกจาก Supabase ทันทีและไม่สามารถกู้คืนได้</p>
+    <p class="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2.5 mb-5">ลบเฉพาะตัวบัญชี ยอดรายรับ/รายจ่ายที่เคยบันทึกจะไม่ถูกลบ</p>
     <div class="flex gap-3">
       <button onclick="closeDeleteModal()" class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-espresso bg-white border border-petal hover:bg-petal-light transition-colors">ยกเลิก</button>
       <button onclick="executeDeleteAccount(this)" class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-white bg-red-500 border-2 border-transparent hover:bg-red-600 shadow-soft transition-colors">ลบบัญชี</button>
@@ -1495,60 +1507,146 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const SUPABASE_ADMIN_ID = '7882e438-fad7-40c2-9039-3eee3ee5fe82';
 let sb = null;
 const cloudTimers = {};
+const cloudPending = {};
 let cloudErrorShown = false;
+
+// รูปโลโก้/แบนเนอร์เป็น base64 ก้อนใหญ่ -> แยกเก็บคนละ row กับ settings เพื่อไม่ต้องอัปโหลด/ดาวน์โหลดซ้ำทุกครั้งที่แก้ตั้งค่า
+const IMAGE_SETTING_KEYS = { logo_base64: 'monali_img_logo', banner_base64: 'monali_img_banner' };
+const SYNC_META_KEY = 'monali_sync_meta';   // เก็บ updated_at ล่าสุดของแต่ละ key ที่ซิงก์แล้ว
+const IMG_SYNCED_KEY = 'monali_img_synced'; // hash ของรูปที่อัปขึ้น cloud แล้ว
 
 function cloudReady() {
   return !!(sb && currentAdmin && currentAdmin.cloud);
 }
 
-function queueCloudSave(key, data) {
-  if (!cloudReady()) return;
-  clearTimeout(cloudTimers[key]);
-  cloudTimers[key] = setTimeout(async () => {
-    try {
-      let value = data;
-      if (key === STORAGE_KEY.SET && data && typeof data === 'object') {
-        value = { ...data };
-        delete value.admin_pass;
-      }
-      const { error } = await sb.from('app_data').upsert({ key: key, value: value, updated_at: new Date().toISOString() });
-      if (error) throw error;
-      cloudErrorShown = false;
-    } catch (e) {
-      console.error('Supabase sync error:', e);
-      if (!cloudErrorShown) {
-        cloudErrorShown = true;
-        showToast('ซิงก์ Supabase ไม่สำเร็จ: ' + (e.message || e) + ' ❌');
+function quickHash(str) {
+  if (!str) return '';
+  let h = 0;
+  const step = Math.max(1, Math.floor(str.length / 2000));
+  for (let i = 0; i < str.length; i += step) h = (h * 31 + str.charCodeAt(i)) | 0;
+  return str.length + ':' + h;
+}
+
+function getSyncMeta() { try { return JSON.parse(localStorage.getItem(SYNC_META_KEY) || '{}'); } catch (e) { return {}; } }
+function setSyncMeta(key, ts) { const m = getSyncMeta(); m[key] = ts; localStorage.setItem(SYNC_META_KEY, JSON.stringify(m)); }
+
+async function upsertCloud(key, value) {
+  const ts = new Date().toISOString();
+  const { error } = await sb.from('app_data').upsert({ key: key, value: value, updated_at: ts });
+  if (error) throw error;
+  setSyncMeta(key, ts);
+}
+
+async function doCloudSave(key, data) {
+  let value = data;
+  if (key === STORAGE_KEY.SET && data && typeof data === 'object') {
+    value = { ...data };
+    delete value.admin_pass;
+    // ดึงรูปออกไปเก็บแยก row (อัปเฉพาะตอนรูปเปลี่ยน)
+    const synced = (() => { try { return JSON.parse(localStorage.getItem(IMG_SYNCED_KEY) || '{}'); } catch (e) { return {}; } })();
+    for (const [field, imgKey] of Object.entries(IMAGE_SETTING_KEYS)) {
+      const img = value[field];
+      delete value[field];
+      if (img && synced[field] !== quickHash(img)) {
+        await upsertCloud(imgKey, { data: img });
+        synced[field] = quickHash(img);
+        localStorage.setItem(IMG_SYNCED_KEY, JSON.stringify(synced));
       }
     }
-  }, 800);
+  }
+  await upsertCloud(key, value);
+}
+
+function queueCloudSave(key, data) {
+  if (!cloudReady()) return;
+  cloudPending[key] = data;
+  clearTimeout(cloudTimers[key]);
+  cloudTimers[key] = setTimeout(() => flushCloudSave(key), 800);
+}
+
+// ส่งขึ้น Supabase ทันที (ไม่รอ debounce) และรอผลจริง — ใช้ตอนลบข้อมูล
+async function flushCloudSave(key, { throwOnError = false } = {}) {
+  if (!cloudReady()) return;
+  clearTimeout(cloudTimers[key]);
+  const data = key in cloudPending ? cloudPending[key] : getFromLocal(key, key === STORAGE_KEY.SET ? '{}' : '[]');
+  delete cloudPending[key];
+  try {
+    await doCloudSave(key, data);
+    cloudErrorShown = false;
+  } catch (e) {
+    console.error('Supabase sync error:', e);
+    if (!cloudErrorShown) {
+      cloudErrorShown = true;
+      showToast('ซิงก์ Supabase ไม่สำเร็จ: ' + (e.message || e) + ' ❌');
+    }
+    if (throwOnError) throw e;
+  }
 }
 
 async function pullFromCloud() {
-  const { data, error } = await sb.from('app_data').select('key,value');
-  if (error) throw error;
-  const map = {};
-  (data || []).forEach(r => { map[r.key] = r.value; });
-  for (const key of Object.values(STORAGE_KEY)) {
-    if (map[key] !== undefined && map[key] !== null) {
+  // 1) ขอแค่ key + updated_at (เล็กมาก) เพื่อดูว่าอะไรเปลี่ยนจริง
+  const { data: metaRows, error: metaErr } = await sb.from('app_data').select('key,updated_at');
+  if (metaErr) throw metaErr;
+  const remote = {};
+  (metaRows || []).forEach(r => { remote[r.key] = r.updated_at; });
+  const meta = getSyncMeta();
+  const changed = [];
+  const allKeys = [...Object.values(STORAGE_KEY), ...Object.values(IMAGE_SETTING_KEYS)];
+  for (const key of allKeys) {
+    if (remote[key] === undefined) continue;
+    const have = localStorage.getItem(key) !== null || Object.values(IMAGE_SETTING_KEYS).includes(key);
+    const same = meta[key] && Date.parse(meta[key]) === Date.parse(remote[key]);
+    if (!same || !have) changed.push(key);
+  }
+  let anyChanged = false;
+  if (changed.length) {
+    // 2) ดึงเฉพาะ key ที่เปลี่ยน (รูปใหญ่ไม่ถูกดึงถ้าไม่เปลี่ยน)
+    const { data, error } = await sb.from('app_data').select('key,value').in('key', changed);
+    if (error) throw error;
+    const map = {};
+    (data || []).forEach(r => { map[r.key] = r.value; });
+    for (const key of changed) {
       let v = map[key];
+      if (v === undefined || v === null) continue;
       if (key === STORAGE_KEY.SET) {
         const local = getFromLocal(key, '{}');
         v = { ...v };
         if (local.admin_pass) v.admin_pass = local.admin_pass;
+        // รูปรูปแบบเก่ายังฝังใน settings / รูปแบบใหม่เก็บแยก -> คงรูปที่มีในเครื่องไว้ก่อน
+        for (const field of Object.keys(IMAGE_SETTING_KEYS)) {
+          if (!v[field] && local[field]) v[field] = local[field];
+        }
+        localStorage.setItem(key, JSON.stringify(v));
+      } else if (Object.values(IMAGE_SETTING_KEYS).includes(key)) {
+        const field = Object.keys(IMAGE_SETTING_KEYS).find(f => IMAGE_SETTING_KEYS[f] === key);
+        const st = getFromLocal(STORAGE_KEY.SET, '{}');
+        if (v && v.data) {
+          st[field] = v.data;
+          localStorage.setItem(STORAGE_KEY.SET, JSON.stringify(st));
+          const synced = (() => { try { return JSON.parse(localStorage.getItem(IMG_SYNCED_KEY) || '{}'); } catch (e) { return {}; } })();
+          synced[field] = quickHash(v.data);
+          localStorage.setItem(IMG_SYNCED_KEY, JSON.stringify(synced));
+        }
+      } else {
+        localStorage.setItem(key, JSON.stringify(v));
       }
-      localStorage.setItem(key, JSON.stringify(v));
-    } else {
-      const raw = localStorage.getItem(key);
-      if (raw) {
-        try {
-          const lv = JSON.parse(raw);
-          const hasData = Array.isArray(lv) ? lv.length > 0 : (lv && Object.keys(lv).length > 0);
-          if (hasData) queueCloudSave(key, lv);
-        } catch (e) {}
-      }
+      setSyncMeta(key, remote[key]);
+      anyChanged = true;
     }
   }
+  // 3) key ไหนยังไม่มีบน cloud แต่มีในเครื่อง -> อัปขึ้นไป
+  for (const key of Object.values(STORAGE_KEY)) {
+    if (remote[key] !== undefined) continue;
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      try {
+        const lv = JSON.parse(raw);
+        const hasData = Array.isArray(lv) ? lv.length > 0 : (lv && Object.keys(lv).length > 0);
+        if (hasData) queueCloudSave(key, lv);
+      } catch (e) {}
+    }
+  }
+  return anyChanged;
 }
 
 async function initSupabase() {
@@ -1560,7 +1658,6 @@ async function initSupabase() {
     const remembered = localStorage.getItem('monali_remember_device') === 'true';
     if (user && user.id === SUPABASE_ADMIN_ID && remembered) {
       currentAdmin = { email: user.email, cloud: true };
-      await pullFromCloud();
     } else {
       currentAdmin = null;
       if (user) await sb.auth.signOut();
@@ -1571,6 +1668,21 @@ async function initSupabase() {
     console.error('Supabase init error:', e);
   }
 }
+
+// ดึงข้อมูลจาก cloud เบื้องหลัง (หน้าเว็บแสดงข้อมูลในเครื่องก่อนทันที แล้วค่อยอัปเดตถ้ามีของใหม่)
+let cloudPullBusy = false;
+async function backgroundCloudPull() {
+  if (!cloudReady() || cloudPullBusy) return;
+  cloudPullBusy = true;
+  try {
+    const changed = await pullFromCloud();
+    if (changed) await loadData();
+  } catch (e) {
+    console.error('Cloud pull error:', e);
+  } finally {
+    cloudPullBusy = false;
+  }
+}
 // ---------------------------
 
 // ---------------------------
@@ -1578,6 +1690,8 @@ async function initSupabase() {
 let netflixAccounts = [];
 let telegramSettings = { token: '', chatId: '' };
 let discordSettings = { webhookUrl: '' };
+let webhookSettings = { url: '' };
+let serverDailyEnabled = false;
 let expandedAccounts = new Set();
 let accountIdToDelete = null;
 let screenToDelete = { id: null, accountId: null, screenIndex: null };
@@ -1688,13 +1802,13 @@ function updateAppIcons(base64Url) {
         {
           src: base64Url,
           sizes: "512x512",
-          type: "image/png",
+          type: "image/jpeg",
           purpose: "any maskable"
         },
         {
           src: base64Url,
           sizes: "192x192",
-          type: "image/png",
+          type: "image/jpeg",
           purpose: "any"
         }
       ]
@@ -1728,6 +1842,10 @@ window.addEventListener('DOMContentLoaded', async () => {
   await initSupabase();
   
   await loadData();
+  backgroundCloudPull();
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') backgroundCloudPull();
+  });
 
   setInterval(() => {
     cachedTodayTime = new Date().setHours(0,0,0,0);
@@ -1788,6 +1906,8 @@ async function loadData() {
     telegramSettings.token = stMap['tg_token'] || '';
     telegramSettings.chatId = stMap['tg_chat_id'] || '';
     discordSettings.webhookUrl = stMap['discord_webhook'] || '';
+    webhookSettings.url = stMap['webhook_url'] || '';
+    serverDailyEnabled = stMap['server_daily'] === true;
 
     if (stMap['logo_base64']) {
       const logoImg = document.getElementById('storeLogo');
@@ -3248,13 +3368,25 @@ function closeDeleteModal() {
 function executeDeleteAccount(btn) {
   requireAdminAuthAction(btn, async () => {
     if (!accountIdToDelete) return;
-    netflixAccounts = netflixAccounts.filter(a => a.id !== accountIdToDelete);
+    const delId = accountIdToDelete;
+
+    // ลบบน Supabase ก่อน (ผ่านฟังก์ชัน delete_main_account) ลบเฉพาะตัวบัญชี ไม่แตะรายการรายรับ/รายจ่าย
+    if (cloudReady()) {
+      const { error } = await sb.rpc('delete_main_account', { p_account_id: delId });
+      if (error) {
+        console.error('delete_main_account error:', error);
+        showToast('ลบบน Supabase ไม่สำเร็จ ยังไม่ได้ลบข้อมูล ❌ (' + (error.message || error) + ')');
+        return;
+      }
+    }
+
+    netflixAccounts = netflixAccounts.filter(a => a.id !== delId);
     saveToLocal(STORAGE_KEY.ACCOUNTS, netflixAccounts);
-    
-    expandedAccounts.delete(accountIdToDelete);
+    expandedAccounts.delete(delId);
+
     await loadData();
     closeDeleteModal();
-    showToast('ลบข้อมูลเรียบร้อยแล้วค่ะ 🗑');
+    showToast('ลบบัญชีออกจาก Supabase แล้ว (ยอดที่บันทึกยังอยู่ครบ) 🗑');
   });
 }
 
@@ -3263,6 +3395,8 @@ function openSettingsModal() {
   document.getElementById('tgToken').value = telegramSettings.token || '';
   document.getElementById('tgChatId').value = telegramSettings.chatId || '';
   document.getElementById('discordWebhook').value = discordSettings.webhookUrl || '';
+  document.getElementById('genericWebhook').value = webhookSettings.url || '';
+  document.getElementById('serverDailyCheckbox').checked = !!serverDailyEnabled;
   document.getElementById('testResult').className = 'hidden text-sm text-center py-2 px-3 rounded-xl mt-3';
   animateModalOpen('settingsModal');
 }
@@ -3275,14 +3409,21 @@ async function saveNotificationSettings(e) {
     const token = document.getElementById('tgToken').value.trim();
     const chatId = document.getElementById('tgChatId').value.trim();
     const discordUrl = document.getElementById('discordWebhook').value.trim();
+    const genericUrl = document.getElementById('genericWebhook').value.trim();
+    const serverDaily = document.getElementById('serverDailyCheckbox').checked;
+    if (genericUrl && !/^https?:\/\//i.test(genericUrl)) { showToast('Webhook URL ต้องขึ้นต้นด้วย http:// หรือ https:// ❌'); return; }
     
     saveSettingsValue('tg_token', token);
     saveSettingsValue('tg_chat_id', chatId);
     saveSettingsValue('discord_webhook', discordUrl);
+    saveSettingsValue('webhook_url', genericUrl);
+    saveSettingsValue('server_daily', serverDaily);
     
     telegramSettings.token = token;
     telegramSettings.chatId = chatId;
     discordSettings.webhookUrl = discordUrl;
+    webhookSettings.url = genericUrl;
+    serverDailyEnabled = serverDaily;
     
     closeSettingsModal();
     showToast('บันทึกการตั้งค่าการแจ้งเตือนแล้ว 🔔');
@@ -3378,6 +3519,75 @@ async function testDiscordSettings(btn) {
   btn.innerHTML = originalText; btn.disabled = false;
 }
 
+function htmlToPlain(text) {
+  return String(text || '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
+}
+
+async function sendWebhookMessage(text, eventName = 'notification') {
+  const url = webhookSettings.url;
+  if (!url) return { success: false, error: 'ยังไม่ได้ตั้งค่า Webhook URL' };
+  const plain = htmlToPlain(text);
+  const storeEl = document.getElementById('storeNameMain');
+  const payload = {
+    event: 'monali.' + eventName,
+    store: storeEl ? storeEl.textContent.trim() : 'MONALI',
+    text: plain,
+    content: plain,
+    message: plain,
+    html: text,
+    sent_at: new Date().toISOString()
+  };
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (response.ok) return { success: true };
+    const err = await response.text();
+    return { success: false, error: 'HTTP ' + response.status + ' ' + err.slice(0, 120) };
+  } catch (error) {
+    // เซิร์ฟเวอร์ปลายทางอาจไม่เปิด CORS: ลองส่งแบบ no-cors (ไม่เห็นผลตอบกลับ)
+    try {
+      await fetch(url, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
+      return { success: true, unverified: true };
+    } catch (e2) {
+      return { success: false, error: error.message };
+    }
+  }
+}
+
+async function testWebhookSettings(btn) {
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+  btn.disabled = true;
+  const tempUrl = document.getElementById('genericWebhook').value.trim();
+  const resultDiv = document.getElementById('testResult');
+  resultDiv.classList.remove('hidden');
+  if (!/^https?:\/\//i.test(tempUrl)) {
+    resultDiv.textContent = 'กรุณากรอก Webhook URL (ขึ้นต้นด้วย https://) ก่อนทดสอบ';
+    resultDiv.className = 'text-sm font-bold text-center py-2.5 px-3 rounded-xl mt-3 text-red-600 bg-red-50 border border-red-200 block';
+    btn.innerHTML = originalText; btn.disabled = false; return;
+  }
+  const oldUrl = webhookSettings.url;
+  webhookSettings.url = tempUrl;
+  const result = await sendWebhookMessage('👋 <b>ทดสอบระบบแจ้งเตือน MONALI</b>\nเชื่อมต่อ Webhook สำเร็จ! ✨', 'test');
+  webhookSettings.url = oldUrl;
+  if (result.success) {
+    resultDiv.innerHTML = result.unverified
+      ? '<i class="fa-solid fa-circle-info mr-1"></i> ส่งแล้ว (ปลายทางไม่เปิด CORS จึงยืนยันผลไม่ได้) ตรวจที่ปลายทางอีกครั้ง'
+      : '<i class="fa-solid fa-check-circle mr-1"></i> ส่งสำเร็จ ตรวจสอบที่ปลายทางได้เลย';
+    resultDiv.className = 'text-sm font-bold text-center py-2.5 px-3 rounded-xl mt-3 text-emerald-600 bg-emerald-50 border border-emerald-200 block';
+  } else {
+    resultDiv.innerHTML = '<i class="fa-solid fa-circle-exclamation mr-1"></i> ส่งไม่สำเร็จ: ' + escapeHTML(result.error);
+    resultDiv.className = 'text-sm font-bold text-center py-2.5 px-3 rounded-xl mt-3 text-red-600 bg-red-50 border border-red-200 block';
+  }
+  btn.innerHTML = originalText; btn.disabled = false;
+}
+
 async function sendAccountingSummary(btn) {
   const originalText = btn.innerHTML;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> กำลังส่ง...';
@@ -3399,6 +3609,10 @@ async function sendAccountingSummary(btn) {
     const resDc = await sendDiscordMessage(message);
     if (resDc.success) successCount++;
   }
+  if (webhookSettings.url) {
+    const resWh = await sendWebhookMessage(message, 'accounting_summary');
+    if (resWh.success) successCount++;
+  }
   
   if (successCount > 0) {
     showToast('ส่งสรุปยอดบัญชีเรียบร้อยแล้ว ✨');
@@ -3412,7 +3626,9 @@ async function sendAccountingSummary(btn) {
 }
 
 async function checkDailyNotifications() {
-  if (!telegramSettings.token || !telegramSettings.chatId) return;
+  if (serverDailyEnabled) return;
+  const hasChannel = (telegramSettings.token && telegramSettings.chatId) || discordSettings.webhookUrl || webhookSettings.url;
+  if (!hasChannel) return;
 
   const todayStr = new Date().toLocaleDateString('en-CA');
   const localLastRun = localStorage.getItem('monali_last_notif_date');
@@ -3490,6 +3706,9 @@ async function sendDailySummary() {
   }
   if (discordSettings.webhookUrl) {
     await sendDiscordMessage(message);
+  }
+  if (webhookSettings.url) {
+    await sendWebhookMessage(message, 'daily_summary');
   }
 }
 
@@ -3929,12 +4148,12 @@ function handleLogoUpload(event) {
     img.onload = async function() {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      canvas.width = img.width > 512 ? 512 : img.width;
+      canvas.width = img.width > 256 ? 256 : img.width;
       canvas.height = img.height * (canvas.width / img.width);
       ctx.fillStyle = "#F5F0E6";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      const compressedBase64 = canvas.toDataURL('image/png', 1.0);
+      const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
       try {
         saveSettingsValue('logo_base64', compressedBase64);
         const logoImg = document.getElementById('storeLogo');
@@ -3962,12 +4181,12 @@ function handleBannerUpload(event) {
     img.onload = async function() {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      canvas.width = img.width > 1200 ? 1200 : img.width;
+      canvas.width = img.width > 900 ? 900 : img.width;
       canvas.height = img.height * (canvas.width / img.width);
       ctx.fillStyle = "#F5F0E6";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      const compressedBase64 = canvas.toDataURL('image/png', 0.8);
+      const compressedBase64 = canvas.toDataURL('image/jpeg', 0.72);
       try {
         saveSettingsValue('banner_base64', compressedBase64);
         const bannerImg = document.getElementById('storeBanner');
