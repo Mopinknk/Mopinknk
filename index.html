@@ -1482,11 +1482,6 @@ function generateId() {
   return 'id_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
 }
 
-function saveToLocal(key, data) {
-  localStorage.setItem(key, JSON.stringify(data));
-  queueCloudSave(key, data);
-}
-
 function getFromLocal(key, defaultValue = '[]') {
   try {
     return JSON.parse(localStorage.getItem(key) || defaultValue);
@@ -1501,24 +1496,50 @@ function saveSettingsValue(key, value) {
   saveToLocal(STORAGE_KEY.SET, stMap);
 }
 
-// --- SUPABASE SYNC ---
+// --- SUPABASE SYNC (merge ตามรายการ รองรับหลายเครื่องพร้อมกัน) ---
 const SUPABASE_URL = 'https://dlepafxydlugwkilbqbo.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRsZXBhZnh5ZGx1Z3draWxicWJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3MzA5NzQsImV4cCI6MjEwNjMwNjk3NH0.wOyXhfs9ZqEOiSUD1HRQSvkq1gZBVbcLWRMMhkClrmU';
 const SUPABASE_ADMIN_ID = '7882e438-fad7-40c2-9039-3eee3ee5fe82';
 let sb = null;
 const cloudTimers = {};
-const cloudPending = {};
-let cloudErrorShown = false;
+const retryTimers = {};
+const flushChain = {};
+const saveVer = {};
+let lastErrToast = 0;
 
-// รูปโลโก้/แบนเนอร์เป็น base64 ก้อนใหญ่ -> แยกเก็บคนละ row กับ settings เพื่อไม่ต้องอัปโหลด/ดาวน์โหลดซ้ำทุกครั้งที่แก้ตั้งค่า
+// รูปโลโก้/แบนเนอร์เป็น base64 ก้อนใหญ่ -> แยกเก็บคนละ row กับ settings
 const IMAGE_SETTING_KEYS = { logo_base64: 'monali_img_logo', banner_base64: 'monali_img_banner' };
-const SYNC_META_KEY = 'monali_sync_meta';   // เก็บ updated_at ล่าสุดของแต่ละ key ที่ซิงก์แล้ว
+const SYNC_META_KEY = 'monali_sync_meta';   // updated_at ล่าสุดของแต่ละ key ที่เรารู้ว่าตรงกับ cloud
 const IMG_SYNCED_KEY = 'monali_img_synced'; // hash ของรูปที่อัปขึ้น cloud แล้ว
+const DIRTY_KEY = 'monali_dirty';           // key ที่บันทึกในเครื่องแล้วแต่ยังไม่ยืนยันว่าขึ้น Supabase
+const TOMB_KEY = 'monali_tombstones';       // บันทึกว่ารายการไหนถูก "กดลบ" (กันรายการที่ลบแล้วกลับมาจากเครื่องอื่น)
+const ARRAY_SYNC_KEYS = [STORAGE_KEY.ACCOUNTS, STORAGE_KEY.TX, STORAGE_KEY.APPS, STORAGE_KEY.TPL];
 
-function cloudReady() {
-  return !!(sb && currentAdmin && currentAdmin.cloud);
+function cloudReady() { return !!(sb && currentAdmin && currentAdmin.cloud); }
+function getJSON(key, def) { try { const v = JSON.parse(localStorage.getItem(key)); return v === null || v === undefined ? def : v; } catch (e) { return def; } }
+function getSyncMeta() { return getJSON(SYNC_META_KEY, {}); }
+function setSyncMeta(key, ts) { const m = getSyncMeta(); m[key] = ts; localStorage.setItem(SYNC_META_KEY, JSON.stringify(m)); }
+function getDirty() { return getJSON(DIRTY_KEY, {}); }
+function setDirty(key, on) {
+  const d = getDirty();
+  if (on) d[key] = Date.now(); else delete d[key];
+  localStorage.setItem(DIRTY_KEY, JSON.stringify(d));
+  updateSyncBadge();
 }
-
+function updateSyncBadge() {
+  try {
+    let el = document.getElementById('syncBadge');
+    const n = Object.keys(getDirty()).length;
+    if (!n) { if (el) el.remove(); return; }
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'syncBadge';
+      el.style.cssText = 'position:fixed;left:12px;bottom:12px;z-index:99998;background:#fff;border:2px solid #E29EB3;color:#3E2723;font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;box-shadow:0 2px 10px rgba(0,0,0,.12);pointer-events:none';
+      (document.body || document.documentElement).appendChild(el);
+    }
+    el.textContent = '⏳ กำลังซิงก์ขึ้น Supabase...';
+  } catch (e) {}
+}
 function quickHash(str) {
   if (!str) return '';
   let h = 0;
@@ -1526,126 +1547,320 @@ function quickHash(str) {
   for (let i = 0; i < str.length; i += step) h = (h * 31 + str.charCodeAt(i)) | 0;
   return str.length + ':' + h;
 }
+function readLocalValue(key) { return getFromLocal(key, ARRAY_SYNC_KEYS.includes(key) ? '[]' : '{}'); }
 
-function getSyncMeta() { try { return JSON.parse(localStorage.getItem(SYNC_META_KEY) || '{}'); } catch (e) { return {}; } }
-function setSyncMeta(key, ts) { const m = getSyncMeta(); m[key] = ts; localStorage.setItem(SYNC_META_KEY, JSON.stringify(m)); }
+// ---------- ประทับเวลาแก้ไข + บันทึกการลบ (ทำอัตโนมัติทุกครั้งที่ saveToLocal) ----------
+function stripRec(r) { if (!r || typeof r !== 'object') return r; const c = { ...r }; delete c._u; return c; }
 
-async function upsertCloud(key, value) {
+function stampLocalChange(key, data) {
+  const now = Date.now();
+  const prev = getJSON(key, null);
+  if (ARRAY_SYNC_KEYS.includes(key) && Array.isArray(data)) {
+    const prevMap = new Map();
+    if (Array.isArray(prev)) prev.forEach(r => { if (r && r.id) prevMap.set(r.id, r); });
+    const nowIds = new Set();
+    data.forEach(r => {
+      if (!r || typeof r !== 'object' || !r.id) return;
+      nowIds.add(r.id);
+      const p = prevMap.get(r.id);
+      if (!p || JSON.stringify(stripRec(p)) !== JSON.stringify(stripRec(r))) r._u = now;
+      else if (p._u) r._u = p._u;
+    });
+    const dead = [];
+    prevMap.forEach((p, id) => { if (!nowIds.has(id)) dead.push(id); });
+    if (dead.length) {
+      const t = getJSON(TOMB_KEY, {});
+      t[key] = t[key] || {};
+      dead.forEach(id => { t[key][id] = now; });
+      localStorage.setItem(TOMB_KEY, JSON.stringify(t));
+      saveVer[TOMB_KEY] = (saveVer[TOMB_KEY] || 0) + 1;
+      setDirty(TOMB_KEY, true);
+      queueCloudSave(TOMB_KEY);
+    }
+  } else if (key === STORAGE_KEY.SET && data && typeof data === 'object' && !Array.isArray(data)) {
+    const p = (prev && typeof prev === 'object') ? prev : {};
+    const fu = { ...(p._fu || {}), ...(data._fu || {}) };
+    Object.keys(data).forEach(f => {
+      if (f === '_fu' || f === 'admin_pass') return;
+      if (JSON.stringify(data[f]) !== JSON.stringify(p[f])) fu[f] = now;
+    });
+    data._fu = fu;
+  }
+}
+
+function saveToLocal(key, data) {
+  stampLocalChange(key, data);
+  localStorage.setItem(key, JSON.stringify(data));
+  saveVer[key] = (saveVer[key] || 0) + 1;
+  setDirty(key, true);
+  queueCloudSave(key);
+}
+
+// ---------- ฟังก์ชัน merge ----------
+function mergeTomb(a, b) {
+  const out = {};
+  [a, b].forEach(t => {
+    Object.keys(t || {}).forEach(k => {
+      out[k] = out[k] || {};
+      Object.entries(t[k] || {}).forEach(([id, ts]) => { out[k][id] = Math.max(out[k][id] || 0, ts || 0); });
+    });
+  });
+  const cutoff = Date.now() - 60 * 86400000;
+  Object.keys(out).forEach(k => Object.keys(out[k]).forEach(id => { if (out[k][id] < cutoff) delete out[k][id]; }));
+  return out;
+}
+
+function mergeArrays(local, remote, tomb) {
+  const L = Array.isArray(local) ? local : [];
+  const R = Array.isArray(remote) ? remote : [];
+  const t = tomb || {};
+  const rMap = new Map();
+  R.forEach(r => { if (r && r.id) rMap.set(r.id, r); });
+  const out = [];
+  const seen = new Set();
+  L.forEach(l => {
+    if (!l || !l.id) { out.push(l); return; }
+    seen.add(l.id);
+    if (t[l.id]) return;                 // ถูกกดลบแล้ว
+    const r = rMap.get(l.id);
+    if (!r) { out.push(l); return; }
+    out.push((r._u || 0) > (l._u || 0) ? r : l);   // อันที่แก้ล่าสุดชนะ
+  });
+  R.forEach(r => {
+    if (!r || !r.id) { if (!out.some(x => JSON.stringify(x) === JSON.stringify(r))) out.push(r); return; }
+    if (seen.has(r.id) || t[r.id]) return;
+    out.push(r);
+  });
+  return out;
+}
+
+function mergeSettings(local, remote) {
+  const l = (local && typeof local === 'object') ? local : {};
+  const r = (remote && typeof remote === 'object') ? remote : {};
+  const lf = l._fu || {}, rf = r._fu || {};
+  const out = { ...l };
+  out._fu = { ...lf };
+  Object.keys(r).forEach(f => {
+    if (f === '_fu') return;
+    if (!(f in l) || (rf[f] || 0) > (lf[f] || 0)) { out[f] = r[f]; out._fu[f] = rf[f] || 0; }
+  });
+  return out;
+}
+
+function mergeFor(key, local, remote, tombAll) {
+  if (key === TOMB_KEY) return mergeTomb(local, remote);
+  if (key === STORAGE_KEY.SET) return mergeSettings(local, remote);
+  return mergeArrays(local, remote, (tombAll || {})[key]);
+}
+
+function stableStr(v) {
+  if (Array.isArray(v)) return '[' + v.map(stableStr).join(',') + ']';
+  if (v && typeof v === 'object') return '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + stableStr(v[k])).join(',') + '}';
+  return JSON.stringify(v);
+}
+// เทียบข้อมูลโดยไม่สนลำดับ (ลำดับรายการ/ลำดับ key ต่างกันไม่ถือว่าเปลี่ยน) กันส่งไปมาไม่รู้จบ
+function canon(key, v) {
+  if (Array.isArray(v)) return v.map(stableStr).sort().join('|');
+  return stableStr(v);
+}
+
+function prepareForCloud(key, value) {
+  if (key === STORAGE_KEY.SET && value && typeof value === 'object') {
+    const v = { ...value };
+    delete v.admin_pass;
+    Object.keys(IMAGE_SETTING_KEYS).forEach(f => { delete v[f]; });
+    return v;
+  }
+  return value;
+}
+
+// ---------- เขียนขึ้น cloud แบบปลอดภัย (optimistic locking + merge เมื่อมีคนอื่นแก้ไปก่อน) ----------
+async function upsertImageRow(key, value) {
   const ts = new Date().toISOString();
   const { error } = await sb.from('app_data').upsert({ key: key, value: value, updated_at: ts });
   if (error) throw error;
   setSyncMeta(key, ts);
 }
 
-async function doCloudSave(key, data) {
-  let value = data;
-  if (key === STORAGE_KEY.SET && data && typeof data === 'object') {
-    value = { ...data };
-    delete value.admin_pass;
-    // ดึงรูปออกไปเก็บแยก row (อัปเฉพาะตอนรูปเปลี่ยน)
-    const synced = (() => { try { return JSON.parse(localStorage.getItem(IMG_SYNCED_KEY) || '{}'); } catch (e) { return {}; } })();
-    for (const [field, imgKey] of Object.entries(IMAGE_SETTING_KEYS)) {
-      const img = value[field];
-      delete value[field];
-      if (img && synced[field] !== quickHash(img)) {
-        await upsertCloud(imgKey, { data: img });
-        synced[field] = quickHash(img);
-        localStorage.setItem(IMG_SYNCED_KEY, JSON.stringify(synced));
-      }
+async function syncImages(settings) {
+  const synced = getJSON(IMG_SYNCED_KEY, {});
+  for (const [field, imgKey] of Object.entries(IMAGE_SETTING_KEYS)) {
+    const img = settings && settings[field];
+    if (img && synced[field] !== quickHash(img)) {
+      await upsertImageRow(imgKey, { data: img });
+      synced[field] = quickHash(img);
+      localStorage.setItem(IMG_SYNCED_KEY, JSON.stringify(synced));
     }
   }
-  await upsertCloud(key, value);
 }
 
-function queueCloudSave(key, data) {
-  if (!cloudReady()) return;
-  cloudPending[key] = data;
-  clearTimeout(cloudTimers[key]);
-  cloudTimers[key] = setTimeout(() => flushCloudSave(key), 800);
+async function fetchRemoteTomb() {
+  const { data, error } = await sb.from('app_data').select('value').eq('key', TOMB_KEY).maybeSingle();
+  if (error) throw error;
+  return (data && data.value) || {};
 }
 
-// ส่งขึ้น Supabase ทันที (ไม่รอ debounce) และรอผลจริง — ใช้ตอนลบข้อมูล
-async function flushCloudSave(key, { throwOnError = false } = {}) {
+// คืน true ถ้ามีการดึงข้อมูลของเครื่องอื่นมารวมเข้าเครื่องนี้ (ต้องวาดหน้าใหม่)
+async function syncKey(key) {
+  let changedLocal = false;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const local = readLocalValue(key);
+    if (key === STORAGE_KEY.SET) await syncImages(local);
+    const payload = prepareForCloud(key, local);
+    const base = getSyncMeta()[key];
+    const ts = new Date(Math.max(Date.now(), base ? Date.parse(base) + 1 : 0)).toISOString();
+
+    if (base) {
+      // ถ้าไม่มีใครแก้ตั้งแต่เรา sync ครั้งก่อน -> เขียนทับได้เลย (เร็ว ไม่ต้องดาวน์โหลดอะไร)
+      const { data, error } = await sb.from('app_data').update({ value: payload, updated_at: ts })
+        .eq('key', key).eq('updated_at', base).select('updated_at');
+      if (error) throw error;
+      if (data && data.length) { setSyncMeta(key, data[0].updated_at); return changedLocal; }
+    }
+
+    // มีเครื่องอื่นแก้ไปก่อน (หรือยังไม่เคยซิงก์) -> ดึงของ cloud มารวมแล้วลองใหม่
+    const { data: row, error: e2 } = await sb.from('app_data').select('value,updated_at').eq('key', key).maybeSingle();
+    if (e2) throw e2;
+    if (!row) {
+      const { data, error } = await sb.from('app_data').insert({ key: key, value: payload, updated_at: ts }).select('updated_at');
+      if (error) { if (error.code === '23505') continue; throw error; }
+      setSyncMeta(key, (data && data[0] && data[0].updated_at) || ts);
+      return changedLocal;
+    }
+    let tombAll = null;
+    if (key !== TOMB_KEY) {
+      tombAll = mergeTomb(getJSON(TOMB_KEY, {}), await fetchRemoteTomb());
+      localStorage.setItem(TOMB_KEY, JSON.stringify(tombAll));
+    }
+    const merged = mergeFor(key, local, row.value, tombAll);
+    if (canon(key, merged) !== canon(key, local)) {
+      localStorage.setItem(key, JSON.stringify(merged));
+      changedLocal = true;
+    }
+    setSyncMeta(key, row.updated_at);
+  }
+  throw new Error('ซิงก์ชนกันหลายครั้ง ลองใหม่อีกครั้ง');
+}
+
+function queueCloudSave(key) {
   if (!cloudReady()) return;
   clearTimeout(cloudTimers[key]);
-  const data = key in cloudPending ? cloudPending[key] : getFromLocal(key, key === STORAGE_KEY.SET ? '{}' : '[]');
-  delete cloudPending[key];
+  cloudTimers[key] = setTimeout(() => flushCloudSave(key), 400);
+}
+
+// ส่งขึ้น Supabase ทันที (ไม่รอ debounce) และรอผลจริง — ใช้ตอนลบ / ปิดแท็บ
+function flushCloudSave(key, opts) {
+  const prev = flushChain[key] || Promise.resolve();
+  const next = prev.catch(() => {}).then(() => flushCloudSaveInner(key, opts || {}));
+  flushChain[key] = next;
+  return next;
+}
+
+async function flushCloudSaveInner(key, { throwOnError = false } = {}) {
+  if (!cloudReady()) return;
+  clearTimeout(cloudTimers[key]);
+  const myVer = saveVer[key] || 0;
   try {
-    await doCloudSave(key, data);
-    cloudErrorShown = false;
+    const changedLocal = await syncKey(key);
+    if ((saveVer[key] || 0) === myVer) setDirty(key, false);
+    clearTimeout(retryTimers[key]); delete retryTimers[key];
+    if (changedLocal && typeof loadData === 'function') loadData();
   } catch (e) {
     console.error('Supabase sync error:', e);
-    if (!cloudErrorShown) {
-      cloudErrorShown = true;
-      showToast('ซิงก์ Supabase ไม่สำเร็จ: ' + (e.message || e) + ' ❌');
+    if (Date.now() - lastErrToast > 8000) {
+      lastErrToast = Date.now();
+      showToast('ซิงก์ Supabase ไม่สำเร็จ จะลองใหม่อัตโนมัติ: ' + (e.message || e) + ' ❌');
     }
+    if (!retryTimers[key]) retryTimers[key] = setTimeout(() => { delete retryTimers[key]; flushCloudSave(key); }, 5000);
     if (throwOnError) throw e;
   }
 }
 
+function flushAllDirty() {
+  if (!cloudReady()) return;
+  Object.keys(getDirty()).forEach(k => { flushCloudSave(k); });
+}
+
+// ---------- ดึงจาก cloud (ดึงเฉพาะที่เปลี่ยน แล้ว merge กับของในเครื่อง ไม่ทับ) ----------
 async function pullFromCloud() {
-  // 1) ขอแค่ key + updated_at (เล็กมาก) เพื่อดูว่าอะไรเปลี่ยนจริง
   const { data: metaRows, error: metaErr } = await sb.from('app_data').select('key,updated_at');
   if (metaErr) throw metaErr;
   const remote = {};
   (metaRows || []).forEach(r => { remote[r.key] = r.updated_at; });
   const meta = getSyncMeta();
-  const changed = [];
-  const allKeys = [...Object.values(STORAGE_KEY), ...Object.values(IMAGE_SETTING_KEYS)];
-  for (const key of allKeys) {
-    if (remote[key] === undefined) continue;
-    const have = localStorage.getItem(key) !== null || Object.values(IMAGE_SETTING_KEYS).includes(key);
+  const dirty = getDirty();
+  const imgKeys = Object.values(IMAGE_SETTING_KEYS);
+  const coreKeys = [TOMB_KEY, ...Object.values(STORAGE_KEY)];
+  const toFetch = [];
+  [...coreKeys, ...imgKeys].forEach(key => {
+    if (remote[key] === undefined) return;
     const same = meta[key] && Date.parse(meta[key]) === Date.parse(remote[key]);
-    if (!same || !have) changed.push(key);
-  }
+    const have = imgKeys.includes(key) || localStorage.getItem(key) !== null;
+    if (!same || !have) toFetch.push(key);
+  });
+
   let anyChanged = false;
-  if (changed.length) {
-    // 2) ดึงเฉพาะ key ที่เปลี่ยน (รูปใหญ่ไม่ถูกดึงถ้าไม่เปลี่ยน)
-    const { data, error } = await sb.from('app_data').select('key,value').in('key', changed);
+  const toPush = new Set();
+
+  if (toFetch.length) {
+    const { data, error } = await sb.from('app_data').select('key,value').in('key', toFetch);
     if (error) throw error;
     const map = {};
     (data || []).forEach(r => { map[r.key] = r.value; });
-    for (const key of changed) {
-      let v = map[key];
+
+    let tombs = getJSON(TOMB_KEY, {});
+    if (map[TOMB_KEY] !== undefined && map[TOMB_KEY] !== null) {
+      const mt = mergeTomb(tombs, map[TOMB_KEY]);
+      localStorage.setItem(TOMB_KEY, JSON.stringify(mt));
+      setSyncMeta(TOMB_KEY, remote[TOMB_KEY]);
+      if (canon(TOMB_KEY, mt) !== canon(TOMB_KEY, mergeTomb(map[TOMB_KEY], {}))) toPush.add(TOMB_KEY);
+      tombs = mt;
+    }
+
+    for (const key of toFetch) {
+      if (key === TOMB_KEY) continue;
+      const v = map[key];
       if (v === undefined || v === null) continue;
-      if (key === STORAGE_KEY.SET) {
-        const local = getFromLocal(key, '{}');
-        v = { ...v };
-        if (local.admin_pass) v.admin_pass = local.admin_pass;
-        // รูปรูปแบบเก่ายังฝังใน settings / รูปแบบใหม่เก็บแยก -> คงรูปที่มีในเครื่องไว้ก่อน
-        for (const field of Object.keys(IMAGE_SETTING_KEYS)) {
-          if (!v[field] && local[field]) v[field] = local[field];
-        }
-        localStorage.setItem(key, JSON.stringify(v));
-      } else if (Object.values(IMAGE_SETTING_KEYS).includes(key)) {
+
+      if (imgKeys.includes(key)) {
         const field = Object.keys(IMAGE_SETTING_KEYS).find(f => IMAGE_SETTING_KEYS[f] === key);
-        const st = getFromLocal(STORAGE_KEY.SET, '{}');
         if (v && v.data) {
+          const st = getFromLocal(STORAGE_KEY.SET, '{}');
           st[field] = v.data;
           localStorage.setItem(STORAGE_KEY.SET, JSON.stringify(st));
-          const synced = (() => { try { return JSON.parse(localStorage.getItem(IMG_SYNCED_KEY) || '{}'); } catch (e) { return {}; } })();
+          const synced = getJSON(IMG_SYNCED_KEY, {});
           synced[field] = quickHash(v.data);
           localStorage.setItem(IMG_SYNCED_KEY, JSON.stringify(synced));
+          anyChanged = true;
         }
-      } else {
-        localStorage.setItem(key, JSON.stringify(v));
+        setSyncMeta(key, remote[key]);
+        continue;
+      }
+
+      const hadLocal = localStorage.getItem(key) !== null;
+      const local = readLocalValue(key);
+      const merged = mergeFor(key, local, v, tombs);
+      if (!hadLocal || canon(key, merged) !== canon(key, local)) {
+        localStorage.setItem(key, JSON.stringify(merged));
+        anyChanged = true;
       }
       setSyncMeta(key, remote[key]);
-      anyChanged = true;
+      // ถ้าผลรวมต่างจากที่อยู่บน cloud (มีของในเครื่องที่ cloud ยังไม่มี) -> ส่งขึ้นไป
+      if (canon(key, prepareForCloud(key, merged)) !== canon(key, prepareForCloud(key, v))) toPush.add(key);
     }
   }
-  // 3) key ไหนยังไม่มีบน cloud แต่มีในเครื่อง -> อัปขึ้นไป
-  for (const key of Object.values(STORAGE_KEY)) {
-    if (remote[key] !== undefined) continue;
-    const raw = localStorage.getItem(key);
-    if (raw) {
-      try {
-        const lv = JSON.parse(raw);
-        const hasData = Array.isArray(lv) ? lv.length > 0 : (lv && Object.keys(lv).length > 0);
-        if (hasData) queueCloudSave(key, lv);
-      } catch (e) {}
-    }
-  }
+
+  // ของที่ค้างส่งอยู่ (dirty) แต่ cloud ไม่ได้เปลี่ยน -> ส่งต่อ
+  Object.keys(dirty).forEach(k => { if (remote[k] !== undefined) toPush.add(k); });
+  // key ที่ยังไม่มีบน cloud แต่มีข้อมูลในเครื่อง -> ส่งขึ้นไป
+  [TOMB_KEY, ...Object.values(STORAGE_KEY)].forEach(key => {
+    if (remote[key] !== undefined) return;
+    const lv = getJSON(key, null);
+    if (lv === null) return;
+    const hasData = Array.isArray(lv) ? lv.length > 0 : (lv && Object.keys(lv).length > 0);
+    if (hasData) toPush.add(key);
+  });
+  toPush.forEach(k => { setDirty(k, true); queueCloudSave(k); });
   return anyChanged;
 }
 
@@ -1845,7 +2060,12 @@ window.addEventListener('DOMContentLoaded', async () => {
   backgroundCloudPull();
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') backgroundCloudPull();
+    else flushAllDirty();
   });
+  window.addEventListener('pagehide', flushAllDirty);
+  setInterval(() => { if (document.visibilityState === 'visible') backgroundCloudPull(); }, 20000);
+  window.addEventListener('online', () => { flushAllDirty(); backgroundCloudPull(); });
+  updateSyncBadge();
 
   setInterval(() => {
     cachedTodayTime = new Date().setHours(0,0,0,0);
@@ -3381,12 +3601,20 @@ function executeDeleteAccount(btn) {
     }
 
     netflixAccounts = netflixAccounts.filter(a => a.id !== delId);
-    saveToLocal(STORAGE_KEY.ACCOUNTS, netflixAccounts);
+    saveToLocal(STORAGE_KEY.ACCOUNTS, netflixAccounts);   // บันทึกด้วยว่า "บัญชีนี้ถูกกดลบ" เพื่อไม่ให้เครื่องอื่นส่งกลับมา
     expandedAccounts.delete(delId);
+
+    let cloudOk = true;
+    if (cloudReady()) {
+      try {
+        await flushCloudSave(TOMB_KEY, { throwOnError: true });
+        await flushCloudSave(STORAGE_KEY.ACCOUNTS, { throwOnError: true });
+      } catch (e) { cloudOk = false; }
+    }
 
     await loadData();
     closeDeleteModal();
-    showToast('ลบบัญชีออกจาก Supabase แล้ว (ยอดที่บันทึกยังอยู่ครบ) 🗑');
+    showToast(cloudOk ? 'ลบบัญชีออกจาก Supabase แล้ว (ยอดที่บันทึกยังอยู่ครบ) 🗑' : 'ลบแล้ว แต่ซิงก์ยังไม่ครบ ระบบจะลองใหม่ให้ ⚠️');
   });
 }
 
