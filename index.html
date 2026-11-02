@@ -963,6 +963,19 @@ input[type="date"]::-webkit-date-and-time-value {
           <span class="text-[11px] sm:text-xs font-bold text-purple-700 leading-snug">ให้เซิร์ฟเวอร์ (Supabase) ส่งสรุปรายวันอัตโนมัติทุกเช้า แม้ไม่ได้เปิดเว็บ <span class="font-medium block text-purple-600/80">ต้องตั้งค่า Edge Function ก่อน ถ้าเปิดข้อนี้ เว็บจะไม่ส่งสรุปรายวันซ้ำตอนเปิดหน้า</span></span>
         </label>
         
+        <div class="pt-3 border-t border-petal">
+          <p class="text-sm font-bold text-espresso mb-2 flex items-center gap-1.5"><i class="fa-solid fa-shield-halved text-emerald-500"></i> สำรอง / กู้คืนข้อมูล</p>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="downloadBackupFile()" class="w-full py-2.5 rounded-2xl text-[11px] sm:text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-200 transition-colors"><i class="fa-solid fa-download mr-1"></i> ดาวน์โหลดไฟล์สำรอง</button>
+            <button type="button" onclick="document.getElementById('restoreFileInput').click()" class="w-full py-2.5 rounded-2xl text-[11px] sm:text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 transition-colors"><i class="fa-solid fa-upload mr-1"></i> กู้คืนจากไฟล์</button>
+          </div>
+          <input type="file" id="restoreFileInput" accept=".json,application/json" class="hidden" onchange="handleRestoreFile(this)">
+          <div class="flex gap-2 mt-2">
+            <select id="cloudBackupSelect" class="flex-1 min-w-0 rounded-2xl border-2 border-petal bg-white px-3 py-2 text-xs text-espresso"></select>
+            <button type="button" onclick="restoreFromCloudBackup(this)" class="shrink-0 px-4 py-2 rounded-2xl text-xs font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 transition-colors">กู้คืนจากคลาวด์</button>
+          </div>
+          <p class="text-[11px] text-espresso/60 font-medium mt-2 leading-snug">ระบบสำรองขึ้นคลาวด์เองวันละครั้ง เก็บย้อนหลัง 7 วัน การกู้คืนจะเพิ่ม/แทนที่รายการ ไม่ลบข้อมูลที่มีอยู่</p>
+        </div>
         <div id="testResult" class="hidden text-sm text-center py-2 px-3 rounded-xl mt-3"></div>
         <div class="flex flex-col gap-3 pt-2 border-t border-petal">
           <div class="grid grid-cols-2 gap-2">
@@ -1512,6 +1525,8 @@ const IMAGE_SETTING_KEYS = { logo_base64: 'monali_img_logo', banner_base64: 'mon
 const SYNC_META_KEY = 'monali_sync_meta';   // updated_at ล่าสุดของแต่ละ key ที่เรารู้ว่าตรงกับ cloud
 const IMG_SYNCED_KEY = 'monali_img_synced'; // hash ของรูปที่อัปขึ้น cloud แล้ว
 const DIRTY_KEY = 'monali_dirty';           // key ที่บันทึกในเครื่องแล้วแต่ยังไม่ยืนยันว่าขึ้น Supabase
+const ADOPT_KEY = 'monali_v2_adopted';
+const PRE_V2_KEY = 'monali_pre_v2_backup';  // สำเนาข้อมูลในเครื่องก่อนเปลี่ยนมาใช้ระบบซิงก์ใหม่
 const TOMB_KEY = 'monali_tombstones';       // บันทึกว่ารายการไหนถูก "กดลบ" (กันรายการที่ลบแล้วกลับมาจากเครื่องอื่น)
 const ARRAY_SYNC_KEYS = [STORAGE_KEY.ACCOUNTS, STORAGE_KEY.TX, STORAGE_KEY.APPS, STORAGE_KEY.TPL];
 
@@ -1552,8 +1567,38 @@ function readLocalValue(key) { return getFromLocal(key, ARRAY_SYNC_KEYS.includes
 // ---------- ประทับเวลาแก้ไข + บันทึกการลบ (ทำอัตโนมัติทุกครั้งที่ saveToLocal) ----------
 function stripRec(r) { if (!r || typeof r !== 'object') return r; const c = { ...r }; delete c._u; return c; }
 
+const HLC_KEY = 'monali_hlc';
+// นาฬิกาแบบ "เรียงเหตุการณ์": การแก้ไขที่เกิดหลังเห็นข้อมูลของเครื่องอื่นจะมีเวลามากกว่าเสมอ แม้นาฬิกาเครื่องเพี้ยน
+function nextStamp() {
+  const cur = Number(localStorage.getItem(HLC_KEY) || 0);
+  const n = Math.max(Date.now(), cur + 1);
+  localStorage.setItem(HLC_KEY, String(n));
+  return n;
+}
+function scanMax(v, stampMode) {
+  let m = 0;
+  const walk = (x, inStamp) => {
+    if (Array.isArray(x)) { x.forEach(y => walk(y, inStamp)); return; }
+    if (x && typeof x === 'object') {
+      for (const k in x) {
+        const val = x[k];
+        if (typeof val === 'number') { if ((k === '_u' || inStamp) && val > m) m = val; }
+        else if (val && typeof val === 'object') walk(val, inStamp || k === '_fu' || k === '_dead');
+      }
+    }
+  };
+  walk(v, !!stampMode);
+  return m;
+}
+function observeStamp(v, stampMode) {
+  const m = scanMax(v, stampMode);
+  if (!m || m > Date.now() + 12 * 3600 * 1000) return;   // ไม่เชื่อเวลาที่ล้ำไปไกลผิดปกติ
+  const cur = Number(localStorage.getItem(HLC_KEY) || 0);
+  if (m > cur) localStorage.setItem(HLC_KEY, String(m));
+}
+
 function stampLocalChange(key, data) {
-  const now = Date.now();
+  const now = nextStamp();
   const prev = getJSON(key, null);
   if (ARRAY_SYNC_KEYS.includes(key) && Array.isArray(data)) {
     const prevMap = new Map();
@@ -1565,6 +1610,23 @@ function stampLocalChange(key, data) {
       const p = prevMap.get(r.id);
       if (!p || JSON.stringify(stripRec(p)) !== JSON.stringify(stripRec(r))) r._u = now;
       else if (p._u) r._u = p._u;
+
+      // ระดับ "จอ" ภายในบัญชี: ประทับเวลาแยกรายจอ + จดจอที่ถูกลบ
+      if (key === STORAGE_KEY.ACCOUNTS && Array.isArray(r.screens)) {
+        const pm = new Map();
+        if (p && Array.isArray(p.screens)) p.screens.forEach(sc => { if (sc && sc.id) pm.set(sc.id, sc); });
+        const dead = { ...((p && p._dead) || {}), ...(r._dead || {}) };
+        const cur = new Set();
+        r.screens.forEach(sc => {
+          if (!sc || typeof sc !== 'object' || !sc.id) return;
+          cur.add(sc.id);
+          const ps = pm.get(sc.id);
+          if (!ps || JSON.stringify(stripRec(ps)) !== JSON.stringify(stripRec(sc))) sc._u = now;
+          else if (ps._u) sc._u = ps._u;
+        });
+        pm.forEach((sc, id) => { if (!cur.has(id)) dead[id] = now; });
+        if (Object.keys(dead).length) r._dead = dead;
+      }
     });
     const dead = [];
     prevMap.forEach((p, id) => { if (!nowIds.has(id)) dead.push(id); });
@@ -1610,10 +1672,42 @@ function mergeTomb(a, b) {
   return out;
 }
 
-function mergeArrays(local, remote, tomb) {
+function pickRec(l, r) {
+  const lu = l._u || 0, ru = r._u || 0;
+  if (lu !== ru) return ru > lu ? r : l;
+  return stableStr(stripRec(l)) >= stableStr(stripRec(r)) ? l : r;   // เวลาเท่ากัน -> เลือกแบบตายตัว ทุกเครื่องได้ผลเหมือนกัน
+}
+
+// รวมบัญชี: ข้อมูลบัญชีเอาฉบับที่แก้ล่าสุด แต่ "จอ" รวมรายจอ (คนละเครื่องแก้คนละจอไม่ทับกัน)
+function mergeAccount(l, r) {
+  const base = pickRec(l, r);
+  const other = base === l ? r : l;
+  const dead = {};
+  [l._dead, r._dead].forEach(d => Object.entries(d || {}).forEach(([id, ts]) => { dead[id] = Math.max(dead[id] || 0, ts || 0); }));
+  const bs = Array.isArray(base.screens) ? base.screens : [];
+  const os = Array.isArray(other.screens) ? other.screens : [];
+  const oMap = new Map();
+  os.forEach(sc => { if (sc && sc.id) oMap.set(sc.id, sc); });
+  const out = [];
+  const seen = new Set();
+  bs.forEach(sc => {
+    if (!sc || !sc.id) { out.push(sc); return; }
+    seen.add(sc.id);
+    if (dead[sc.id]) return;
+    const o = oMap.get(sc.id);
+    out.push(o ? pickRec(sc, o) : sc);
+  });
+  os.forEach(sc => { if (!sc || !sc.id || seen.has(sc.id) || dead[sc.id]) return; out.push(sc); });
+  const merged = { ...base, screens: out };
+  if (Object.keys(dead).length) merged._dead = dead;
+  return merged;
+}
+
+function mergeArrays(local, remote, tomb, key) {
   const L = Array.isArray(local) ? local : [];
   const R = Array.isArray(remote) ? remote : [];
   const t = tomb || {};
+  const mergeRec = key === STORAGE_KEY.ACCOUNTS ? mergeAccount : pickRec;
   const rMap = new Map();
   R.forEach(r => { if (r && r.id) rMap.set(r.id, r); });
   const out = [];
@@ -1623,8 +1717,7 @@ function mergeArrays(local, remote, tomb) {
     seen.add(l.id);
     if (t[l.id]) return;                 // ถูกกดลบแล้ว
     const r = rMap.get(l.id);
-    if (!r) { out.push(l); return; }
-    out.push((r._u || 0) > (l._u || 0) ? r : l);   // อันที่แก้ล่าสุดชนะ
+    out.push(r ? mergeRec(l, r) : l);
   });
   R.forEach(r => {
     if (!r || !r.id) { if (!out.some(x => JSON.stringify(x) === JSON.stringify(r))) out.push(r); return; }
@@ -1642,7 +1735,10 @@ function mergeSettings(local, remote) {
   out._fu = { ...lf };
   Object.keys(r).forEach(f => {
     if (f === '_fu') return;
-    if (!(f in l) || (rf[f] || 0) > (lf[f] || 0)) { out[f] = r[f]; out._fu[f] = rf[f] || 0; }
+    if (!(f in l)) { out[f] = r[f]; out._fu[f] = rf[f] || 0; return; }
+    const lt = lf[f] || 0, rt = rf[f] || 0;
+    if (rt > lt) { out[f] = r[f]; out._fu[f] = rt; }
+    else if (rt === lt && stableStr(r[f]) > stableStr(l[f])) { out[f] = r[f]; }
   });
   return out;
 }
@@ -1650,7 +1746,7 @@ function mergeSettings(local, remote) {
 function mergeFor(key, local, remote, tombAll) {
   if (key === TOMB_KEY) return mergeTomb(local, remote);
   if (key === STORAGE_KEY.SET) return mergeSettings(local, remote);
-  return mergeArrays(local, remote, (tombAll || {})[key]);
+  return mergeArrays(local, remote, (tombAll || {})[key], key);
 }
 
 function stableStr(v) {
@@ -1732,6 +1828,8 @@ async function syncKey(key) {
       tombAll = mergeTomb(getJSON(TOMB_KEY, {}), await fetchRemoteTomb());
       localStorage.setItem(TOMB_KEY, JSON.stringify(tombAll));
     }
+    observeStamp(row.value, key === TOMB_KEY);
+    if (tombAll) observeStamp(tombAll, true);
     const merged = mergeFor(key, local, row.value, tombAll);
     if (canon(key, merged) !== canon(key, local)) {
       localStorage.setItem(key, JSON.stringify(merged));
@@ -1787,6 +1885,23 @@ async function pullFromCloud() {
   if (metaErr) throw metaErr;
   const remote = {};
   (metaRows || []).forEach(r => { remote[r.key] = r.updated_at; });
+  lastRemoteMeta = remote;
+
+  // ครั้งแรกที่เครื่องนี้ใช้ระบบซิงก์แบบใหม่: ยึดข้อมูลบน cloud เป็นหลัก
+  // (กันข้อมูลเก่าที่เคยลบ/แก้ไปแล้วแต่ยังค้างในเครื่อง ถูกส่งกลับขึ้นไปใหม่) เก็บของเดิมในเครื่องไว้เป็นสำเนา
+  const adopting = !localStorage.getItem(ADOPT_KEY);
+  if (adopting) {
+    const pre = {};
+    const resetKeys = [...ARRAY_SYNC_KEYS, TOMB_KEY].filter(k => remote[k] !== undefined);
+    resetKeys.forEach(k => { const raw = localStorage.getItem(k); if (raw !== null) { pre[k] = raw; localStorage.removeItem(k); } });
+    if (Object.keys(pre).length) localStorage.setItem(PRE_V2_KEY, JSON.stringify({ taken_at: new Date().toISOString(), data: pre }));
+    const d0 = getDirty(), m0 = getSyncMeta();
+    resetKeys.forEach(k => { delete d0[k]; delete m0[k]; });
+    localStorage.setItem(DIRTY_KEY, JSON.stringify(d0));
+    localStorage.setItem(SYNC_META_KEY, JSON.stringify(m0));
+    updateSyncBadge();
+  }
+
   const meta = getSyncMeta();
   const dirty = getDirty();
   const imgKeys = Object.values(IMAGE_SETTING_KEYS);
@@ -1810,6 +1925,7 @@ async function pullFromCloud() {
 
     let tombs = getJSON(TOMB_KEY, {});
     if (map[TOMB_KEY] !== undefined && map[TOMB_KEY] !== null) {
+      observeStamp(map[TOMB_KEY], true);
       const mt = mergeTomb(tombs, map[TOMB_KEY]);
       localStorage.setItem(TOMB_KEY, JSON.stringify(mt));
       setSyncMeta(TOMB_KEY, remote[TOMB_KEY]);
@@ -1839,6 +1955,7 @@ async function pullFromCloud() {
 
       const hadLocal = localStorage.getItem(key) !== null;
       const local = readLocalValue(key);
+      observeStamp(v, false);
       const merged = mergeFor(key, local, v, tombs);
       if (!hadLocal || canon(key, merged) !== canon(key, local)) {
         localStorage.setItem(key, JSON.stringify(merged));
@@ -1861,7 +1978,118 @@ async function pullFromCloud() {
     if (hasData) toPush.add(key);
   });
   toPush.forEach(k => { setDirty(k, true); queueCloudSave(k); });
+  if (adopting) localStorage.setItem(ADOPT_KEY, '1');
   return anyChanged;
+}
+
+// ---------- สำรองข้อมูล ----------
+const BACKUP_PREFIX = 'monali_backup_';   // monali_backup_0..6 = สำรองรายวันแบบหมุนเวียน 7 วัน (เขียนทับวันเดิมของสัปดาห์ก่อน)
+let lastRemoteMeta = {};
+
+function buildSnapshot(forFile) {
+  const data = {};
+  [STORAGE_KEY.ACCOUNTS, STORAGE_KEY.TX, STORAGE_KEY.APPS, STORAGE_KEY.TPL].forEach(k => { data[k] = getJSON(k, []); });
+  const st = { ...getJSON(STORAGE_KEY.SET, {}) };
+  delete st.admin_pass;
+  if (!forFile) Object.keys(IMAGE_SETTING_KEYS).forEach(f => { delete st[f]; });
+  data[STORAGE_KEY.SET] = st;
+  data[TOMB_KEY] = getJSON(TOMB_KEY, {});
+  return { app: 'monali', version: 1, taken_at: new Date().toISOString(), data };
+}
+
+async function maybeBackupToCloud() {
+  try {
+    if (!cloudReady()) return;
+    if (Object.keys(getDirty()).length) return;               // รอให้ข้อมูลซิงก์ครบก่อนค่อยสำรอง
+    const slot = BACKUP_PREFIX + new Date().getDay();
+    const last = lastRemoteMeta[slot];
+    if (last && new Date(last).toDateString() === new Date().toDateString()) return;   // วันนี้สำรองแล้ว
+    const acc = getJSON(STORAGE_KEY.ACCOUNTS, []), tx = getJSON(STORAGE_KEY.TX, []);
+    if (!acc.length && !tx.length) return;                    // ไม่สำรองข้อมูลว่างทับของเดิม
+    const { error } = await sb.from('app_data').upsert({ key: slot, value: buildSnapshot(false), updated_at: new Date().toISOString() });
+    if (error) throw error;
+    lastRemoteMeta[slot] = new Date().toISOString();
+  } catch (e) { console.error('Backup error:', e); }
+}
+
+function downloadBackupFile() {
+  if (!requireAdminAuth()) return;
+  const blob = new Blob([JSON.stringify(buildSnapshot(true))], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'monali-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  showToast('ดาวน์โหลดไฟล์สำรองแล้ว 💾');
+}
+
+// กู้คืนแบบ "เพิ่ม/แทนที่" เท่านั้น ไม่ลบข้อมูลที่มีอยู่ในระบบตอนนี้
+async function restoreFromSnapshot(snap) {
+  if (!snap || snap.app !== 'monali' || !snap.data) throw new Error('bad snapshot');
+  const d = snap.data;
+  const counts = {};
+  [STORAGE_KEY.ACCOUNTS, STORAGE_KEY.TX, STORAGE_KEY.APPS, STORAGE_KEY.TPL].forEach(k => { counts[k] = Array.isArray(d[k]) ? d[k].filter(r => r && r.id).length : 0; });
+  const total = Object.values(counts).reduce((a, b) => a + b, 0);
+  if (!total) { showToast('ไม่พบข้อมูลในไฟล์สำรอง ❌'); return; }
+  const when = snap.taken_at ? new Date(snap.taken_at).toLocaleString('th-TH') : '-';
+  if (!confirm(`กู้คืนจากสำรองเมื่อ ${when}\nบัญชี ${counts[STORAGE_KEY.ACCOUNTS]} | รายการยอด ${counts[STORAGE_KEY.TX]}\n\nระบบจะเพิ่ม/แทนที่รายการเหล่านี้ และไม่ลบข้อมูลที่มีอยู่ตอนนี้ ดำเนินการต่อ?`)) return;
+  const tomb = getJSON(TOMB_KEY, {});
+  for (const key of ARRAY_SYNC_KEYS) {
+    const incoming = Array.isArray(d[key]) ? d[key] : [];
+    if (!incoming.length) continue;
+    const arr = readLocalValue(key).slice();
+    incoming.forEach(r => {
+      if (!r || !r.id) return;
+      const copy = JSON.parse(JSON.stringify(r));
+      if (tomb[key]) delete tomb[key][r.id];
+      const i = arr.findIndex(x => x && x.id === r.id);
+      if (i >= 0) arr[i] = copy; else arr.push(copy);
+    });
+    localStorage.setItem(TOMB_KEY, JSON.stringify(tomb));
+    saveToLocal(key, arr);
+  }
+  setDirty(TOMB_KEY, true); queueCloudSave(TOMB_KEY);
+  await loadData();
+  showToast(`กู้คืนข้อมูลแล้ว ${total} รายการ ✅`);
+}
+
+async function handleRestoreFile(input) {
+  if (!requireAdminAuth()) { input.value = ''; return; }
+  const f = input.files && input.files[0];
+  input.value = '';
+  if (!f) return;
+  let snap;
+  try { snap = JSON.parse(await f.text()); } catch (e) { showToast('ไฟล์สำรองไม่ถูกต้อง ❌'); return; }
+  try { await restoreFromSnapshot(snap); } catch (e) { showToast('ไฟล์สำรองไม่ถูกต้อง ❌'); }
+}
+
+async function populateBackupSlots() {
+  const sel = document.getElementById('cloudBackupSelect');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">กำลังโหลดรายการสำรอง...</option>';
+  if (!cloudReady()) { sel.innerHTML = '<option value="">(ต้องเข้าสู่ระบบก่อน)</option>'; return; }
+  try {
+    const { data, error } = await sb.from('app_data').select('key,updated_at').like('key', BACKUP_PREFIX + '%');
+    if (error) throw error;
+    const rows = (data || []).sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at));
+    sel.innerHTML = rows.length ? '' : '<option value="">(ยังไม่มีสำรองบนคลาวด์)</option>';
+    rows.forEach(r => {
+      const o = document.createElement('option');
+      o.value = r.key;
+      o.textContent = new Date(r.updated_at).toLocaleString('th-TH');
+      sel.appendChild(o);
+    });
+  } catch (e) { sel.innerHTML = '<option value="">โหลดรายการสำรองไม่สำเร็จ</option>'; }
+}
+
+async function restoreFromCloudBackup(btn) {
+  requireAdminAuthAction(btn, async () => {
+    const sel = document.getElementById('cloudBackupSelect');
+    if (!sel || !sel.value) { showToast('ยังไม่มีสำรองให้เลือก ❌'); return; }
+    const { data, error } = await sb.from('app_data').select('value').eq('key', sel.value).maybeSingle();
+    if (error || !data) { showToast('ดึงข้อมูลสำรองไม่สำเร็จ ❌'); return; }
+    await restoreFromSnapshot(data.value);
+  });
 }
 
 async function initSupabase() {
@@ -1892,6 +2120,7 @@ async function backgroundCloudPull() {
   try {
     const changed = await pullFromCloud();
     if (changed) await loadData();
+    maybeBackupToCloud();
   } catch (e) {
     console.error('Cloud pull error:', e);
   } finally {
@@ -3626,6 +3855,7 @@ function openSettingsModal() {
   document.getElementById('genericWebhook').value = webhookSettings.url || '';
   document.getElementById('serverDailyCheckbox').checked = !!serverDailyEnabled;
   document.getElementById('testResult').className = 'hidden text-sm text-center py-2 px-3 rounded-xl mt-3';
+  populateBackupSlots();
   animateModalOpen('settingsModal');
 }
 function closeSettingsModal() { animateModalClose('settingsModal'); }
@@ -4918,5 +5148,3 @@ function spawnSparkles(x, y) {
 </script>
 </body>
 </html>
-
-
