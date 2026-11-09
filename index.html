@@ -536,6 +536,26 @@ input[type="date"]::-webkit-date-and-time-value {
     </div>
   </div>
 
+  <div id="accMonthNavContainer" class="hidden bg-white border-2 border-petal rounded-3xl p-3.5 sm:p-4 mb-6 shadow-soft flex flex-col sm:flex-row items-center justify-between gap-3 transition-all">
+    <div class="flex items-center justify-between w-full sm:w-auto gap-2">
+      <button type="button" onclick="changeAccMonth(-1)" class="w-10 h-10 rounded-2xl bg-petal-light hover:bg-petal text-espresso font-bold flex items-center justify-center transition-colors border-2 border-petal shadow-sm shrink-0" title="เดือนก่อนหน้า">
+        <i class="fa-solid fa-chevron-left text-sm"></i>
+      </button>
+      <div class="flex items-center gap-2 bg-petal-light/30 border-2 border-petal rounded-2xl px-3 sm:px-4 py-1.5 min-w-0 flex-1 sm:flex-none">
+        <i class="fa-regular fa-calendar-days text-petal-deep text-lg shrink-0"></i>
+        <select id="accMonthSelect" onchange="handleAccMonthChange(this.value)" class="bg-transparent border-0 focus:ring-0 focus:outline-none text-xs sm:text-sm font-extrabold text-espresso cursor-pointer min-w-0 w-full py-1.5"></select>
+      </div>
+      <button type="button" onclick="changeAccMonth(1)" class="w-10 h-10 rounded-2xl bg-petal-light hover:bg-petal text-espresso font-bold flex items-center justify-center transition-colors border-2 border-petal shadow-sm shrink-0" title="เดือนถัดไป">
+        <i class="fa-solid fa-chevron-right text-sm"></i>
+      </button>
+    </div>
+    <div class="flex items-center justify-end w-full sm:w-auto gap-2">
+      <button type="button" onclick="setAccMonthCurrent()" class="px-3.5 py-2 rounded-2xl text-xs font-bold bg-petal hover:bg-petal-deep text-espresso border-2 border-transparent transition-colors shadow-sm flex items-center gap-1 shrink-0">
+        <i class="fa-solid fa-rotate-left"></i> เดือนนี้
+      </button>
+    </div>
+  </div>
+
   <div class="grid grid-cols-3 gap-3 sm:gap-4 mb-6">
     <div class="bg-white border-2 border-emerald-200 rounded-3xl p-4 flex flex-col justify-center shadow-soft relative overflow-hidden group hover:shadow-cute transition-all">
       <div class="absolute -right-4 -top-4 w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center -z-0 transition-transform duration-500 group-hover:scale-110"></div>
@@ -2143,6 +2163,7 @@ let selectedAppFilter = 'all';
 let searchQuery = '';
 let monaliTransactions = [];
 let accFilterMode = 'day';
+let selectedAccMonth = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); })();
 
 function getLocalDateString(d = new Date()) {
   const year = d.getFullYear();
@@ -4255,13 +4276,13 @@ function exportAccountingCSV() {
   const filteredTx = monaliTransactions.filter(tx => {
     const txTime = new Date(tx.date).getTime();
     if (accFilterMode === 'day') return txTime >= startOfSelDay && txTime <= endOfSelDay;
-    if (accFilterMode === 'month') return txTime >= startOfMonth;
+    if (accFilterMode === 'month') { const r = getAccMonthRange(); return txTime >= r.start && txTime <= r.end; }
     if (accFilterMode === 'year') return txTime >= startOfYear;
     return true;
   });
 
   if (filteredTx.length === 0) {
-    showToast('ไม่มีข้อมูลสำหรับส่งออกในช่วงเวลานี้ ❌');
+    showToast(accFilterMode === 'month' ? `ไม่มีข้อมูลของเดือน ${accMonthLabel(selectedAccMonth)} ให้ส่งออก ❌` : 'ไม่มีข้อมูลสำหรับส่งออกในช่วงเวลานี้ ❌');
     return;
   }
 
@@ -4292,7 +4313,7 @@ function exportAccountingCSV() {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.setAttribute("href", url);
-  link.setAttribute("download", `${storeName}_accounting_${accFilterMode}_${getLocalDateString()}.csv`);
+  link.setAttribute("download", `${storeName}_accounting_${accFilterMode === 'month' ? 'month_' + selectedAccMonth : accFilterMode}_${getLocalDateString()}.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -4882,7 +4903,67 @@ function handleAddTransaction(e) {
   });
 }
 
+function currentMonthKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+}
+
+// ช่วงเวลาของ "เดือนที่เลือก" (ต้นเดือน 00:00 ถึงสิ้นเดือน 23:59:59)
+function getAccMonthRange() {
+  const [y, m] = selectedAccMonth.split('-').map(Number);
+  return {
+    start: new Date(y, m - 1, 1, 0, 0, 0, 0).getTime(),
+    end: new Date(y, m, 0, 23, 59, 59, 999).getTime()
+  };
+}
+
+function accMonthLabel(ym, style) {
+  const [y, m] = ym.split('-').map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString('th-TH', { month: style || 'long', year: 'numeric' });
+}
+
+function syncAccMonthUI() {
+  const sel = document.getElementById('accMonthSelect');
+  if (!sel) return;
+  const cur = currentMonthKey();
+  const set = new Set([cur, selectedAccMonth]);
+  let [y, m] = cur.split('-').map(Number);
+  for (let i = 0; i < 12; i++) {                         // อย่างน้อยย้อนหลัง 12 เดือน
+    set.add(y + '-' + String(m).padStart(2, '0'));
+    m--; if (m === 0) { m = 12; y--; }
+  }
+  monaliTransactions.forEach(tx => {                     // และทุกเดือนที่มีรายการ
+    const d = new Date(tx.date);
+    if (!isNaN(d)) set.add(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'));
+  });
+  const list = [...set].sort().reverse();
+  const sig = list.join(',');
+  if (sel.dataset.sig !== sig) {
+    sel.innerHTML = list.map(k => `<option value="${k}">${accMonthLabel(k)}${k === cur ? ' (เดือนนี้)' : ''}</option>`).join('');
+    sel.dataset.sig = sig;
+  }
+  sel.value = selectedAccMonth;
+}
+
+function handleAccMonthChange(val) {
+  if (!/^\d{4}-\d{2}$/.test(val)) return;
+  selectedAccMonth = val;
+  updateAccFilterButtonsUI();
+  renderTransactions();
+}
+
+function changeAccMonth(delta) {
+  const [y, m] = selectedAccMonth.split('-').map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  const next = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  if (next > currentMonthKey()) return;                  // ไม่ไปเดือนอนาคต
+  handleAccMonthChange(next);
+}
+
+function setAccMonthCurrent() { handleAccMonthChange(currentMonthKey()); }
+
 function setAccFilter(mode) {
+  if (mode === 'month' && accFilterMode !== 'month') selectedAccMonth = currentMonthKey();
   accFilterMode = mode;
   if (mode === 'day') {
     const dateInput = document.getElementById('accDatePickerInput');
@@ -4957,6 +5038,13 @@ function updateAccFilterButtonsUI() {
       dayNav.classList.add('hidden');
     }
   }
+  const monthNav = document.getElementById('accMonthNavContainer');
+  if (monthNav) {
+    if (accFilterMode === 'month') { monthNav.classList.remove('hidden'); syncAccMonthUI(); }
+    else monthNav.classList.add('hidden');
+  }
+  const mBtn = document.getElementById('btnFilterMonth');
+  if (mBtn) mBtn.textContent = (selectedAccMonth === currentMonthKey()) ? 'เดือนนี้' : accMonthLabel(selectedAccMonth, 'short');
 }
 
 function renderTransactions() {
@@ -4987,18 +5075,20 @@ function renderTransactions() {
   if (dateInput) dateInput.value = selectedAccDate;
   if (badgeLabel) {
     if (accFilterMode === 'day') badgeLabel.textContent = `วันที่ ${thaiDateText}`;
-    else if (accFilterMode === 'month') badgeLabel.textContent = `เดือนนี้ (${now.toLocaleDateString('th-TH', { month: 'short', year: 'numeric' })})`;
+    else if (accFilterMode === 'month') badgeLabel.textContent = (selectedAccMonth === currentMonthKey() ? 'เดือนนี้ ' : 'เดือน ') + `(${accMonthLabel(selectedAccMonth, 'short')})`;
     else if (accFilterMode === 'year') badgeLabel.textContent = `ปีนี้ (${now.toLocaleDateString('th-TH', { year: 'numeric' })})`;
     else badgeLabel.textContent = 'รายการทั้งหมด';
   }
 
+  const monthRange = getAccMonthRange();
+  if (accFilterMode === 'month') syncAccMonthUI();
   const filteredTx = monaliTransactions.filter(tx => {
     const txTime = new Date(tx.date).getTime();
     if (accFilterMode === 'day') {
       return txTime >= startOfSelDay && txTime <= endOfSelDay;
     }
     if (accFilterMode === 'month') {
-      return txTime >= startOfMonth;
+      return txTime >= monthRange.start && txTime <= monthRange.end;
     }
     if (accFilterMode === 'year') {
       return txTime >= startOfYear;
@@ -5009,7 +5099,7 @@ function renderTransactions() {
   if (filteredTx.length === 0) {
     let emptyMsg = 'ยังไม่มีประวัติการทำรายการในช่วงเวลานี้';
     if (accFilterMode === 'day') emptyMsg = `ยังไม่มีรายการในวันที่ ${thaiDateText}`;
-    else if (accFilterMode === 'month') emptyMsg = 'ยังไม่มีรายการในเดือนนี้';
+    else if (accFilterMode === 'month') emptyMsg = `ยังไม่มีรายการในเดือน ${accMonthLabel(selectedAccMonth)}`;
     else if (accFilterMode === 'year') emptyMsg = 'ยังไม่มีรายการในปีนี้';
     listEl.innerHTML = ` <div class="text-center py-16 flex flex-col items-center bg-ivory/30 rounded-2xl border-2 border-dashed border-petal"> <div class="w-16 h-16 bg-white border-2 border-petal rounded-full flex items-center justify-center text-espresso/40 mb-3 text-3xl shadow-sm"> <i class="fa-solid fa-receipt"></i> </div> <p class="text-espresso font-bold text-base">${emptyMsg}</p> <p class="text-xs text-espresso/60 mt-1 font-medium">เพิ่มรายการใหม่ หรือคลิกเลือกวันอื่นด้านบนได้เลยค่ะ</p> </div>`;
   } else {
@@ -5218,5 +5308,3 @@ function spawnSparkles(x, y) {
 </script>
 </body>
 </html>
-
-
