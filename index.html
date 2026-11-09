@@ -530,6 +530,9 @@ input[type="date"]::-webkit-date-and-time-value {
       <div class="relative flex items-center">
         <input type="date" id="accDatePickerInput" onchange="handleAccDateChange(event)" class="rounded-2xl border-2 border-petal bg-white px-3 py-2 text-xs font-bold text-espresso focus:border-petal-deep focus:ring-0 shadow-sm cursor-pointer hover:border-petal-deep transition-colors">
       </div>
+      <button type="button" onclick="backToAccMonth()" class="px-3.5 py-2 rounded-2xl text-xs font-bold bg-white hover:bg-petal-light text-espresso border-2 border-petal transition-colors shadow-sm flex items-center gap-1 shrink-0">
+        <i class="fa-regular fa-calendar"></i> ดูทั้งเดือน
+      </button>
       <button type="button" onclick="setAccDayToday()" class="px-3.5 py-2 rounded-2xl text-xs font-bold bg-petal hover:bg-petal-deep text-espresso border-2 border-transparent transition-colors shadow-sm flex items-center gap-1 shrink-0">
         <i class="fa-solid fa-rotate-left"></i> วันนี้
       </button>
@@ -554,6 +557,11 @@ input[type="date"]::-webkit-date-and-time-value {
         <i class="fa-solid fa-rotate-left"></i> เดือนนี้
       </button>
     </div>
+  </div>
+
+  <div id="accMonthDaysContainer" class="hidden bg-white border-2 border-petal rounded-3xl p-3.5 sm:p-4 mb-6 shadow-soft">
+    <p class="text-xs sm:text-sm font-extrabold text-espresso mb-2.5 flex items-center gap-1.5"><i class="fa-solid fa-calendar-day text-petal-deep"></i> ยอดรายวัน <span class="text-[11px] font-bold text-espresso/50">แตะวันที่เพื่อดูรายการของวันนั้น</span></p>
+    <div id="accMonthDaysList" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1"></div>
   </div>
 
   <div class="grid grid-cols-3 gap-3 sm:gap-4 mb-6">
@@ -4962,6 +4970,53 @@ function changeAccMonth(delta) {
 
 function setAccMonthCurrent() { handleAccMonthChange(currentMonthKey()); }
 
+function openAccDay(dateStr) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return;
+  selectedAccDate = dateStr;
+  accFilterMode = 'day';
+  const dateInput = document.getElementById('accDatePickerInput');
+  if (dateInput) dateInput.value = selectedAccDate;
+  const transDateInput = document.getElementById('transDate');
+  if (transDateInput) transDateInput.value = selectedAccDate;
+  updateAccFilterButtonsUI();
+  renderTransactions();
+  const list = document.getElementById('transactionList');
+  if (list) list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function backToAccMonth() {
+  selectedAccMonth = selectedAccDate.slice(0, 7);
+  accFilterMode = 'month';
+  updateAccFilterButtonsUI();
+  renderTransactions();
+}
+
+// สรุปยอดรายวันของเดือนที่เลือก (แตะวันไหนก็เปิดรายการของวันนั้น)
+function renderAccDaySummary(txs) {
+  const box = document.getElementById('accMonthDaysContainer');
+  const list = document.getElementById('accMonthDaysList');
+  if (!box || !list) return;
+  if (accFilterMode !== 'month' || !txs.length) { box.classList.add('hidden'); list.innerHTML = ''; return; }
+  const days = {};
+  txs.forEach(tx => {
+    const key = getLocalDateString(new Date(tx.date));
+    const d = days[key] || (days[key] = { income: 0, expense: 0, count: 0 });
+    if (tx.type === 'income') d.income += tx.amount; else d.expense += tx.amount;
+    d.count++;
+  });
+  const fmt = n => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  list.innerHTML = Object.keys(days).sort().reverse().map(key => {
+    const [y, m, dd] = key.split('-').map(Number);
+    const label = new Date(y, m - 1, dd).toLocaleDateString('th-TH', { weekday: 'short', day: 'numeric', month: 'short' });
+    const d = days[key];
+    return `<button type="button" onclick="openAccDay('${key}')" class="w-full text-left rounded-2xl border-2 border-petal bg-white hover:border-petal-deep hover:bg-petal-light/40 transition-colors px-3.5 py-2.5 flex items-center justify-between gap-3">
+      <span class="min-w-0"><span class="block text-xs sm:text-sm font-extrabold text-espresso">${label}</span><span class="block text-[11px] font-bold text-espresso/50">${d.count} รายการ</span></span>
+      <span class="text-right shrink-0"><span class="block text-xs font-extrabold text-emerald-600">+${fmt(d.income)}</span><span class="block text-xs font-extrabold text-red-500">-${fmt(d.expense)}</span></span>
+    </button>`;
+  }).join('');
+  box.classList.remove('hidden');
+}
+
 function setAccFilter(mode) {
   if (mode === 'month' && accFilterMode !== 'month') selectedAccMonth = currentMonthKey();
   accFilterMode = mode;
@@ -5096,6 +5151,7 @@ function renderTransactions() {
     return true;
   });
 
+  renderAccDaySummary(filteredTx);
   if (filteredTx.length === 0) {
     let emptyMsg = 'ยังไม่มีประวัติการทำรายการในช่วงเวลานี้';
     if (accFilterMode === 'day') emptyMsg = `ยังไม่มีรายการในวันที่ ${thaiDateText}`;
