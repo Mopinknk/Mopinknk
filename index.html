@@ -789,6 +789,10 @@ input[type="date"]::-webkit-date-and-time-value {
             <label class="block text-sm font-bold text-espresso mb-1.5">หมายเหตุเพิ่มเติม</label>
             <textarea id="screenNotes" rows="2" class="box-border block w-full rounded-2xl border-petal bg-white px-4 py-3.5 text-espresso focus:bg-white border-2 focus:border-petal-deep focus:ring-0 transition-colors" placeholder="เช่น โอนกสิกร, ต่ออายุเดือนหน้า..."></textarea>
           </div>
+          <div class="w-full">
+            <label class="block text-sm font-bold text-espresso mb-1.5"><i class="fa-brands fa-line text-green-500"></i> LINE userId ลูกค้า (ถ้ามี)</label>
+            <input type="text" id="screenLineId" class="box-border block w-full h-[52px] rounded-2xl border-petal bg-white px-4 text-espresso border-2 focus:border-petal-deep focus:ring-0" placeholder="U1234abcd... (ขึ้นต้นด้วย U)">
+          </div>
         </div>
       </form>
     </div>
@@ -3723,6 +3727,7 @@ function openEditScreenModal(accountId, screenIndex) {
   document.getElementById('expireDate').value = screen.expireDate || '';
   document.getElementById('screenPin').value = screen.pin || '';
   document.getElementById('screenNotes').value = screen.notes || '';
+  document.getElementById('screenLineId').value = screen.lineUserId || '';
   document.getElementById('screenPrice').value = screen.price || '';
   document.getElementById('autoRecordIncome').checked = (screen.status !== 'sold');
   animateModalOpen('editScreenModal');
@@ -3752,6 +3757,7 @@ async function handleEditScreen(e) {
     account.screens[screenIndex].expireDate = document.getElementById('expireDate').value || null;
     account.screens[screenIndex].pin = document.getElementById('screenPin').value;
     account.screens[screenIndex].notes = document.getElementById('screenNotes').value;
+    account.screens[screenIndex].lineUserId = document.getElementById('screenLineId').value.trim() || null;
     account.screens[screenIndex].price = price;
     
     saveToLocal(STORAGE_KEY.ACCOUNTS, netflixAccounts);
@@ -5381,6 +5387,8 @@ function spawnSparkles(x, y) {
       <p class="text-[11px] text-espresso/60">แก้ข้อความได้ ใช้ {แอป} {บัญชี} {จอ} {วันหมด} แทนข้อมูลแต่ละจอ</p>
       <label class="text-xs font-bold flex items-center gap-2"><input type="checkbox" id="lineAll" onchange="renderLineList()"> แสดงทุกจอที่ขายแล้ว (ปกติแสดงเฉพาะที่หมดใน 3 วัน)</label>
       <div id="lineList" class="flex flex-col gap-2"></div>
+      <button onclick="sendLineAll(this)" class="w-full rounded-2xl bg-green-500 text-white px-4 py-3 text-sm font-bold"><i class="fa-solid fa-paper-plane"></i> ส่งให้ทุกคนที่มี LINE userId ในรายการ</button>
+      <div id="lineResult" class="text-xs font-bold"></div>
     </div>
   </div>
 </div>
@@ -5414,15 +5422,33 @@ function renderLineList() {
     <div class="flex items-center gap-2 p-2.5 rounded-xl border-2 border-petal text-xs font-bold">
       <div class="flex-1 min-w-0"><div class="truncate">${escapeHTML(getAccountApp(r.acc))} · ${escapeHTML(r.acc.name)} จอ ${r.i + 1}</div>
       <div class="text-espresso/50 font-medium truncate">${r.sc.expireDate ? formatDate(r.sc.expireDate) : '-'}${r.sc.notes ? ' · ' + escapeHTML(r.sc.notes) : ''}</div></div>
-      <button onclick="copyLineMsg(${k})" class="px-3 py-2 rounded-xl bg-green-100 text-green-700 border border-green-200 shrink-0"><i class="fa-regular fa-copy"></i> คัดลอก</button>
+      ${r.sc.lineUserId ? `<button onclick="sendLineOne(${k}, this)" class="px-3 py-2 rounded-xl bg-green-500 text-white shrink-0"><i class="fa-solid fa-paper-plane"></i> ส่ง</button>` : ''}
+      <button onclick="copyLineMsg(${k})" class="px-3 py-2 rounded-xl bg-green-100 text-green-700 border border-green-200 shrink-0"><i class="fa-regular fa-copy"></i></button>
     </div>`).join('') : '<div class="text-xs text-espresso/60 text-center py-6">ไม่มีจอที่ต้องแจ้งเตือนตอนนี้ค่ะ 🎉</div>';
 }
-function copyLineMsg(k) {
-  const r = _lineRows[k];
-  const msg = document.getElementById('lineText').value
+function buildLineMsg(r) {
+  return document.getElementById('lineText').value
     .replaceAll('{แอป}', getAccountApp(r.acc)).replaceAll('{บัญชี}', r.acc.name)
     .replaceAll('{จอ}', r.i + 1).replaceAll('{วันหมด}', r.sc.expireDate ? formatDate(r.sc.expireDate) : '-');
-  copyText(msg);
+}
+function copyLineMsg(k) { copyText(buildLineMsg(_lineRows[k])); }
+async function pushLine(rows) {
+  if (!requireAdminAuth()) return null;
+  const res = document.getElementById('lineResult');
+  try {
+    const { data, error } = await sb.functions.invoke('line-push', { body: { messages: rows.map(r => ({ to: r.sc.lineUserId, text: buildLineMsg(r) })) } });
+    if (error) throw error;
+    const ok = data.results.filter(x => x.ok).length;
+    res.className = 'text-xs font-bold ' + (ok === rows.length ? 'text-emerald-600' : 'text-red-600');
+    res.textContent = 'ส่งสำเร็จ ' + ok + '/' + rows.length + ' คน' + (ok < rows.length ? ' (userId อาจผิด หรือลูกค้ายังไม่ได้เพิ่มเพื่อน OA)' : '');
+  } catch (e) { res.className = 'text-xs font-bold text-red-600'; res.textContent = 'ส่งไม่สำเร็จ: ' + (e.message || e); }
+}
+async function sendLineOne(k, btn) { btn.disabled = true; await pushLine([_lineRows[k]]); btn.disabled = false; }
+async function sendLineAll(btn) {
+  const rows = _lineRows.filter(r => r.sc.lineUserId);
+  if (!rows.length) { const res = document.getElementById('lineResult'); res.className = 'text-xs font-bold text-red-600'; res.textContent = 'ยังไม่มีจอไหนใส่ LINE userId'; return; }
+  if (!confirm('ส่งข้อความถึง ' + rows.length + ' คน?')) return;
+  btn.disabled = true; await pushLine(rows); btn.disabled = false;
 }
 </script>
 </body>
